@@ -6,8 +6,10 @@ export type ProductCardProps = {
   brand: string;
   name: string;
   badge?: string;
+  outOfStock?: boolean;
   surface?: "surface" | "surface-alt";
   href: string;
+  imageClassName?: string;
 };
 
 export default function ProductCard({
@@ -15,13 +17,15 @@ export default function ProductCard({
   brand,
   name,
   badge,
+  outOfStock = false,
   surface = "surface",
   href,
+  imageClassName = "h-[362px]",
 }: ProductCardProps) {
   return (
     <Link href={href} className="group flex flex-col">
       <div
-        className={`relative h-[362px] w-full overflow-hidden ${
+        className={`relative w-full overflow-hidden ${imageClassName} ${
           surface === "surface" ? "bg-surface" : "bg-surface-alt"
         }`}
       >
@@ -36,6 +40,13 @@ export default function ProductCard({
           <span className="absolute left-3 top-3 bg-ink px-2 py-1 text-[9px] font-medium uppercase tracking-[1.35px] text-background">
             {badge}
           </span>
+        )}
+        {outOfStock && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+            <span className="text-[10px] font-normal uppercase leading-[15px] tracking-[1px] text-muted">
+              Sin stock
+            </span>
+          </div>
         )}
       </div>
 
