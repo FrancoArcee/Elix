@@ -8,7 +8,15 @@ const NAV_ITEMS = [
   { label: "Nosotros", href: "/#nosotros" },
 ];
 
-export default function Navbar() {
+type NavbarProps = {
+  active?: string;
+  withSearchBar?: boolean;
+};
+
+export default function Navbar({
+  active = "/",
+  withSearchBar = true,
+}: NavbarProps) {
   return (
     <header className="w-full border-b border-ink/10 bg-background/95">
       <div className="mx-auto flex h-[60px] w-full max-w-[1280px] items-center gap-4 px-6">
@@ -25,7 +33,7 @@ export default function Navbar() {
               key={item.label}
               href={item.href}
               className={`text-[10px] font-medium uppercase tracking-[1.8px] transition-colors hover:text-ink ${
-                item.href === "/" ? "text-ink" : "text-muted"
+                item.href === active ? "text-ink" : "text-muted"
               }`}
             >
               {item.label}
@@ -63,22 +71,24 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className="border-t border-ink/10 px-6 py-4">
-        <div className="relative mx-auto w-full max-w-[576px]">
-          <Image
-            src="/icons/icon-search-input.svg"
-            alt=""
-            width={14}
-            height={14}
-            className="absolute left-0 top-1/2 size-[14px] -translate-y-1/2"
-          />
-          <input
-            type="text"
-            placeholder="Buscar fragancias, marcas…"
-            className="w-full border-b border-ink/10 bg-transparent pb-2 pl-5 text-[14px] text-ink outline-none placeholder:text-muted"
-          />
+      {withSearchBar && (
+        <div className="border-t border-ink/10 px-6 py-4">
+          <div className="relative mx-auto w-full max-w-[576px]">
+            <Image
+              src="/icons/icon-search-input.svg"
+              alt=""
+              width={14}
+              height={14}
+              className="absolute left-0 top-1/2 size-[14px] -translate-y-1/2"
+            />
+            <input
+              type="text"
+              placeholder="Buscar fragancias, marcas…"
+              className="w-full border-b border-ink/10 bg-transparent pb-2 pl-5 text-[14px] text-ink outline-none placeholder:text-muted"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }
