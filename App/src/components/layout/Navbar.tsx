@@ -5,7 +5,7 @@ const NAV_ITEMS = [
   { label: "Inicio", href: "/" },
   { label: "Perfumes", href: "/products" },
   { label: "Body Splash", href: "/products?type=body-splash" },
-  { label: "Nosotros", href: "/#nosotros" },
+  { label: "Nosotros", href: "/nosotros" },
 ];
 
 type NavbarProps = {
