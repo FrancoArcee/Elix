@@ -1,0 +1,57 @@
+import Image from "next/image";
+import Link from "next/link";
+
+const CATEGORIES = [
+  {
+    image: "/images/cat-perfumes-arabes.png",
+    title: "Perfumes Árabes",
+    subtitle: "Oud, ámbar, resinas y especias de Oriente Medio",
+    href: "/products?type=perfumes",
+  },
+  {
+    image: "/images/cat-body-splash.png",
+    title: "Body Splash",
+    subtitle: "Frescura cotidiana con fragancias irresistibles",
+    href: "/products?type=body-splash",
+  },
+];
+
+export default function Categories() {
+  return (
+    <section className="mx-auto w-full max-w-[1280px] px-6 py-24">
+      <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
+        Explorar por
+      </p>
+      <h2 className="mt-3 font-serif text-[36px] leading-10 text-ink">
+        Categorías
+      </h2>
+
+      <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {CATEGORIES.map((category) => (
+          <Link
+            key={category.title}
+            href={category.href}
+            className="group relative block aspect-[3/4] overflow-hidden bg-surface"
+          >
+            <Image
+              src={category.image}
+              alt={category.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-6">
+              <h3 className="font-serif text-[24px] leading-8 text-white">
+                {category.title}
+              </h3>
+              <p className="mt-1 text-[12px] leading-4 text-white/65">
+                {category.subtitle}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
