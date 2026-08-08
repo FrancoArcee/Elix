@@ -103,7 +103,7 @@ docker compose down -v
 
 ## Opencode Agent Usage
 
-This project has custom agents defined in `opencode.jsonc`:
+This project has custom agents defined under the `agent` key in `opencode.jsonc`:
 
 - `@frontend` — For Next.js/Tailwind/Zustand tasks
 - `@backend` — For Django REST tasks
