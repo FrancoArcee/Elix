@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -59,36 +58,6 @@ export default function ProductDetail({
       <Navbar active="/products" withSearchBar={false} />
       <main className="bg-background">
         <div className="mx-auto w-full max-w-[1280px] px-6 py-12">
-          <nav aria-label="Miga de pan" className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="text-[16px] text-muted transition-colors hover:text-ink"
-            >
-              Inicio
-            </Link>
-            <Image
-              src="/icons/icon-chevron-right.svg"
-              alt=""
-              width={9}
-              height={9}
-              className="size-[9px]"
-            />
-            <Link
-              href="/products"
-              className="text-[16px] text-muted transition-colors hover:text-ink"
-            >
-              Colección
-            </Link>
-            <Image
-              src="/icons/icon-chevron-right.svg"
-              alt=""
-              width={9}
-              height={9}
-              className="size-[9px]"
-            />
-            <span className="text-[10px] text-ink">{name}</span>
-          </nav>
-
           <div className="grid grid-cols-1 gap-10 pt-8 lg:grid-cols-2">
             <div className="flex flex-col">
               <div className="relative aspect-square w-full overflow-hidden bg-surface">
@@ -96,6 +65,7 @@ export default function ProductDetail({
                   src={galleryImages[activeImage]}
                   alt={name}
                   fill
+                  priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
                 />
@@ -158,7 +128,7 @@ export default function ProductDetail({
 
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-2 bg-ink py-4 transition-colors hover:bg-ink/90"
+                className="mt-8 flex w-full items-center justify-center gap-2 bg-ink py-4 transition-colors hover:bg-ink/90"
               >
                 <Image
                   src="/icons/icon-chat-white.svg"
