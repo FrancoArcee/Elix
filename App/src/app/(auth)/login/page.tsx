@@ -1,17 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
-import LoginForm from "@/components/auth/LoginForm";
+import AdminLoginForm from "@/components/auth/AdminLoginForm";
 
 export default function LoginPage() {
   return (
     <main className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-2">
-      <div className="relative min-h-[320px] overflow-hidden bg-surface lg:min-h-screen">
+      <div className="relative hidden overflow-hidden bg-surface lg:block lg:min-h-screen">
         <Image
           src="/images/auth-elix-fragancias.jpg"
           alt="Colección de fragancias ELIX"
           fill
           priority
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="50vw"
           className="object-cover"
         />
         <div className="absolute inset-0 bg-black/40" />
@@ -29,8 +29,8 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      <div className="flex items-center justify-center px-6 py-16 lg:p-16">
-        <LoginForm />
+      <div className="flex items-center justify-center p-8 lg:p-16">
+        <AdminLoginForm />
       </div>
     </main>
   );
