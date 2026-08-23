@@ -2,13 +2,13 @@ import Link from "next/link";
 
 export default function PromoSection() {
   return (
-    <section className="bg-ink px-6 py-24">
+    <section className="bg-ink px-4 py-20 md:px-6 md:py-24">
       <div className="mx-auto flex w-full max-w-[768px] flex-col items-center text-center">
         <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.6px] text-background/40">
           Oferta activa
         </p>
 
-        <h2 className="mt-7 font-serif text-[40px] font-bold leading-[1.25] text-background md:text-[60px] md:leading-[75px]">
+        <h2 className="mt-7 font-serif text-[36px] font-bold leading-[45px] text-background md:mt-7 md:text-[60px] md:leading-[75px]">
           20% off en toda
           <br />
           la colección.
