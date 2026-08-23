@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import ProductCard, {
   type ProductCardProps,
 } from "@/components/products/ProductCard";
@@ -17,10 +20,12 @@ export default function ProductListing({
   products,
   backgroundClass = "bg-background",
 }: ProductListingProps) {
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
   return (
-    <main className={`min-h-screen px-6 py-12 ${backgroundClass}`}>
+    <main className={`min-h-screen px-4 py-10 md:px-6 md:py-12 ${backgroundClass}`}>
       <div className="mx-auto w-full max-w-[1280px]">
-        <h1 className="font-serif text-[36px] font-bold leading-10 text-ink">
+        <h1 className="font-serif text-[30px] font-bold leading-9 text-ink md:text-[36px] md:leading-10">
           {title}
         </h1>
 
@@ -30,27 +35,52 @@ export default function ProductListing({
               {productCount}{" "}
               {productCount === 1 ? "producto" : "productos"}
             </p>
-            <button
-              type="button"
-              className="flex items-center gap-2 border-[0.667px] border-ink/10 px-3 py-2"
-            >
-              <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.5px] text-ink">
-                Más vendidos
-              </span>
-              <Image
-                src="/icons/icon-chevron-down.svg"
-                alt=""
-                width={10}
-                height={10}
-                className="size-[10px]"
-              />
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-expanded={isFiltersOpen}
+                onClick={() => setIsFiltersOpen((open) => !open)}
+                className="flex items-center gap-2 border border-ink/10 px-3 py-2 lg:hidden"
+              >
+                <Image
+                  src="/icons/icon-filter.svg"
+                  alt=""
+                  width={12}
+                  height={12}
+                  className="size-[12px]"
+                />
+                <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-ink">
+                  Filtros
+                </span>
+              </button>
+              <button
+                type="button"
+                className="flex items-center gap-2 border border-ink/10 px-3 py-2"
+              >
+                <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.5px] text-ink">
+                  Más vendidos
+                </span>
+                <Image
+                  src="/icons/icon-chevron-down.svg"
+                  alt=""
+                  width={10}
+                  height={10}
+                  className="size-[10px]"
+                />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-10 lg:flex-row">
-          <FilterPanel className="w-full shrink-0 lg:w-[208px]" />
-          <div className="grid flex-1 grid-cols-1 gap-6 pb-14 md:grid-cols-2">
+        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
+          <div
+            className={`${
+              isFiltersOpen ? "block" : "hidden"
+            } w-full lg:block lg:w-[208px] lg:shrink-0`}
+          >
+            <FilterPanel onClose={() => setIsFiltersOpen(false)} />
+          </div>
+          <div className="grid flex-1 grid-cols-2 gap-4 pb-14 md:gap-6 lg:grid-cols-2">
             {products.map((product) => (
               <ProductCard
                 key={product.name}
