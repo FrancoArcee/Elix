@@ -28,11 +28,11 @@ export default function NosotrosPage() {
   return (
     <>
       <Navbar active="/nosotros" withSearchBar={false} />
-      <main className="mx-auto w-full max-w-[896px] px-6 py-24">
+      <main className="mx-auto w-full max-w-[896px] px-4 py-16 md:px-6 md:py-24">
         <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
           Quiénes somos
         </p>
-        <h1 className="mt-4 font-serif text-[40px] font-bold leading-[50px] text-ink md:text-[60px] md:leading-[75px]">
+        <h1 className="mt-4 font-serif text-[36px] font-bold leading-[45px] text-ink md:text-[60px] md:leading-[75px]">
           <span className="block">ELIX nació de</span>
           <span className="block">la pasión por</span>
           <span className="block">las fragancias.</span>
@@ -43,14 +43,14 @@ export default function NosotrosPage() {
           acercarlas a quienes, como nosotros, se enamoran de un buen perfume.
         </p>
 
-        <div className="mt-20 border-t border-ink/10" />
+        <div className="mt-16 border-t border-ink/10 md:mt-20" />
 
-        <section className="mt-20">
+        <section className="mt-16 md:mt-20">
           <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
             El equipo
           </p>
           <div className="mt-10 grid grid-cols-1 items-center gap-14 md:grid-cols-2">
-            <div className="flex h-[297px] flex-col items-center justify-center gap-3 border border-dashed border-ink/10 bg-surface">
+            <div className="flex h-[278px] flex-col items-center justify-center gap-3 border border-dashed border-ink/10 bg-surface">
               <div className="flex size-14 items-center justify-center rounded-full border border-dashed border-muted/30">
                 <Image
                   src="/icons/icon-team-user.svg"
@@ -65,7 +65,7 @@ export default function NosotrosPage() {
               </p>
             </div>
             <div>
-              <h2 className="font-serif text-[36px] font-bold leading-[45px] text-ink">
+              <h2 className="font-serif text-[30px] font-bold leading-[37.5px] text-ink md:text-[36px] md:leading-[45px]">
                 <span className="block">Genaro y Manuel,</span>
                 <span className="block">dos personas detrás</span>
                 <span className="block">de cada fragancia.</span>
@@ -87,13 +87,13 @@ export default function NosotrosPage() {
           </div>
         </section>
 
-        <div className="mt-20 border-t border-ink/10" />
+        <div className="mt-16 border-t border-ink/10 md:mt-20" />
 
-        <section className="mt-20">
+        <section className="mt-16 md:mt-20">
           <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
             Cómo comprar
           </p>
-          <h2 className="mt-6 font-serif text-[36px] font-bold leading-[45px] text-ink">
+          <h2 className="mt-6 font-serif text-[30px] font-bold leading-[37.5px] text-ink md:text-[36px] md:leading-[45px]">
             <span className="block">Sin carritos.</span>
             <span className="block">Sin formularios.</span>
             <span className="block">Solo una consulta.</span>
@@ -122,7 +122,7 @@ export default function NosotrosPage() {
           </div>
         </section>
 
-        <section className="mt-20 text-center">
+        <section className="mt-16 text-center md:mt-20">
           <p className="text-[14px] leading-5 text-muted">
             ¿Encontraste algo que te gustó?
           </p>

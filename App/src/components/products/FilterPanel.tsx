@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 type FilterGroup = {
@@ -42,9 +43,10 @@ const FILTER_GROUPS: FilterGroup[] = [
 
 type FilterPanelProps = {
   className?: string;
+  onClose?: () => void;
 };
 
-export default function FilterPanel({ className }: FilterPanelProps) {
+export default function FilterPanel({ className, onClose }: FilterPanelProps) {
   const [selected, setSelected] = useState<string[]>([]);
 
   const toggle = (option: string) => {
@@ -56,9 +58,32 @@ export default function FilterPanel({ className }: FilterPanelProps) {
   };
 
   return (
-    <aside className={className}>
+    <aside
+      className={`border border-ink/10 p-6 lg:border-0 lg:p-0 ${className ?? ""}`}
+    >
+      <div className="flex items-center justify-between lg:hidden">
+        <p className="text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
+          Filtros
+        </p>
+        {onClose && (
+          <button
+            type="button"
+            aria-label="Cerrar filtros"
+            onClick={onClose}
+            className="flex items-center justify-center"
+          >
+            <Image
+              src="/icons/icon-close.svg"
+              alt=""
+              width={15}
+              height={15}
+              className="size-[15px]"
+            />
+          </button>
+        )}
+      </div>
       {FILTER_GROUPS.map((group, groupIndex) => (
-        <div key={group.title} className={groupIndex > 0 ? "pt-8" : undefined}>
+        <div key={group.title} className={groupIndex > 0 ? "pt-8" : "pt-6 lg:pt-0"}>
           <p className="text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
             {group.title}
           </p>

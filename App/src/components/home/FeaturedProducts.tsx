@@ -38,13 +38,13 @@ const FEATURED_PRODUCTS: Omit<ProductCardProps, "key">[] = [
 
 export default function FeaturedProducts() {
   return (
-    <section id="destacados" className="mx-auto w-full max-w-[1280px] px-6 py-24">
+    <section id="destacados" className="mx-auto w-full max-w-[1280px] px-4 py-16 md:px-6 md:py-24">
       <div className="flex items-end justify-between">
         <div>
           <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
             Los favoritos
           </p>
-          <h2 className="mt-3 font-serif text-[36px] leading-10 text-ink">
+          <h2 className="mt-3 font-serif text-[30px] leading-9 text-ink md:text-[36px] md:leading-10">
             Destacados
           </h2>
         </div>
@@ -63,9 +63,13 @@ export default function FeaturedProducts() {
         </Link>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-2 gap-4 md:mt-12 md:gap-6 lg:grid-cols-3">
         {FEATURED_PRODUCTS.map((product) => (
-          <ProductCard key={product.name} {...product} />
+          <ProductCard
+            key={product.name}
+            {...product}
+            imageClassName="aspect-[3/4] md:h-[362px]"
+          />
         ))}
       </div>
     </section>

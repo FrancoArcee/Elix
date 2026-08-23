@@ -1,0 +1,34 @@
+import Image from "next/image";
+
+type HeroPreviewCardProps = {
+  imageUrl: string;
+  kicker: string;
+  title: string;
+};
+
+export default function HeroPreviewCard({
+  imageUrl,
+  kicker,
+  title,
+}: HeroPreviewCardProps) {
+  return (
+    <div className="relative h-[258px] w-full overflow-hidden border border-ink/10 bg-surface">
+      <Image
+        src={imageUrl}
+        alt={title}
+        fill
+        sizes="(max-width: 768px) 100vw, 592px"
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-5">
+        <p className="text-[8px] font-medium uppercase leading-3 tracking-[2px] text-white/55">
+          {kicker}
+        </p>
+        <p className="pt-1 font-serif text-[18px] font-bold leading-[24.75px] text-white">
+          {title}
+        </p>
+      </div>
+    </div>
+  );
+}

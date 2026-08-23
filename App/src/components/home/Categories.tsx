@@ -18,15 +18,15 @@ const CATEGORIES = [
 
 export default function Categories() {
   return (
-    <section className="mx-auto w-full max-w-[1280px] px-6 py-24">
+    <section className="mx-auto w-full max-w-[1280px] px-4 py-16 md:px-6 md:py-24">
       <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
         Explorar por
       </p>
-      <h2 className="mt-3 font-serif text-[36px] leading-10 text-ink">
+      <h2 className="mt-3 font-serif text-[30px] leading-9 text-ink md:text-[36px] md:leading-10">
         Categorías
       </h2>
 
-      <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
         {CATEGORIES.map((category) => (
           <Link
             key={category.title}

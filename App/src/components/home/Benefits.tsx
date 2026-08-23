@@ -21,12 +21,14 @@ const BENEFITS = [
 export default function Benefits() {
   return (
     <section className="border-y border-ink/10">
-      <div className="mx-auto w-full max-w-[1280px]">
+      <div className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 md:divide-x md:divide-ink/10">
-          {BENEFITS.map((benefit) => (
+          {BENEFITS.map((benefit, index) => (
             <div
               key={benefit.title}
-              className="flex items-start gap-4 border-b border-ink/10 px-6 py-8 last:border-b-0 md:border-b-0"
+              className={`flex items-start gap-4 px-6 py-8 md:border-t-0 ${
+                index > 0 ? "border-t border-ink/10" : ""
+              }`}
             >
               <Image
                 src={benefit.icon}
