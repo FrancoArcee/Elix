@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 const NAV_ITEMS = [
   { label: "Inicio", href: "/" },
@@ -17,9 +20,12 @@ export default function Navbar({
   active = "/",
   withSearchBar = true,
 }: NavbarProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <header className="w-full border-b border-ink/10 bg-background/95">
-      <div className="mx-auto flex h-[60px] w-full max-w-[1280px] items-center gap-4 px-6">
+      <div className="mx-auto flex h-[60px] w-full max-w-[1280px] items-center gap-4 px-4 md:px-6">
         <Link
           href="/"
           className="font-serif text-[20px] font-bold tracking-[5px] text-ink"
@@ -44,7 +50,12 @@ export default function Navbar({
         <div className="ml-auto flex items-center gap-3">
           <button
             type="button"
-            aria-label="Buscar"
+            aria-label={isSearchOpen ? "Cerrar búsqueda" : "Buscar"}
+            aria-expanded={isSearchOpen}
+            onClick={() => {
+              setIsSearchOpen((open) => !open);
+              setIsMenuOpen(false);
+            }}
             className="flex items-center justify-center"
           >
             <Image
@@ -57,8 +68,26 @@ export default function Navbar({
           </button>
           <button
             type="button"
+            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={isMenuOpen}
+            onClick={() => {
+              setIsMenuOpen((open) => !open);
+              setIsSearchOpen(false);
+            }}
+            className="flex items-center justify-center md:hidden"
+          >
+            <Image
+              src="/icons/icon-menu.svg"
+              alt=""
+              width={18}
+              height={18}
+              className="size-[18px]"
+            />
+          </button>
+          <Link
+            href="/login"
             aria-label="Mi cuenta"
-            className="flex items-center justify-center"
+            className="hidden items-center justify-center md:flex"
           >
             <Image
               src="/icons/icon-user.svg"
@@ -67,20 +96,39 @@ export default function Navbar({
               height={17}
               className="size-[17px]"
             />
-          </button>
+          </Link>
         </div>
       </div>
 
-      {withSearchBar && (
-        <div className="border-t border-ink/10 px-6 py-4">
+      {isMenuOpen && (
+        <nav className="border-t border-ink/10 bg-background md:hidden">
+          <div className="flex flex-col gap-5 px-6 py-5">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className={`text-[11px] font-medium uppercase leading-[16.5px] tracking-[2.2px] transition-colors hover:text-ink ${
+                  item.href === active ? "text-ink" : "text-muted"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      {withSearchBar && isSearchOpen && (
+        <div className="animate-slide-down border-t border-ink/10 px-6 py-4">
           <div className="relative mx-auto w-full max-w-[576px]">
-            <Image
-              src="/icons/icon-search-input.svg"
-              alt=""
-              width={14}
-              height={14}
-              className="absolute left-0 top-1/2 size-[14px] -translate-y-1/2"
-            />
+              <Image
+                src="/icons/icon-search-input.svg"
+                alt=""
+                width={14}
+                height={14}
+                className="absolute left-0 top-1/2 size-[14px] -translate-y-1/2"
+              />
             <input
               type="text"
               placeholder="Buscar fragancias, marcas…"
