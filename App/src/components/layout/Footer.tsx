@@ -9,7 +9,7 @@ const SOCIAL_ICONS = [
 
 export default function Footer() {
   return (
-    <footer className="bg-ink px-6 pb-8 pt-14">
+    <footer className="bg-ink px-4 pb-8 pt-14 md:px-6">
       <div className="mx-auto w-full max-w-[1280px]">
         <p className="font-serif text-[20px] font-bold tracking-[5px] text-background">
           ELIX
@@ -39,7 +39,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-6 md:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-background/10 pt-6 md:flex-row md:gap-4">
           <p className="text-[12px] whitespace-nowrap text-background/35">
             © 2026 ELIX. Todos los derechos reservados.
           </p>
