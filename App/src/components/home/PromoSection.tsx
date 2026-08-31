@@ -9,8 +9,8 @@ export default function PromoSection() {
         </p>
 
         <h2 className="mt-7 font-serif text-[36px] font-bold leading-[45px] text-background md:mt-7 md:text-[60px] md:leading-[75px]">
-          20% off en toda
-          <br />
+          20% off en toda<span className="hidden md:inline"> </span>
+          <br className="hidden md:block" />
           la colección.
         </h2>
 

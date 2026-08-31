@@ -63,7 +63,7 @@ export default function FeaturedProducts() {
         </Link>
       </div>
 
-      <div className="mt-10 grid grid-cols-2 gap-4 md:mt-12 md:gap-6 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-2 gap-4 md:mt-12 md:gap-6 sm:grid-cols-3">
         {FEATURED_PRODUCTS.map((product) => (
           <ProductCard
             key={product.name}

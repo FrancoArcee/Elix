@@ -40,11 +40,11 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-background/10 pt-6 md:flex-row md:gap-4">
-          <p className="text-[12px] whitespace-nowrap text-background/35">
+          <p className="text-[12px] text-background/35">
             © 2026 ELIX. Todos los derechos reservados.
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link
               href="#"
               className="text-[12px] text-background/35 transition-colors hover:text-background/70"

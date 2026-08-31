@@ -50,7 +50,7 @@ export default function NosotrosPage() {
             El equipo
           </p>
           <div className="mt-10 grid grid-cols-1 items-center gap-14 md:grid-cols-2">
-            <div className="flex h-[278px] flex-col items-center justify-center gap-3 border border-dashed border-ink/10 bg-surface">
+            <div className="flex aspect-[3/2] w-full flex-col items-center justify-center gap-3 border border-dashed border-ink/10 bg-surface md:aspect-auto md:h-[278px]">
               <div className="flex size-14 items-center justify-center rounded-full border border-dashed border-muted/30">
                 <Image
                   src="/icons/icon-team-user.svg"
@@ -128,7 +128,7 @@ export default function NosotrosPage() {
           </p>
           <Link
             href="/products"
-            className="mx-auto mt-6 flex h-[43px] w-[159px] items-center justify-center bg-ink"
+            className="mx-auto mt-6 flex h-[43px] w-full max-w-[159px] items-center justify-center bg-ink"
           >
             <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background">
               Ver catálogo

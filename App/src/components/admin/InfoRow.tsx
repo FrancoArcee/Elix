@@ -20,13 +20,15 @@ export default function InfoRow({
   const hasValue = Boolean(value);
 
   return (
-    <div className="flex items-center justify-between border border-ink/10 bg-background px-5 py-4">
+    <div className="flex flex-col gap-3 border border-ink/10 bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
       <div className="min-w-0">
         <p className="text-[8px] uppercase leading-3 tracking-[2px] text-muted">
           {name}
         </p>
         {hasValue ? (
-          <p className="pt-0.5 text-[14px] leading-5 text-ink">{value}</p>
+          <p className="truncate pt-0.5 text-[14px] leading-5 text-ink">
+            {value}
+          </p>
         ) : (
           <p className="pt-0.5 text-[12px] italic leading-4 text-muted">
             {emptyLabel}

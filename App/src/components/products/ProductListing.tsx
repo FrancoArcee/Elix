@@ -35,7 +35,7 @@ export default function ProductListing({
               {productCount}{" "}
               {productCount === 1 ? "producto" : "productos"}
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-3">
               <button
                 type="button"
                 aria-expanded={isFiltersOpen}
@@ -80,7 +80,7 @@ export default function ProductListing({
           >
             <FilterPanel onClose={() => setIsFiltersOpen(false)} />
           </div>
-          <div className="grid flex-1 grid-cols-2 gap-4 pb-14 md:gap-6 lg:grid-cols-2">
+          <div className="grid flex-1 grid-cols-1 gap-4 pb-14 sm:grid-cols-2 md:gap-6">
             {products.map((product) => (
               <ProductCard
                 key={product.name}

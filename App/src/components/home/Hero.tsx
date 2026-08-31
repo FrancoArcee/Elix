@@ -21,7 +21,7 @@ export default function Hero() {
           Nueva colección — 2026
         </p>
 
-        <h1 className="mt-5 max-w-[344px] font-serif text-[48px] font-bold leading-[49.44px] text-white md:mt-8 md:leading-[1.03] md:text-ink md:text-[60px]">
+        <h1 className="mt-5 max-w-[344px] font-serif text-[40px] font-bold leading-[41px] text-white md:mt-8 md:leading-[1.03] md:text-ink md:text-[60px]">
           Descubrí
           <br />
           el arte de

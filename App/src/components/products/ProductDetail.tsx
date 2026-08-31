@@ -99,7 +99,7 @@ export default function ProductDetail({
               <p className="pb-3 text-[9px] uppercase leading-[13.5px] tracking-[2.7px] text-muted">
                 {brand}
               </p>
-              <h1 className="pb-10 font-serif text-[48px] font-bold leading-[60px] text-ink">
+              <h1 className="pb-10 font-serif text-[34px] font-bold leading-[42px] text-ink md:text-[48px] md:leading-[60px]">
                 {name}
               </h1>
 
