@@ -40,7 +40,11 @@ export default function AdminProductsPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <AdminHeader title="Productos" backHref="/admin" />
       <main className="flex-1 px-6 py-8 md:px-10">
-        <AdminHeading title="Productos" actionLabel="+ Agregar" />
+        <AdminHeading
+          title="Productos"
+          actionLabel="+ Agregar"
+          actionHref="/admin/products/new"
+        />
 
         <div className="pt-6">
           <AdminSearchInput
@@ -58,7 +62,7 @@ export default function AdminProductsPage() {
               onClick={() => setCategory(filter)}
             />
           ))}
-          <span className="mx-1 h-[27px] w-px bg-ink/10" />
+          <span className="mx-1 hidden h-[27px] w-px bg-ink/10 sm:inline-block" />
           {STOCK_FILTERS.map((filter) => (
             <FilterChip
               key={filter}
@@ -74,7 +78,7 @@ export default function AdminProductsPage() {
           {filteredProducts.length === 1 ? "producto" : "productos"}
         </p>
 
-        <div className="grid grid-cols-2 gap-4 pt-4 pb-14 md:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-[960px] grid-cols-1 gap-4 pt-4 pb-14 sm:grid-cols-2 md:grid-cols-3">
           {filteredProducts.map((product) => (
             <AdminProductCard
               key={product.id}
