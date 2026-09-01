@@ -67,11 +67,11 @@ export default function InlineEntryForm({
         ))}
       </div>
 
-      <div className="flex h-[31px] items-start gap-2 pt-4">
+      <div className="flex flex-col items-stretch gap-2 pt-4 sm:flex-row sm:items-start">
         <AdminButton
           type="submit"
           variant="primary"
-          className="h-full min-w-0 flex-1 px-4 py-2"
+          className="h-[31px] min-w-0 flex-1 px-4 py-2"
         >
           {submitLabel}
         </AdminButton>
@@ -79,7 +79,7 @@ export default function InlineEntryForm({
           type="button"
           variant="outline"
           onClick={onCancel}
-          className="h-full px-4 py-2"
+          className="h-[31px] px-4 py-2"
         >
           Cancelar
         </AdminButton>

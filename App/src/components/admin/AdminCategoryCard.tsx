@@ -36,7 +36,7 @@ export default function AdminCategoryCard({
     return (
       <Link
         href={href}
-        className="relative block h-[246px] w-full overflow-hidden bg-surface transition-opacity hover:opacity-90"
+        className="relative block aspect-[3/2] w-full overflow-hidden bg-surface transition-opacity hover:opacity-90 sm:aspect-auto sm:h-[246px]"
       >
         <CardContent name={name} image={image} />
       </Link>
@@ -44,7 +44,7 @@ export default function AdminCategoryCard({
   }
 
   return (
-    <div className="relative h-[246px] w-full overflow-hidden bg-surface">
+    <div className="relative aspect-[3/2] w-full overflow-hidden bg-surface sm:aspect-auto sm:h-[246px]">
       <CardContent name={name} image={image} />
     </div>
   );

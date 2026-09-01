@@ -59,7 +59,7 @@ export default function FilterPanel({ className, onClose }: FilterPanelProps) {
 
   return (
     <aside
-      className={`border border-ink/10 p-6 lg:border-0 lg:p-0 ${className ?? ""}`}
+      className={`max-h-[70vh] overflow-y-auto border border-ink/10 p-6 lg:max-h-none lg:overflow-visible lg:border-0 lg:p-0 ${className ?? ""}`}
     >
       <div className="flex items-center justify-between lg:hidden">
         <p className="text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">

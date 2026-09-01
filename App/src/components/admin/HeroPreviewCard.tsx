@@ -12,7 +12,7 @@ export default function HeroPreviewCard({
   title,
 }: HeroPreviewCardProps) {
   return (
-    <div className="relative h-[258px] w-full overflow-hidden border border-ink/10 bg-surface">
+    <div className="relative aspect-[16/9] w-full overflow-hidden border border-ink/10 bg-surface sm:aspect-auto sm:h-[258px]">
       <Image
         src={imageUrl}
         alt={title}

@@ -20,7 +20,7 @@ export default function ProductCard({
   outOfStock = false,
   surface = "surface",
   href,
-  imageClassName = "h-[362px]",
+  imageClassName = "aspect-[3/4] md:h-[362px]",
 }: ProductCardProps) {
   return (
     <Link href={href} className="group flex flex-col">

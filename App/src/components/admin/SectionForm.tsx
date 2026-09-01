@@ -89,7 +89,7 @@ export default function SectionForm({
         />
       </div>
 
-      <div className="flex items-start gap-3 pt-9">
+      <div className="flex flex-col items-stretch gap-3 pt-9 sm:flex-row sm:items-start">
         <AdminButton
           type="submit"
           variant="primary"

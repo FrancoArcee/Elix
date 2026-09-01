@@ -29,6 +29,8 @@ export type PaymentMethod = {
 
 export type ProductCategory = "Perfumes Árabes" | "Body Splash";
 
+export type ProductOrientation = "Unisex" | "Masculino" | "Femenino";
+
 export type AdminProduct = {
   id: string;
   brand: string;
@@ -37,6 +39,15 @@ export type AdminProduct = {
   category: ProductCategory;
   badge?: string;
   outOfStock?: boolean;
+  orientation?: ProductOrientation;
+  olfactoryFamily?: string;
+  price?: number;
+  originalPrice?: number;
+  sizes?: string;
+  topNotes?: string;
+  heartNotes?: string;
+  baseNotes?: string;
+  description?: string;
 };
 
 export type AdminCategory = {
@@ -47,6 +58,17 @@ export type AdminCategory = {
   color: string;
 };
 
+export type OfferCategory = ProductCategory | "Toda la colección";
+
+export type Offer = {
+  id: string;
+  discount: number;
+  paymentMethod: string;
+  categories: OfferCategory[];
+  description: string;
+  active: boolean;
+};
+
 type AdminState = {
   hero: HeroContent;
   aboutSections: AboutSection[];
@@ -54,6 +76,7 @@ type AdminState = {
   paymentMethods: PaymentMethod[];
   products: AdminProduct[];
   categories: AdminCategory[];
+  offers: Offer[];
   addAboutSection: (
     data: Omit<AboutSection, "id" | "visible"> & { visible?: boolean },
   ) => void;
@@ -66,8 +89,15 @@ type AdminState = {
   addPaymentMethod: (data: Omit<PaymentMethod, "id">) => void;
   updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => void;
   removePaymentMethod: (id: string) => void;
+  addProduct: (
+    data: Omit<AdminProduct, "id"> & { id?: string },
+  ) => void;
   addCategory: (data: Omit<AdminCategory, "id">) => void;
   updateCategory: (id: string, data: Partial<AdminCategory>) => void;
+  addOffer: (data: Omit<Offer, "id" | "active"> & { active?: boolean }) => void;
+  updateOffer: (id: string, data: Partial<Offer>) => void;
+  toggleOfferActive: (id: string) => void;
+  removeOffer: (id: string) => void;
 };
 
 const createId = () =>
@@ -190,6 +220,24 @@ export const useAdminStore = create<AdminState>((set) => ({
       color: "#EDE8E3",
     },
   ],
+  offers: [
+    {
+      id: "offer-efectivo",
+      discount: 20,
+      paymentMethod: "Efectivo",
+      categories: ["Toda la colección"],
+      description: "20% off pagando en efectivo en toda la colección.",
+      active: true,
+    },
+    {
+      id: "offer-debito",
+      discount: 10,
+      paymentMethod: "Tarjeta de débito",
+      categories: ["Perfumes Árabes"],
+      description: "10% off en perfumes árabes con débito.",
+      active: false,
+    },
+  ],
   addAboutSection: (data) =>
     set((state) => ({
       aboutSections: [
@@ -241,6 +289,13 @@ export const useAdminStore = create<AdminState>((set) => ({
     set((state) => ({
       paymentMethods: state.paymentMethods.filter((method) => method.id !== id),
     })),
+  addProduct: (data) =>
+    set((state) => ({
+      products: [
+        { ...data, id: data.id ?? createId() },
+        ...state.products,
+      ],
+    })),
   addCategory: (data) =>
     set((state) => ({
       categories: [...state.categories, { ...data, id: createId() }],
@@ -250,5 +305,33 @@ export const useAdminStore = create<AdminState>((set) => ({
       categories: state.categories.map((category) =>
         category.id === id ? { ...category, ...data } : category,
       ),
+    })),
+  addOffer: (data) =>
+    set((state) => ({
+      offers: [
+        ...state.offers,
+        {
+          ...data,
+          id: createId(),
+          active: data.active ?? true,
+          categories: data.categories.length ? data.categories : ["Toda la colección"],
+        },
+      ],
+    })),
+  updateOffer: (id, data) =>
+    set((state) => ({
+      offers: state.offers.map((offer) =>
+        offer.id === id ? { ...offer, ...data } : offer,
+      ),
+    })),
+  toggleOfferActive: (id) =>
+    set((state) => ({
+      offers: state.offers.map((offer) =>
+        offer.id === id ? { ...offer, active: !offer.active } : offer,
+      ),
+    })),
+  removeOffer: (id) =>
+    set((state) => ({
+      offers: state.offers.filter((offer) => offer.id !== id),
     })),
 }));

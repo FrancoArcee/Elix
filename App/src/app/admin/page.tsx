@@ -20,6 +20,7 @@ const PANEL_SECTIONS = [
   {
     title: "Ofertas",
     description: "Configurá descuentos y promociones activas",
+    href: "/admin/offers",
   },
   {
     title: "Información",
