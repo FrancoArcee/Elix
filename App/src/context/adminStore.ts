@@ -36,6 +36,7 @@ export type AdminProduct = {
   brand: string;
   name: string;
   image: string;
+  images?: string[];
   category: ProductCategory;
   badge?: string;
   outOfStock?: boolean;
@@ -92,6 +93,7 @@ type AdminState = {
   addProduct: (
     data: Omit<AdminProduct, "id"> & { id?: string },
   ) => void;
+  updateProduct: (id: string, data: Partial<AdminProduct>) => void;
   addCategory: (data: Omit<AdminCategory, "id">) => void;
   updateCategory: (id: string, data: Partial<AdminCategory>) => void;
   addOffer: (data: Omit<Offer, "id" | "active"> & { active?: boolean }) => void;
@@ -295,6 +297,12 @@ export const useAdminStore = create<AdminState>((set) => ({
         { ...data, id: data.id ?? createId() },
         ...state.products,
       ],
+    })),
+  updateProduct: (id, data) =>
+    set((state) => ({
+      products: state.products.map((product) =>
+        product.id === id ? { ...product, ...data } : product,
+      ),
     })),
   addCategory: (data) =>
     set((state) => ({

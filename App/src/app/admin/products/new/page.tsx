@@ -33,7 +33,8 @@ export default function AdminNewProductPage() {
                 ? Number(values.originalPrice)
                 : undefined,
               image:
-                values.imageUrl || "/images/product-oud-royale.png",
+                values.images[0] || "/images/product-oud-royale.png",
+              images: values.images.length ? values.images : undefined,
               badge: values.badge || undefined,
               sizes: values.sizes || undefined,
               topNotes: values.topNotes || undefined,

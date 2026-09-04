@@ -5,6 +5,7 @@ import TextField from "./TextField";
 import TextAreaField from "./TextAreaField";
 import AdminButton from "./AdminButton";
 import FilterChip from "./FilterChip";
+import ProductImagesField from "./ProductImagesField";
 import type {
   ProductCategory,
   ProductOrientation,
@@ -18,7 +19,7 @@ export type ProductFormValues = {
   olfactoryFamily: string;
   price: string;
   originalPrice: string;
-  imageUrl: string;
+  images: string[];
   sizes: string;
   badge: string;
   topNotes: string;
@@ -54,7 +55,7 @@ const EMPTY_VALUES: ProductFormValues = {
   olfactoryFamily: "",
   price: "",
   originalPrice: "",
-  imageUrl: "",
+  images: [],
   sizes: "",
   badge: "",
   topNotes: "",
@@ -213,11 +214,11 @@ export default function ProductForm({
       </h2>
 
       <div className="pt-6">
-        <TextField
-          label="URL de imagen"
-          placeholder="https://..."
-          value={values.imageUrl}
-          onChange={update("imageUrl")}
+        <ProductImagesField
+          images={values.images}
+          onChange={(images) =>
+            setValues((current) => ({ ...current, images }))
+          }
         />
       </div>
 
