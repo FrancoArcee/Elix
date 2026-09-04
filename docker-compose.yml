@@ -1,0 +1,27 @@
+services:
+  frontend:
+    build: ./App
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./App:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - ./App/.env.dev
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: elix
+      POSTGRES_USER: elix_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
