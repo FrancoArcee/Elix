@@ -3,15 +3,11 @@
 import { useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
-import OfferForm from "@/components/admin/OfferForm";
+import OfferCreateCard from "@/components/admin/OfferCreateCard";
 import OfferCard from "@/components/admin/OfferCard";
+import OfferEmptyState from "@/components/admin/OfferEmptyState";
 import { useAdminStore, type OfferCategory } from "@/context/adminStore";
 import type { OfferFormValues } from "@/components/admin/OfferForm";
-
-type FormState =
-  | { mode: "closed" }
-  | { mode: "new" }
-  | { mode: "edit"; id: string };
 
 export default function AdminOffersPage() {
   const offers = useAdminStore((state) => state.offers);
@@ -21,37 +17,59 @@ export default function AdminOffersPage() {
   const toggleOfferActive = useAdminStore((state) => state.toggleOfferActive);
   const removeOffer = useAdminStore((state) => state.removeOffer);
 
-  const [form, setForm] = useState<FormState>({ mode: "closed" });
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const activeOffers = offers.filter((offer) => offer.active);
   const otherOffers = offers.filter((offer) => !offer.active);
 
-  const closeForm = () => setForm({ mode: "closed" });
+  const openCreate = () => {
+    setEditingId(null);
+    setCreateOpen(true);
+  };
 
-  const editingOffer =
-    form.mode === "edit" ? offers.find((offer) => offer.id === form.id) : undefined;
-
-  const formOpen =
-    form.mode === "new" || (form.mode === "edit" && Boolean(editingOffer));
-
-  const handleSubmit = (values: OfferFormValues) => {
-    const categories =
-      values.categories.length > 0
-        ? (values.categories as OfferCategory[])
-        : (["Toda la colección"] as OfferCategory[]);
-    const data = {
+  const handleCreate = (values: OfferFormValues) => {
+    addOffer({
       discount: Number(values.discount),
       paymentMethod: values.paymentMethod,
-      categories,
+      categories: values.categories as OfferCategory[],
       description: values.description,
-    };
+    });
+    setCreateOpen(false);
+  };
 
-    if (form.mode === "edit") {
-      updateOffer(form.id, data);
-    } else {
-      addOffer(data);
-    }
-    closeForm();
+  const handleEdit = (id: string, values: OfferFormValues) => {
+    updateOffer(id, {
+      discount: Number(values.discount),
+      paymentMethod: values.paymentMethod,
+      categories: values.categories as OfferCategory[],
+      description: values.description,
+    });
+    setEditingId(null);
+  };
+
+  const renderCard = (offer: (typeof offers)[number]) => {
+    const editing = editingId === offer.id;
+    return (
+      <OfferCard
+        key={offer.id}
+        discount={offer.discount}
+        paymentMethod={offer.paymentMethod}
+        description={offer.description}
+        categories={offer.categories}
+        active={offer.active}
+        editing={editing}
+        paymentMethods={paymentMethods}
+        onToggleActive={() => toggleOfferActive(offer.id)}
+        onEdit={() => {
+          setCreateOpen(false);
+          setEditingId(editing ? null : offer.id);
+        }}
+        onDelete={() => removeOffer(offer.id)}
+        onSubmit={(values) => handleEdit(offer.id, values)}
+        onCancelEdit={() => setEditingId(null)}
+      />
+    );
   };
 
   return (
@@ -59,39 +77,22 @@ export default function AdminOffersPage() {
       <AdminHeader title="Ofertas" backHref="/admin" />
       <main className="flex-1 px-6 py-8 md:px-10 md:py-10">
         <div className="mx-auto w-full max-w-[672px]">
-          <AdminHeading
-            title="Ofertas"
-            actionLabel="+ Nueva oferta"
-            onAction={() =>
-              setForm((current) =>
-                current.mode === "closed" ? { mode: "new" } : { mode: "closed" },
-              )
-            }
-          />
+          <AdminHeading title="Ofertas" />
 
           <div className="pt-8">
-            <OfferForm
-              key={form.mode === "edit" ? form.id : "new-offer"}
-              open={formOpen}
-              onToggle={closeForm}
+            <OfferCreateCard
+              open={createOpen}
+              onToggle={() => {
+                setEditingId(null);
+                setCreateOpen((current) => !current);
+              }}
               paymentMethods={paymentMethods}
-              initialValues={
-                editingOffer
-                  ? {
-                      discount: String(editingOffer.discount),
-                      paymentMethod: editingOffer.paymentMethod,
-                      categories: editingOffer.categories,
-                      description: editingOffer.description,
-                    }
-                  : undefined
-              }
-              editing={form.mode === "edit"}
-              onSubmit={handleSubmit}
-              onCancel={closeForm}
+              onSubmit={handleCreate}
+              onCancel={() => setCreateOpen(false)}
             />
           </div>
 
-          {activeOffers.length > 0 && (
+          {activeOffers.length > 0 ? (
             <section className="pt-8">
               <div className="flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-ink" />
@@ -100,21 +101,13 @@ export default function AdminOffersPage() {
                 </p>
               </div>
               <div className="flex flex-col gap-3 pt-3">
-                {activeOffers.map((offer) => (
-                  <OfferCard
-                    key={offer.id}
-                    discount={offer.discount}
-                    paymentMethod={offer.paymentMethod}
-                    description={offer.description}
-                    categories={offer.categories}
-                    active
-                    onToggleActive={() => toggleOfferActive(offer.id)}
-                    onEdit={() => setForm({ mode: "edit", id: offer.id })}
-                    onDelete={() => removeOffer(offer.id)}
-                  />
-                ))}
+                {activeOffers.map(renderCard)}
               </div>
             </section>
+          ) : (
+            <div className="pt-8">
+              <OfferEmptyState />
+            </div>
           )}
 
           {otherOffers.length > 0 && (
@@ -125,19 +118,7 @@ export default function AdminOffersPage() {
                 </p>
               </div>
               <div className="flex flex-col gap-3 pt-3">
-                {otherOffers.map((offer) => (
-                  <OfferCard
-                    key={offer.id}
-                    discount={offer.discount}
-                    paymentMethod={offer.paymentMethod}
-                    description={offer.description}
-                    categories={offer.categories}
-                    active={false}
-                    onToggleActive={() => toggleOfferActive(offer.id)}
-                    onEdit={() => setForm({ mode: "edit", id: offer.id })}
-                    onDelete={() => removeOffer(offer.id)}
-                  />
-                ))}
+                {otherOffers.map(renderCard)}
               </div>
             </section>
           )}

@@ -2,17 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type AdminLoginFormProps = {
   className?: string;
 };
 
 export default function AdminLoginForm({ className = "" }: AdminLoginFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    router.push("/admin");
   };
 
   return (

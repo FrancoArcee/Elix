@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type AdminProductCardProps = {
   image: string;
@@ -6,17 +7,18 @@ type AdminProductCardProps = {
   name: string;
   badge?: string;
   outOfStock?: boolean;
+  href?: string;
 };
 
-export default function AdminProductCard({
+function CardContent({
   image,
   brand,
   name,
   badge,
-  outOfStock = false,
-}: AdminProductCardProps) {
+  outOfStock,
+}: Omit<AdminProductCardProps, "href">) {
   return (
-    <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface">
+    <>
       <Image
         src={image}
         alt={name}
@@ -47,6 +49,44 @@ export default function AdminProductCard({
           {name}
         </p>
       </div>
+    </>
+  );
+}
+
+export default function AdminProductCard({
+  image,
+  brand,
+  name,
+  badge,
+  outOfStock = false,
+  href,
+}: AdminProductCardProps) {
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="relative block aspect-[3/4] w-full overflow-hidden bg-surface transition-opacity hover:opacity-90"
+      >
+        <CardContent
+          image={image}
+          brand={brand}
+          name={name}
+          badge={badge}
+          outOfStock={outOfStock}
+        />
+      </Link>
+    );
+  }
+
+  return (
+    <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface">
+      <CardContent
+        image={image}
+        brand={brand}
+        name={name}
+        badge={badge}
+        outOfStock={outOfStock}
+      />
     </div>
   );
 }

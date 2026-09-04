@@ -87,6 +87,7 @@ export default function AdminProductsPage() {
               name={product.name}
               badge={product.badge}
               outOfStock={product.outOfStock}
+              href={`/admin/products/${product.id}`}
             />
           ))}
         </div>
