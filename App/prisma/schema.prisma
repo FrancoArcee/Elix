@@ -32,7 +32,7 @@ enum NoteType {
 // ================================================================
 
 model Brand {
-  id       Int       @id @default(autoincrement())
+  id       String    @id @default(cuid())
   name     String    @unique
   products Product[]
 
@@ -40,27 +40,27 @@ model Brand {
 }
 
 model Country {
-  id       Int       @id @default(autoincrement())
+  id       String    @id @default(cuid())
   name     String    @unique
   products Product[]
 
   @@map("countrys")
 }
 
-model Type {
-  id          Int         @id @default(autoincrement())
-  name        String      @unique
-  color       Int
-  urlImage    String?     @map("url_image")
-  description String
-  products    Product[]
-  offerTypes  OfferType[]
+model Category {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  color           Int
+  urlImage        String?         @map("url_image")
+  description     String
+  products        Product[]
+  offerCategories OfferCategory[]
 
-  @@map("types")
+  @@map("categories")
 }
 
 model Product {
-  id             Int            @id @default(autoincrement())
+  id             String         @id @default(cuid())
   name           String
   targetAudience TargetAudience @map("target_audience")
   description    String?
@@ -70,35 +70,36 @@ model Product {
   presentation   String?
   concentration  Concentration?
 
-  brandId Int   @map("brand_id")
-  brand   Brand @relation(fields: [brandId], references: [id])
+  brandId String @map("brand_id")
+  brand   Brand  @relation(fields: [brandId], references: [id])
 
-  originId Int?     @map("origin_id")
+  originId String?  @map("origin_id")
   origin   Country? @relation(fields: [originId], references: [id])
 
-  typeId Int  @map("type_id")
-  type   Type @relation(fields: [typeId], references: [id])
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id])
 
   volumes         ProductVolume[]
   notes           ProductNote[]
   images          ProductImage[]
   featuredProduct FeaturedProduct?
 
+  @@index([categoryId, targetAudience])
   @@map("products")
 }
 
 model Volume {
-  id       Int             @id @default(autoincrement())
-  volume   Int
+  id       String          @id @default(cuid())
+  volume   Int             @unique
   products ProductVolume[]
 
   @@map("volumes")
 }
 
 model ProductVolume {
-  id        Int     @id @default(autoincrement())
-  productId Int     @map("product_id")
-  volumeId  Int     @map("volume_id")
+  id        String  @id @default(cuid())
+  productId String  @map("product_id")
+  volumeId  String  @map("volume_id")
   product   Product @relation(fields: [productId], references: [id])
   volume    Volume  @relation(fields: [volumeId], references: [id])
 
@@ -107,7 +108,7 @@ model ProductVolume {
 }
 
 model Note {
-  id       Int           @id @default(autoincrement())
+  id       String        @id @default(cuid())
   name     String
   products ProductNote[]
 
@@ -115,10 +116,10 @@ model Note {
 }
 
 model ProductNote {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   type      NoteType
-  productId Int      @map("product_id")
-  noteId    Int      @map("note_id")
+  productId String   @map("product_id")
+  noteId    String   @map("note_id")
   product   Product  @relation(fields: [productId], references: [id])
   note      Note     @relation(fields: [noteId], references: [id])
 
@@ -127,26 +128,26 @@ model ProductNote {
 }
 
 model ProductImage {
-  id           Int      @id @default(autoincrement())
-  imageUrl     String?  @map("image_url")
-  displayOrder Int?     @map("display_order") // entre 1 y 4 (validar en app layer)
-  productId    Int?     @map("product_id")
-  product      Product? @relation(fields: [productId], references: [id])
+  id           String  @id @default(cuid())
+  imageUrl     String  @map("image_url")
+  displayOrder Int     @map("display_order")
+  productId    String  @map("product_id")
+  product      Product @relation(fields: [productId], references: [id])
 
   @@map("product_images")
 }
 
 model FeaturedProduct {
-  id           Int     @id @default(autoincrement())
+  id           String  @id @default(cuid())
   displayOrder Int     @map("display_order")
-  productId    Int     @unique @map("product_id")
+  productId    String  @unique @map("product_id")
   product      Product @relation(fields: [productId], references: [id])
 
   @@map("featured_products")
 }
 
 model Information {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(cuid())
   label       String
   title       String
   description String
@@ -156,7 +157,7 @@ model Information {
 }
 
 model PaymentMethod {
-  id                  Int                  @id @default(autoincrement())
+  id                  String               @id @default(cuid())
   method              String
   offerPaymentMethods OfferPaymentMethod[]
 
@@ -164,38 +165,38 @@ model PaymentMethod {
 }
 
 model Offer {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   discount    Decimal? @db.Decimal(10, 2)
   description String?
 
   offerPaymentMethods OfferPaymentMethod[]
-  offerTypes          OfferType[]
+  offerCategories     OfferCategory[]
 
   @@map("offers")
 }
 
 model OfferPaymentMethod {
-  id              Int           @id @default(autoincrement())
-  offerId         Int           @map("offer_id")
-  paymentMethodId Int           @map("payment_method_id")
+  id              String        @id @default(cuid())
+  offerId         String        @map("offer_id")
+  paymentMethodId String        @map("payment_method_id")
   offer           Offer         @relation(fields: [offerId], references: [id])
   paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
 
   @@map("offer_payment_methods")
 }
 
-model OfferType {
-  id      Int   @id @default(autoincrement())
-  offerId Int   @map("offer_id")
-  typeId  Int   @map("type_id")
-  offer   Offer @relation(fields: [offerId], references: [id])
-  type    Type  @relation(fields: [typeId], references: [id])
+model OfferCategory {
+  id         String   @id @default(cuid())
+  offerId    String   @map("offer_id")
+  categoryId String   @map("category_id")
+  offer      Offer    @relation(fields: [offerId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
 
-  @@map("offer_types")
+  @@map("offer_categories")
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
+  id       String  @id @default(cuid())
   name     String?
   email    String?
   password String?
