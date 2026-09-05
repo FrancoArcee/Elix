@@ -6,3 +6,200 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum TargetAudience {
+  masculino
+  femenino
+  unisex
+}
+
+enum Concentration {
+  edt
+  edp
+  edc
+  extrait
+}
+
+enum NoteType {
+  salida
+  corazon
+  fondo
+  unico
+}
+
+// ================================================================
+// MODELS
+// ================================================================
+
+model Brand {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+
+  @@map("brands")
+}
+
+model Country {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+
+  @@map("countrys")
+}
+
+model Category {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  color           Int
+  urlImage        String?         @map("url_image")
+  description     String
+  products        Product[]
+  offerCategories OfferCategory[]
+
+  @@map("categories")
+}
+
+model Product {
+  id             String         @id @default(cuid())
+  name           String
+  targetAudience TargetAudience @map("target_audience")
+  description    String?
+  price          Decimal?       @db.Decimal(10, 2)
+  sku            String?        @unique
+  fraganceFamily String?        @map("fragance_family")
+  presentation   String?
+  concentration  Concentration?
+
+  brandId String @map("brand_id")
+  brand   Brand  @relation(fields: [brandId], references: [id])
+
+  originId String?  @map("origin_id")
+  origin   Country? @relation(fields: [originId], references: [id])
+
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  volumes         ProductVolume[]
+  notes           ProductNote[]
+  images          ProductImage[]
+  featuredProduct FeaturedProduct?
+
+  @@index([categoryId, targetAudience])
+  @@map("products")
+}
+
+model Volume {
+  id       String          @id @default(cuid())
+  volume   Int             @unique
+  products ProductVolume[]
+
+  @@map("volumes")
+}
+
+model ProductVolume {
+  id        String  @id @default(cuid())
+  productId String  @map("product_id")
+  volumeId  String  @map("volume_id")
+  product   Product @relation(fields: [productId], references: [id])
+  volume    Volume  @relation(fields: [volumeId], references: [id])
+
+  @@unique([productId, volumeId])
+  @@map("product_volumes")
+}
+
+model Note {
+  id       String        @id @default(cuid())
+  name     String
+  products ProductNote[]
+
+  @@map("notes")
+}
+
+model ProductNote {
+  id        String   @id @default(cuid())
+  type      NoteType
+  productId String   @map("product_id")
+  noteId    String   @map("note_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  note      Note     @relation(fields: [noteId], references: [id])
+
+  @@unique([productId, noteId, type])
+  @@map("product_notes")
+}
+
+model ProductImage {
+  id           String  @id @default(cuid())
+  imageUrl     String  @map("image_url")
+  displayOrder Int     @map("display_order")
+  productId    String  @map("product_id")
+  product      Product @relation(fields: [productId], references: [id])
+
+  @@map("product_images")
+}
+
+model FeaturedProduct {
+  id           String  @id @default(cuid())
+  displayOrder Int     @map("display_order")
+  productId    String  @unique @map("product_id")
+  product      Product @relation(fields: [productId], references: [id])
+
+  @@map("featured_products")
+}
+
+model Information {
+  id          String  @id @default(cuid())
+  label       String
+  title       String
+  description String
+  imageUrl    String? @map("image_url")
+
+  @@map("information")
+}
+
+model PaymentMethod {
+  id                  String               @id @default(cuid())
+  method              String
+  offerPaymentMethods OfferPaymentMethod[]
+
+  @@map("payment_methods")
+}
+
+model Offer {
+  id          String   @id @default(cuid())
+  discount    Decimal? @db.Decimal(10, 2)
+  description String?
+
+  offerPaymentMethods OfferPaymentMethod[]
+  offerCategories     OfferCategory[]
+
+  @@map("offers")
+}
+
+model OfferPaymentMethod {
+  id              String        @id @default(cuid())
+  offerId         String        @map("offer_id")
+  paymentMethodId String        @map("payment_method_id")
+  offer           Offer         @relation(fields: [offerId], references: [id])
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+
+  @@map("offer_payment_methods")
+}
+
+model OfferCategory {
+  id         String   @id @default(cuid())
+  offerId    String   @map("offer_id")
+  categoryId String   @map("category_id")
+  offer      Offer    @relation(fields: [offerId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@map("offer_categories")
+}
+
+model User {
+  id       String  @id @default(cuid())
+  name     String?
+  email    String?
+  password String?
+
+  @@map("user")
+}
