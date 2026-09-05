@@ -8,7 +8,9 @@ services:
       - /app/node_modules
       - /app/.next
     env_file:
-      - ./App/.env.dev
+      - ./App/.env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
     depends_on:
       - db
 
@@ -17,9 +19,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: elix
-      POSTGRES_USER: elix_user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
 

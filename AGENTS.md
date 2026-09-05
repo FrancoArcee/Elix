@@ -32,12 +32,13 @@ App/
 ├── src/
 │   ├── app/
 │   │   ├── api/                    # API Routes
+│   │   │   ├── auth/               # better-auth catch-all
+│   │   │   │   └── [...all]/route.ts
 │   │   │   ├── health/route.ts
 │   │   │   ├── products/route.ts
 │   │   │   ├── products/[id]/route.ts
 │   │   │   ├── promos/route.ts
 │   │   │   └── admin/
-│   │   │       ├── login/route.ts
 │   │   │       ├── products/route.ts
 │   │   │       ├── products/[id]/route.ts
 │   │   │       ├── promos/route.ts
@@ -55,8 +56,11 @@ App/
 │   ├── hooks/
 │   ├── lib/
 │   │   ├── prisma.ts              # Prisma client singleton
-│   │   ├── auth.ts                # JWT helpers (jose + bcryptjs)
+│   │   ├── auth.ts                # better-auth server config
+│   │   ├── auth-client.ts         # better-auth React client
+│   │   ├── admin.ts               # getAdminSession() helper
 │   │   └── r2.ts                  # Cloudflare R2 client
+│   ├── middleware.ts              # Route protection (session cookie)
 │   ├── services/                  # Frontend fetch helpers
 │   └── utils/
 ├── .env.dev
@@ -74,7 +78,7 @@ App/
 - **API calls (server)**: Direct Prisma queries in API Routes
 - **Components**: `src/components/` organized by domain
 - **Lib**: Shared utilities in `src/lib/` (prisma, auth, r2)
-- **Auth**: Single admin user, shared credentials, JWT via `jose`
+- **Auth**: better-auth (email/password), single admin user seeded via `prisma/seed.js` (`ADMIN_EMAIL`/`ADMIN_PASSWORD` en vars), role check via `getAdminSession()` in `src/lib/admin.ts`
 - **Images**: Uploaded to Cloudflare R2, URLs stored in DB
 
 ## Code Style
@@ -94,4 +98,4 @@ Database: `localhost:5432`
 
 ## Environment Variables
 
-- `App/.env.dev` — DATABASE_URL, JWT_SECRET, R2 credentials
+- `App/.env.dev` — DATABASE_URL, BETTER_AUTH_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, R2 credentials

@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server'
 import { uploadImage, deleteImage } from '@/lib/r2'
+import { getAdminSession } from '@/lib/admin'
 
 export async function POST(request: Request) {
+  const session = await getAdminSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const formData = await request.formData()
   const file = formData.get('file') as File | null
 
@@ -18,6 +22,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const session = await getAdminSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { key } = await request.json()
 
   if (!key) {

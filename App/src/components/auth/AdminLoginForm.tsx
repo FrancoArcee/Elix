@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "@/lib/auth-client";
 
 type AdminLoginFormProps = {
   className?: string;
@@ -12,10 +13,28 @@ export default function AdminLoginForm({ className = "" }: AdminLoginFormProps) 
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { error: signInError } = await signIn.email({
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (signInError) {
+      setError("Email o contraseña incorrectos.");
+      return;
+    }
+
     router.push("/admin");
+    router.refresh();
   };
 
   return (
@@ -73,11 +92,16 @@ export default function AdminLoginForm({ className = "" }: AdminLoginFormProps) 
         />
       </div>
 
+      {error && (
+        <p className="pt-4 text-[12px] leading-[16px] text-red-500">{error}</p>
+      )}
+
       <button
         type="submit"
-        className="mt-9 h-[47px] w-full bg-ink text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background transition-colors hover:bg-ink/90"
+        disabled={loading}
+        className="mt-9 h-[47px] w-full bg-ink text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background transition-colors hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Ingresar
+        {loading ? "Ingresando..." : "Ingresar"}
       </button>
 
       <Link
