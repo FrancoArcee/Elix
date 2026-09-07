@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AdminHeader from "@/components/admin/AdminHeader";
 import HeroPreviewCard from "@/components/admin/HeroPreviewCard";
 import InfoSectionCard from "@/components/admin/InfoSectionCard";
 import InfoRow from "@/components/admin/InfoRow";
 import InlineEntryForm from "@/components/admin/InlineEntryForm";
+import TextField from "@/components/admin/TextField";
+import ImageDropzone from "@/components/admin/ImageDropzone";
+import AdminButton from "@/components/admin/AdminButton";
 import { useAdminStore } from "@/context/adminStore";
 
 type EntryFormState =
@@ -23,11 +27,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function AdminInformationPage() {
+  const router = useRouter();
+  const isUnauthorized = useAdminStore((state) => state.isUnauthorized);
   const hero = useAdminStore((state) => state.hero);
   const aboutSections = useAdminStore((state) => state.aboutSections);
   const contacts = useAdminStore((state) => state.contacts);
   const paymentMethods = useAdminStore((state) => state.paymentMethods);
 
+  const fetchInformationData = useAdminStore(
+    (state) => state.fetchInformationData,
+  );
+  const updateHero = useAdminStore((state) => state.updateHero);
   const toggleAboutVisibility = useAdminStore(
     (state) => state.toggleAboutVisibility,
   );
@@ -45,6 +55,12 @@ export default function AdminInformationPage() {
     (state) => state.removePaymentMethod,
   );
 
+  const [heroEdit, setHeroEdit] = useState(false);
+  const [heroForm, setHeroForm] = useState({
+    kicker: hero.kicker,
+    title: hero.title,
+    imageUrl: hero.imageUrl,
+  });
   const [contactForm, setContactForm] = useState<EntryFormState>({
     mode: "closed",
   });
@@ -52,9 +68,28 @@ export default function AdminInformationPage() {
     mode: "closed",
   });
 
+  useEffect(() => {
+    fetchInformationData();
+  }, [fetchInformationData]);
+
+  useEffect(() => {
+    if (isUnauthorized) {
+      router.replace("/login");
+    }
+  }, [isUnauthorized, router]);
+
+  useEffect(() => {
+    setHeroForm({ kicker: hero.kicker, title: hero.title, imageUrl: hero.imageUrl });
+  }, [hero]);
+
   const closeForms = () => {
     setContactForm({ mode: "closed" });
     setPaymentForm({ mode: "closed" });
+  };
+
+  const handleHeroSubmit = async () => {
+    await updateHero(heroForm);
+    setHeroEdit(false);
   };
 
   return (
@@ -63,13 +98,72 @@ export default function AdminInformationPage() {
       <main className="flex-1 px-6 py-8 md:px-10 md:py-10">
         <div className="mx-auto w-full max-w-[672px]">
           <section>
-            <SectionLabel>Inicio</SectionLabel>
+            <div className="flex items-center justify-between gap-4">
+              <SectionLabel>Inicio</SectionLabel>
+              <button
+                type="button"
+                onClick={() => setHeroEdit(!heroEdit)}
+                className="border border-ink/10 px-3 py-1.5 text-[9px] font-medium uppercase leading-[13.5px] tracking-[1.62px] text-muted transition-colors hover:border-ink/35 hover:text-ink"
+              >
+                {heroEdit ? "Cancelar" : "Editar"}
+              </button>
+            </div>
             <div className="pt-4">
-              <HeroPreviewCard
-                imageUrl={hero.imageUrl}
-                kicker={hero.kicker}
-                title={hero.title}
-              />
+              {heroEdit ? (
+                <div className="w-full max-w-[512px]">
+                  <TextField
+                    label="Kicker"
+                    placeholder="Ej: Nueva colección — 2026"
+                    value={heroForm.kicker}
+                    onChange={(e) =>
+                      setHeroForm((prev) => ({ ...prev, kicker: e.target.value }))
+                    }
+                  />
+                  <div className="pt-5">
+                    <TextField
+                      label="Título"
+                      placeholder="Ej: Descubrí el arte de las fragancias árabes."
+                      value={heroForm.title}
+                      onChange={(e) =>
+                        setHeroForm((prev) => ({ ...prev, title: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="pt-5">
+                    <ImageDropzone
+                      label="Imagen de fondo"
+                      value={heroForm.imageUrl ?? undefined}
+                      onChange={(url) =>
+                        setHeroForm((prev) => ({ ...prev, imageUrl: url ?? null }))
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-col items-stretch gap-3 pt-6 sm:flex-row sm:items-start">
+                    <AdminButton
+                      type="button"
+                      variant="primary"
+                      className="h-[39px] min-w-0 flex-1 px-5 py-3"
+                      onClick={handleHeroSubmit}
+                    >
+                      Guardar cambios
+                    </AdminButton>
+                    <AdminButton
+                      type="button"
+                      variant="outline"
+                      className="h-[39px] px-5 py-3"
+                      onClick={() => setHeroEdit(false)}
+                    >
+                      Cancelar
+                    </AdminButton>
+                  </div>
+                </div>
+              ) : (
+                <HeroPreviewCard
+                  imageUrl={hero.imageUrl}
+                  kicker={hero.kicker}
+                  title={hero.title}
+                />
+              )}
             </div>
           </section>
 

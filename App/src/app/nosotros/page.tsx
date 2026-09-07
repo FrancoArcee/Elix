@@ -2,6 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 
 const STEPS = [
   {
@@ -24,68 +27,78 @@ const STEPS = [
   },
 ];
 
-export default function NosotrosPage() {
+export default async function NosotrosPage() {
+  const sections = await prisma.information.findMany({
+    where: { visible: true },
+    orderBy: { displayOrder: "asc" },
+  });
+
+  const [header, ...rest] = sections;
+
   return (
     <>
       <Navbar active="/nosotros" withSearchBar={false} />
       <main className="mx-auto w-full max-w-[896px] px-4 py-16 md:px-6 md:py-24">
-        <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
-          Quiénes somos
-        </p>
-        <h1 className="mt-4 font-serif text-[36px] font-bold leading-[45px] text-ink md:text-[60px] md:leading-[75px]">
-          <span className="block">ELIX nació de</span>
-          <span className="block">la pasión por</span>
-          <span className="block">las fragancias.</span>
-        </h1>
-        <p className="mt-8 max-w-[576px] text-[16px] leading-[26px] text-muted">
-          Somos un emprendimiento argentino especializado en perfumería árabe y
-          body splash. Importamos fragancias seleccionadas de Oriente Medio para
-          acercarlas a quienes, como nosotros, se enamoran de un buen perfume.
-        </p>
+        {header ? (
+          <>
+            <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
+              {header.label}
+            </p>
+            <h1 className="mt-4 font-serif text-[36px] font-bold leading-[45px] text-ink md:text-[60px] md:leading-[75px]">
+              {header.title}
+            </h1>
+            <p className="mt-8 max-w-[576px] text-[16px] leading-[26px] text-muted">
+              {header.description}
+            </p>
+          </>
+        ) : null}
 
-        <div className="mt-16 border-t border-ink/10 md:mt-20" />
-
-        <section className="mt-16 md:mt-20">
-          <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
-            El equipo
-          </p>
-          <div className="mt-10 grid grid-cols-1 items-center gap-14 md:grid-cols-2">
-            <div className="flex aspect-[3/2] w-full flex-col items-center justify-center gap-3 border border-dashed border-ink/10 bg-surface md:aspect-auto md:h-[278px]">
-              <div className="flex size-14 items-center justify-center rounded-full border border-dashed border-muted/30">
-                <Image
-                  src="/icons/icon-team-user.svg"
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="size-5"
-                />
+        {rest.map((section) => (
+          <div key={section.id}>
+            <div className="mt-16 border-t border-ink/10 md:mt-20" />
+            <section className="mt-16 md:mt-20">
+              <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
+                {section.label}
+              </p>
+              <div className="mt-10 grid grid-cols-1 items-center gap-14 md:grid-cols-2">
+                {section.imageUrl ? (
+                  <div className="relative aspect-[3/2] w-full overflow-hidden md:h-[278px]">
+                    <Image
+                      src={section.imageUrl}
+                      alt={section.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 448px"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex aspect-[3/2] w-full flex-col items-center justify-center gap-3 border border-dashed border-ink/10 bg-surface md:aspect-auto md:h-[278px]">
+                    <div className="flex size-14 items-center justify-center rounded-full border border-dashed border-muted/30">
+                      <Image
+                        src="/icons/icon-team-user.svg"
+                        alt=""
+                        width={20}
+                        height={20}
+                        className="size-5"
+                      />
+                    </div>
+                    <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-muted/50">
+                      Sin imagen
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <h2 className="font-serif text-[30px] font-bold leading-[37.5px] text-ink md:text-[36px] md:leading-[45px]">
+                    {section.title}
+                  </h2>
+                  <p className="mt-5 max-w-[396px] text-[14px] leading-[22.75px] text-muted">
+                    {section.description}
+                  </p>
+                </div>
               </div>
-              <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-muted/50">
-                Foto — Genaro &amp; Manuel
-              </p>
-            </div>
-            <div>
-              <h2 className="font-serif text-[30px] font-bold leading-[37.5px] text-ink md:text-[36px] md:leading-[45px]">
-                <span className="block">Genaro y Manuel,</span>
-                <span className="block">dos personas detrás</span>
-                <span className="block">de cada fragancia.</span>
-              </h2>
-              <p className="mt-5 max-w-[396px] text-[14px] leading-[22.75px] text-muted">
-                Somos dos amigos unidos por la misma obsesión: encontrar las
-                mejores fragancias y acercarlas a quienes las aprecian. Genaro
-                lidera la selección y curaduría del catálogo, garantizando
-                autenticidad y calidad en cada producto importado. Manuel se
-                encarga de acompañar a cada cliente desde la primera consulta
-                hasta la entrega.
-              </p>
-              <p className="mt-5 max-w-[396px] text-[14px] leading-[22.75px] text-muted">
-                Juntos construimos ELIX como lo que queremos que sea: un lugar
-                donde la experiencia de elegir un perfume sea tan placentera
-                como usarlo.
-              </p>
-            </div>
+            </section>
           </div>
-        </section>
+        ))}
 
         <div className="mt-16 border-t border-ink/10 md:mt-20" />
 
