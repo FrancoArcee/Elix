@@ -12,7 +12,7 @@ if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
   process.exit(1)
 }
 
-async function main() {
+async function seedAdmin() {
   let user = await prisma.user.findUnique({
     where: { email: ADMIN_EMAIL },
   })
@@ -60,6 +60,113 @@ async function main() {
   })
 
   console.log(`Credential account created for ${ADMIN_EMAIL}`)
+}
+
+async function seedHero() {
+  const existing = await prisma.hero.findFirst()
+  if (existing) {
+    console.log("Hero already exists, skipping.")
+    return
+  }
+
+  await prisma.hero.create({
+    data: {
+      id: `hero_${randomUUID()}`,
+      kicker: "Nueva colección — 2026",
+      title: "Descubrí el arte de las fragancias árabes.",
+      imageUrl: "/images/hero-coleccion.png",
+    },
+  })
+  console.log("Hero seeded.")
+}
+
+async function seedInformation() {
+  const count = await prisma.information.count()
+  if (count > 0) {
+    console.log("Information sections already exist, skipping.")
+    return
+  }
+
+  await prisma.information.createMany({
+    data: [
+      {
+        id: `info_${randomUUID()}`,
+        label: "Quiénes somos",
+        title: "ELIX nació de la pasión por las fragancias.",
+        description:
+          "Somos un emprendimiento argentino especializado en perfumería árabe y body splash. Importamos fragancias seleccionadas de Oriente Medio para acercarlas a quienes, como nosotros, se enamoran de un buen perfume.",
+        visible: true,
+        displayOrder: 0,
+      },
+      {
+        id: `info_${randomUUID()}`,
+        label: "El equipo",
+        title: "Genaro y Manuel, dos personas detrás de cada fragancia.",
+        description:
+          "Detrás de ELIX hay dos amigos que convirtieron su admiración por la perfumería árabe en un proyecto diario.",
+        visible: true,
+        displayOrder: 1,
+      },
+    ],
+  })
+  console.log("Information sections seeded.")
+}
+
+async function seedContacts() {
+  const count = await prisma.contact.count()
+  if (count > 0) {
+    console.log("Contacts already exist, skipping.")
+    return
+  }
+
+  await prisma.contact.createMany({
+    data: [
+      {
+        id: `contact_${randomUUID()}`,
+        application: "WhatsApp",
+        value: "+54 9 11 0000-0000",
+        displayOrder: 0,
+      },
+      {
+        id: `contact_${randomUUID()}`,
+        application: "Instagram",
+        value: "@elix.fragancias",
+        displayOrder: 1,
+      },
+    ],
+  })
+  console.log("Contacts seeded.")
+}
+
+async function seedPaymentMethods() {
+  const count = await prisma.paymentMethod.count()
+  if (count > 0) {
+    console.log("Payment methods already exist, skipping.")
+    return
+  }
+
+  await prisma.paymentMethod.createMany({
+    data: [
+      {
+        id: `pm_${randomUUID()}`,
+        method: "Efectivo",
+      },
+      {
+        id: `pm_${randomUUID()}`,
+        method: "Transferencia bancaria",
+        identifier: "CVU: 0000000000000000000000",
+      },
+    ],
+  })
+  console.log("Payment methods seeded.")
+}
+
+async function main() {
+  await seedAdmin()
+  await seedHero()
+  await seedInformation()
+  await seedContacts()
+  await seedPaymentMethods()
 }
 
 main()
