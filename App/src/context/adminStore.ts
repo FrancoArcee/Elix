@@ -1,9 +1,14 @@
 import { create } from "zustand";
+import { UnauthorizedError } from "@/lib/fetch-admin";
+import * as heroService from "@/services/hero";
+import * as informationService from "@/services/information";
+import * as contactsService from "@/services/contacts";
+import * as paymentMethodsService from "@/services/payment-methods";
 
 export type HeroContent = {
   kicker: string;
   title: string;
-  imageUrl: string;
+  imageUrl: string | null;
 };
 
 export type AboutSection = {
@@ -78,18 +83,21 @@ type AdminState = {
   products: AdminProduct[];
   categories: AdminCategory[];
   offers: Offer[];
+  isUnauthorized: boolean;
+  fetchInformationData: () => Promise<void>;
+  updateHero: (data: HeroContent) => Promise<void>;
   addAboutSection: (
     data: Omit<AboutSection, "id" | "visible"> & { visible?: boolean },
-  ) => void;
-  updateAboutSection: (id: string, data: Partial<AboutSection>) => void;
-  toggleAboutVisibility: (id: string) => void;
-  removeAboutSection: (id: string) => void;
-  addContact: (data: Omit<ContactEntry, "id">) => void;
-  updateContact: (id: string, data: Partial<ContactEntry>) => void;
-  removeContact: (id: string) => void;
-  addPaymentMethod: (data: Omit<PaymentMethod, "id">) => void;
-  updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => void;
-  removePaymentMethod: (id: string) => void;
+  ) => Promise<void>;
+  updateAboutSection: (id: string, data: Partial<AboutSection>) => Promise<void>;
+  toggleAboutVisibility: (id: string) => Promise<void>;
+  removeAboutSection: (id: string) => Promise<void>;
+  addContact: (data: Omit<ContactEntry, "id">) => Promise<void>;
+  updateContact: (id: string, data: Partial<ContactEntry>) => Promise<void>;
+  removeContact: (id: string) => Promise<void>;
+  addPaymentMethod: (data: Omit<PaymentMethod, "id">) => Promise<void>;
+  updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => Promise<void>;
+  removePaymentMethod: (id: string) => Promise<void>;
   addProduct: (
     data: Omit<AdminProduct, "id"> & { id?: string },
   ) => void;
@@ -102,47 +110,30 @@ type AdminState = {
   removeOffer: (id: string) => void;
 };
 
-const createId = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
+const withAuth =
+  (set: (partial: Partial<AdminState>) => void) =>
+  async <T>(action: () => Promise<T>): Promise<T | undefined> => {
+    try {
+      return await action();
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return undefined;
+      }
+      throw error;
+    }
+  };
 
-export const useAdminStore = create<AdminState>((set) => ({
+export const useAdminStore = create<AdminState>((set, get) => ({
+  isUnauthorized: false,
   hero: {
-    kicker: "Nueva colección — 2026",
-    title: "Descubrí el arte de las fragancias árabes.",
-    imageUrl: "/images/hero-coleccion.png",
+    kicker: "",
+    title: "",
+    imageUrl: null,
   },
-  aboutSections: [
-    {
-      id: "quienes-somos",
-      label: "Quiénes somos",
-      title: "ELIX nació de la pasión por las fragancias.",
-      description:
-        "Somos un emprendimiento argentino especializado en perfumería árabe y body splash. Importamos fragancias seleccionadas de Oriente Medio para acercarlas a quienes, como nosotros, se enamoran de un buen perfume.",
-      visible: true,
-    },
-    {
-      id: "el-equipo",
-      label: "El equipo",
-      title: "Genaro y Manuel, dos personas detrás de cada fragancia.",
-      description:
-        "Detrás de ELIX hay dos amigos que convirtieron su admiración por la perfumería árabe en un proyecto diario.",
-      visible: true,
-    },
-  ],
-  contacts: [
-    { id: "contact-whatsapp", application: "WhatsApp", value: "+54 9 11 0000-0000" },
-    { id: "contact-instagram", application: "Instagram", value: "@elix.fragancias" },
-  ],
-  paymentMethods: [
-    { id: "payment-efectivo", name: "Efectivo", identifier: undefined },
-    {
-      id: "payment-transferencia",
-      name: "Transferencia bancaria",
-      identifier: "CVU: 0000000000000000000000",
-    },
-  ],
+  aboutSections: [],
+  contacts: [],
+  paymentMethods: [],
   products: [
     {
       id: "oud-royale",
@@ -240,61 +231,192 @@ export const useAdminStore = create<AdminState>((set) => ({
       active: false,
     },
   ],
-  addAboutSection: (data) =>
-    set((state) => ({
-      aboutSections: [
-        ...state.aboutSections,
-        { ...data, id: createId(), visible: data.visible ?? true },
-      ],
-    })),
-  updateAboutSection: (id, data) =>
-    set((state) => ({
-      aboutSections: state.aboutSections.map((section) =>
-        section.id === id ? { ...section, ...data } : section,
-      ),
-    })),
-  toggleAboutVisibility: (id) =>
-    set((state) => ({
-      aboutSections: state.aboutSections.map((section) =>
-        section.id === id ? { ...section, visible: !section.visible } : section,
-      ),
-    })),
-  removeAboutSection: (id) =>
-    set((state) => ({
-      aboutSections: state.aboutSections.filter((section) => section.id !== id),
-    })),
-  addContact: (data) =>
-    set((state) => ({
-      contacts: [...state.contacts, { ...data, id: createId() }],
-    })),
-  updateContact: (id, data) =>
-    set((state) => ({
-      contacts: state.contacts.map((contact) =>
-        contact.id === id ? { ...contact, ...data } : contact,
-      ),
-    })),
-  removeContact: (id) =>
-    set((state) => ({
-      contacts: state.contacts.filter((contact) => contact.id !== id),
-    })),
-  addPaymentMethod: (data) =>
-    set((state) => ({
-      paymentMethods: [...state.paymentMethods, { ...data, id: createId() }],
-    })),
-  updatePaymentMethod: (id, data) =>
-    set((state) => ({
-      paymentMethods: state.paymentMethods.map((method) =>
-        method.id === id ? { ...method, ...data } : method,
-      ),
-    })),
-  removePaymentMethod: (id) =>
-    set((state) => ({
-      paymentMethods: state.paymentMethods.filter((method) => method.id !== id),
-    })),
+
+  fetchInformationData: async () => {
+    set({ isUnauthorized: false });
+    try {
+      const [heroData, infoData, contactData, pmData] = await Promise.all([
+        heroService.getHero(),
+        informationService.getAdminInformation(),
+        contactsService.getAdminContacts(),
+        paymentMethodsService.getAdminPaymentMethods(),
+      ]);
+
+      set({
+        hero: heroData
+          ? { kicker: heroData.kicker, title: heroData.title, imageUrl: heroData.imageUrl }
+          : get().hero,
+        aboutSections: infoData.map((s) => ({
+          id: s.id,
+          label: s.label,
+          title: s.title,
+          description: s.description,
+          imageUrl: s.imageUrl ?? undefined,
+          visible: s.visible,
+        })),
+        contacts: contactData.map((c) => ({
+          id: c.id,
+          application: c.application,
+          value: c.value,
+        })),
+        paymentMethods: pmData.map((p) => ({
+          id: p.id,
+          name: p.method,
+          identifier: p.identifier ?? undefined,
+        })),
+      });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return;
+      }
+      console.error("Failed to fetch information data:", error);
+    }
+  },
+
+  updateHero: async (data) => {
+    await withAuth(set)(async () => {
+      await heroService.updateHero(data);
+      set({ hero: data });
+    });
+  },
+
+  addAboutSection: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await informationService.createInformation({
+        label: data.label,
+        title: data.title,
+        description: data.description,
+        imageUrl: data.imageUrl ?? null,
+        visible: data.visible ?? true,
+      });
+      set((state) => ({
+        aboutSections: [
+          ...state.aboutSections,
+          {
+            id: created.id,
+            label: created.label,
+            title: created.title,
+            description: created.description,
+            imageUrl: created.imageUrl ?? undefined,
+            visible: created.visible,
+          },
+        ],
+      }));
+    });
+  },
+
+  updateAboutSection: async (id, data) => {
+    await withAuth(set)(async () => {
+      await informationService.updateInformation(id, {
+        label: data.label,
+        title: data.title,
+        description: data.description,
+        imageUrl: data.imageUrl,
+        visible: data.visible,
+      });
+      set((state) => ({
+        aboutSections: state.aboutSections.map((section) =>
+          section.id === id ? { ...section, ...data } : section,
+        ),
+      }));
+    });
+  },
+
+  toggleAboutVisibility: async (id) => {
+    await withAuth(set)(async () => {
+      const updated = await informationService.toggleInformationVisibility(id);
+      set((state) => ({
+        aboutSections: state.aboutSections.map((section) =>
+          section.id === id ? { ...section, visible: updated.visible } : section,
+        ),
+      }));
+    });
+  },
+
+  removeAboutSection: async (id) => {
+    await withAuth(set)(async () => {
+      await informationService.deleteInformation(id);
+      set((state) => ({
+        aboutSections: state.aboutSections.filter((section) => section.id !== id),
+      }));
+    });
+  },
+
+  addContact: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await contactsService.createContact(data);
+      set((state) => ({
+        contacts: [
+          ...state.contacts,
+          { id: created.id, application: created.application, value: created.value },
+        ],
+      }));
+    });
+  },
+
+  updateContact: async (id, data) => {
+    await withAuth(set)(async () => {
+      await contactsService.updateContact(id, data);
+      set((state) => ({
+        contacts: state.contacts.map((contact) =>
+          contact.id === id ? { ...contact, ...data } : contact,
+        ),
+      }));
+    });
+  },
+
+  removeContact: async (id) => {
+    await withAuth(set)(async () => {
+      await contactsService.deleteContact(id);
+      set((state) => ({
+        contacts: state.contacts.filter((contact) => contact.id !== id),
+      }));
+    });
+  },
+
+  addPaymentMethod: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await paymentMethodsService.createPaymentMethod({
+        method: data.name,
+        identifier: data.identifier ?? null,
+      });
+      set((state) => ({
+        paymentMethods: [
+          ...state.paymentMethods,
+          { id: created.id, name: created.method, identifier: created.identifier ?? undefined },
+        ],
+      }));
+    });
+  },
+
+  updatePaymentMethod: async (id, data) => {
+    await withAuth(set)(async () => {
+      await paymentMethodsService.updatePaymentMethod(id, {
+        method: data.name,
+        identifier: data.identifier,
+      });
+      set((state) => ({
+        paymentMethods: state.paymentMethods.map((method) =>
+          method.id === id ? { ...method, ...data } : method,
+        ),
+      }));
+    });
+  },
+
+  removePaymentMethod: async (id) => {
+    await withAuth(set)(async () => {
+      await paymentMethodsService.deletePaymentMethod(id);
+      set((state) => ({
+        paymentMethods: state.paymentMethods.filter((method) => method.id !== id),
+      }));
+    });
+  },
+
   addProduct: (data) =>
     set((state) => ({
       products: [
-        { ...data, id: data.id ?? createId() },
+        { ...data, id: data.id ?? crypto.randomUUID() },
         ...state.products,
       ],
     })),
@@ -306,7 +428,7 @@ export const useAdminStore = create<AdminState>((set) => ({
     })),
   addCategory: (data) =>
     set((state) => ({
-      categories: [...state.categories, { ...data, id: createId() }],
+      categories: [...state.categories, { ...data, id: crypto.randomUUID() }],
     })),
   updateCategory: (id, data) =>
     set((state) => ({
@@ -320,7 +442,7 @@ export const useAdminStore = create<AdminState>((set) => ({
         ...state.offers,
         {
           ...data,
-          id: createId(),
+          id: crypto.randomUUID(),
           active: data.active ?? true,
           categories: data.categories.length ? data.categories : ["Toda la colección"],
         },

@@ -1,12 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-export default function Hero() {
+export default async function Hero() {
+  const hero = await prisma.hero.findFirst()
+
+  if (!hero) return null
+
   return (
     <section className="relative w-full md:h-[710px] md:grid md:grid-cols-2">
       <div aria-hidden className="absolute inset-0 md:hidden">
         <Image
-          src="/images/hero-coleccion.png"
+          src={hero.imageUrl}
           alt=""
           fill
           priority
@@ -18,17 +23,11 @@ export default function Hero() {
 
       <div className="relative z-10 flex min-h-[600px] flex-col justify-end px-6 pb-12 pt-32 text-white md:min-h-full md:justify-center md:px-14 md:py-20 md:text-ink lg:px-[56px]">
         <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-white/55 md:text-muted">
-          Nueva colección — 2026
+          {hero.kicker}
         </p>
 
         <h1 className="mt-5 max-w-[344px] font-serif text-[40px] font-bold leading-[41px] text-white md:mt-8 md:leading-[1.03] md:text-ink md:text-[60px]">
-          Descubrí
-          <br />
-          el arte de
-          <br />
-          las fragancias
-          <br />
-          árabes.
+          {hero.title}
         </h1>
 
         <p className="mt-5 max-w-[340px] text-[14px] leading-[22.75px] text-white/60 md:mt-7 md:text-muted">
@@ -54,7 +53,7 @@ export default function Hero() {
 
       <div className="relative hidden min-h-full overflow-hidden bg-surface md:block">
         <Image
-          src="/images/hero-coleccion.png"
+          src={hero.imageUrl}
           alt="Colección de perfumes ELIX"
           fill
           priority
