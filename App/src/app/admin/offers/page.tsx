@@ -1,21 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
 import OfferCreateCard from "@/components/admin/OfferCreateCard";
 import OfferCard from "@/components/admin/OfferCard";
 import OfferEmptyState from "@/components/admin/OfferEmptyState";
-import { useAdminStore, type OfferCategory } from "@/context/adminStore";
+import { useAdminStore } from "@/context/adminStore";
 import type { OfferFormValues } from "@/components/admin/OfferForm";
 
 export default function AdminOffersPage() {
+  const router = useRouter();
   const offers = useAdminStore((state) => state.offers);
   const paymentMethods = useAdminStore((state) => state.paymentMethods);
+  const categories = useAdminStore((state) => state.categories);
   const addOffer = useAdminStore((state) => state.addOffer);
   const updateOffer = useAdminStore((state) => state.updateOffer);
   const toggleOfferActive = useAdminStore((state) => state.toggleOfferActive);
   const removeOffer = useAdminStore((state) => state.removeOffer);
+  const fetchOffers = useAdminStore((state) => state.fetchOffers);
+  const fetchCategories = useAdminStore((state) => state.fetchCategories);
+  const fetchInformationData = useAdminStore((state) => state.fetchInformationData);
+  const isUnauthorized = useAdminStore((state) => state.isUnauthorized);
+
+  useEffect(() => {
+    fetchOffers();
+    fetchCategories();
+    fetchInformationData();
+  }, [fetchOffers, fetchCategories, fetchInformationData]);
+
+  useEffect(() => {
+    if (isUnauthorized) {
+      router.replace("/login");
+    }
+  }, [isUnauthorized, router]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -32,7 +51,7 @@ export default function AdminOffersPage() {
     addOffer({
       discount: Number(values.discount),
       paymentMethod: values.paymentMethod,
-      categories: values.categories as OfferCategory[],
+      categories: values.categories,
       description: values.description,
     });
     setCreateOpen(false);
@@ -42,7 +61,7 @@ export default function AdminOffersPage() {
     updateOffer(id, {
       discount: Number(values.discount),
       paymentMethod: values.paymentMethod,
-      categories: values.categories as OfferCategory[],
+      categories: values.categories,
       description: values.description,
     });
     setEditingId(null);
@@ -60,6 +79,7 @@ export default function AdminOffersPage() {
         active={offer.active}
         editing={editing}
         paymentMethods={paymentMethods}
+        allCategories={categories}
         onToggleActive={() => toggleOfferActive(offer.id)}
         onEdit={() => {
           setCreateOpen(false);
@@ -87,6 +107,7 @@ export default function AdminOffersPage() {
                 setCreateOpen((current) => !current);
               }}
               paymentMethods={paymentMethods}
+              categories={categories}
               onSubmit={handleCreate}
               onCancel={() => setCreateOpen(false)}
             />

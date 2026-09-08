@@ -7,6 +7,7 @@ type OfferCreateCardProps = {
   open: boolean;
   onToggle: () => void;
   paymentMethods: { name: string }[];
+  categories: { name: string }[];
   onSubmit: (values: OfferFormValues) => void;
   onCancel: () => void;
 };
@@ -15,6 +16,7 @@ export default function OfferCreateCard({
   open,
   onToggle,
   paymentMethods,
+  categories,
   onSubmit,
   onCancel,
 }: OfferCreateCardProps) {
@@ -43,6 +45,7 @@ export default function OfferCreateCard({
       {open && (
         <OfferForm
           paymentMethods={paymentMethods}
+          categories={categories}
           editing={false}
           onSubmit={onSubmit}
           onCancel={onCancel}

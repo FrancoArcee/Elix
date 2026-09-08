@@ -7,23 +7,49 @@ import PromoSection from "@/components/home/PromoSection";
 import Categories from "@/components/home/Categories";
 import BrandMarquee from "@/components/home/BrandMarquee";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+async function getActiveOffer() {
+  const offer = await prisma.offer.findFirst({
+    where: { active: true },
+    include: {
+      offerCategories: { include: { category: true } },
+      offerPaymentMethods: { include: { paymentMethod: true } },
+    },
+  })
+
+  if (!offer) return null
+
+  const allCategoryCount = await prisma.category.count()
+  const categoryNames = offer.offerCategories.map((oc: { category: { name: string } }) => oc.category.name)
+  const isAllCategories = categoryNames.length === allCategoryCount && allCategoryCount > 0
+
+  return {
+    discount: Number(offer.discount),
+    paymentMethod: offer.offerPaymentMethods[0]?.paymentMethod.method ?? "",
+    categories: isAllCategories ? ["Toda la colección"] : categoryNames,
+    description: offer.description ?? "",
+  }
+}
+
+export default async function Home() {
+  const offer = await getActiveOffer()
+
   return (
     <>
       <Navbar />
       <main>
-        <AnnouncementBar />
+        {offer && <AnnouncementBar offer={offer} />}
         <Hero />
         <Benefits />
-        <PromoSection />
+        {offer && <PromoSection offer={offer} />}
         <Categories />
         <BrandMarquee />
         <FeaturedProducts />
       </main>
       <Footer />
     </>
-  );
+  )
 }

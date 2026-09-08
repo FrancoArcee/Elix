@@ -2,16 +2,16 @@
 
 import Image from "next/image";
 import OfferForm, { type OfferFormValues } from "./OfferForm";
-import type { OfferCategory } from "@/context/adminStore";
 
 type OfferCardProps = {
   discount: number;
   paymentMethod: string;
   description: string;
-  categories: OfferCategory[];
+  categories: string[];
   active: boolean;
   editing?: boolean;
   paymentMethods: { name: string }[];
+  allCategories: { name: string }[];
   onToggleActive: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -27,6 +27,7 @@ export default function OfferCard({
   active,
   editing = false,
   paymentMethods,
+  allCategories,
   onToggleActive,
   onEdit,
   onDelete,
@@ -135,6 +136,7 @@ export default function OfferCard({
       {editing && (
         <OfferForm
           paymentMethods={paymentMethods}
+          categories={allCategories}
           initialValues={{
             discount: String(discount),
             paymentMethod,

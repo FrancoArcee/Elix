@@ -1,16 +1,24 @@
-const ANNOUNCEMENT_SEGMENTS = [
-  { type: "accent", text: "20% off" },
-  { type: "muted", text: "pagando en efectivo" },
-  { type: "muted", text: "en toda la colección" },
-  { type: "muted", text: "Perfumes Árabes" },
-  { type: "muted", text: "Body Splash" },
-  { type: "accent", text: "Oferta activa" },
-] as const;
+type AnnouncementBarProps = {
+  offer: {
+    discount: number;
+    paymentMethod: string;
+    categories: string[];
+  };
+};
 
-function AnnouncementRow() {
+function AnnouncementRow({ offer }: { offer: AnnouncementBarProps["offer"] }) {
+  const isAllCategories = offer.categories.includes("Toda la colección");
+
+  const segments = [
+    { type: "accent", text: `${offer.discount}% off` },
+    { type: "muted", text: `pagando en ${offer.paymentMethod.toLowerCase()}` },
+    { type: "muted", text: isAllCategories ? "en toda la colección" : offer.categories[0] },
+    { type: "accent", text: "Oferta activa" },
+  ];
+
   return (
     <>
-      {ANNOUNCEMENT_SEGMENTS.map((segment, index) => (
+      {segments.map((segment, index) => (
         <div
           key={`${segment.text}-${index}`}
           className="flex items-center whitespace-nowrap"
@@ -31,12 +39,12 @@ function AnnouncementRow() {
   );
 }
 
-export default function AnnouncementBar() {
+export default function AnnouncementBar({ offer }: AnnouncementBarProps) {
   return (
     <div className="w-full overflow-hidden border-b border-background/10 bg-ink py-4">
       <div className="flex w-max animate-marquee">
-        <AnnouncementRow />
-        <AnnouncementRow />
+        <AnnouncementRow offer={offer} />
+        <AnnouncementRow offer={offer} />
       </div>
     </div>
   );
