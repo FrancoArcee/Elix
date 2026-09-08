@@ -2,14 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getCategories } from "@/services/categories";
 
-const NAV_ITEMS = [
+const STATIC_ITEMS = [
   { label: "Inicio", href: "/" },
-  { label: "Perfumes", href: "/products" },
-  { label: "Body Splash", href: "/products?type=body-splash" },
   { label: "Nosotros", href: "/nosotros" },
 ];
+
+function categoryHref(name: string): string {
+  return `/products?type=${encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"))}`;
+}
 
 type NavbarProps = {
   active?: string;
@@ -22,6 +25,19 @@ export default function Navbar({
 }: NavbarProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<{ label: string; href: string }[]>([]);
+
+  useEffect(() => {
+    getCategories().then((data) =>
+      setCategories(data.map((c) => ({ label: c.name, href: categoryHref(c.name) })))
+    );
+  }, []);
+
+  const navItems = [
+    ...STATIC_ITEMS.slice(0, 1),
+    ...categories,
+    ...STATIC_ITEMS.slice(1),
+  ];
 
   return (
     <header className="w-full border-b border-ink/10 bg-background/95">
@@ -34,7 +50,7 @@ export default function Navbar({
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
@@ -103,7 +119,7 @@ export default function Navbar({
       {isMenuOpen && (
         <nav className="border-t border-ink/10 bg-background md:hidden">
           <div className="flex flex-col gap-5 px-6 py-5">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}

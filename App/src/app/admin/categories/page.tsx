@@ -1,12 +1,27 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
 import AdminCategoryCard from "@/components/admin/AdminCategoryCard";
 import { useAdminStore } from "@/context/adminStore";
 
 export default function AdminCategoriesPage() {
+  const router = useRouter();
   const categories = useAdminStore((state) => state.categories);
+  const isUnauthorized = useAdminStore((state) => state.isUnauthorized);
+  const fetchCategories = useAdminStore((state) => state.fetchCategories);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (isUnauthorized) {
+      router.replace("/login");
+    }
+  }, [isUnauthorized, router]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
