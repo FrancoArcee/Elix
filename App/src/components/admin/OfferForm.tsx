@@ -3,23 +3,17 @@
 import { useState } from "react";
 import AdminButton from "./AdminButton";
 import FilterChip from "./FilterChip";
-import type { OfferCategory } from "@/context/adminStore";
-
-const CATEGORY_OPTIONS: OfferCategory[] = [
-  "Perfumes Árabes",
-  "Body Splash",
-  "Toda la colección",
-];
 
 export type OfferFormValues = {
   discount: string;
   paymentMethod: string;
-  categories: OfferCategory[];
+  categories: string[];
   description: string;
 };
 
 type OfferFormProps = {
   paymentMethods: { name: string }[];
+  categories: { name: string }[];
   initialValues?: OfferFormValues;
   editing?: boolean;
   onSubmit: (values: OfferFormValues) => void;
@@ -35,17 +29,19 @@ const EMPTY_VALUES: OfferFormValues = {
 
 export default function OfferForm({
   paymentMethods,
+  categories,
   initialValues,
   editing = false,
   onSubmit,
   onCancel,
 }: OfferFormProps) {
+  const categoryOptions = [...categories.map((c) => c.name), "Toda la colección"];
   const [values, setValues] = useState<OfferFormValues>({
     ...EMPTY_VALUES,
     ...initialValues,
   });
 
-  const toggleCategory = (category: OfferCategory) => {
+  const toggleCategory = (category: string) => {
     setValues((current) => {
       if (category === "Toda la colección") {
         return {
@@ -123,7 +119,7 @@ export default function OfferForm({
           Aplica a
         </span>
         <div className="flex flex-wrap items-center gap-2">
-          {CATEGORY_OPTIONS.map((category) => (
+          {categoryOptions.map((category) => (
             <FilterChip
               key={category}
               label={category}

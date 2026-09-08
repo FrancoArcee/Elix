@@ -5,6 +5,7 @@ import * as informationService from "@/services/information";
 import * as contactsService from "@/services/contacts";
 import * as paymentMethodsService from "@/services/payment-methods";
 import * as categoryService from "@/services/categories";
+import * as offerService from "@/services/offers";
 
 export type HeroContent = {
   kicker: string;
@@ -71,7 +72,7 @@ export type Offer = {
   id: string;
   discount: number;
   paymentMethod: string;
-  categories: OfferCategory[];
+  categories: string[];
   description: string;
   active: boolean;
 };
@@ -107,10 +108,11 @@ type AdminState = {
   addCategory: (data: Omit<AdminCategory, "id">) => Promise<void>;
   updateCategory: (id: string, data: Partial<AdminCategory>) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
-  addOffer: (data: Omit<Offer, "id" | "active"> & { active?: boolean }) => void;
-  updateOffer: (id: string, data: Partial<Offer>) => void;
-  toggleOfferActive: (id: string) => void;
-  removeOffer: (id: string) => void;
+  fetchOffers: () => Promise<void>;
+  addOffer: (data: Omit<Offer, "id" | "active"> & { active?: boolean }) => Promise<void>;
+  updateOffer: (id: string, data: Partial<Offer>) => Promise<void>;
+  toggleOfferActive: (id: string) => Promise<void>;
+  removeOffer: (id: string) => Promise<void>;
 };
 
 const withAuth =
@@ -203,24 +205,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     },
   ],
   categories: [],
-  offers: [
-    {
-      id: "offer-efectivo",
-      discount: 20,
-      paymentMethod: "Efectivo",
-      categories: ["Toda la colección"],
-      description: "20% off pagando en efectivo en toda la colección.",
-      active: true,
-    },
-    {
-      id: "offer-debito",
-      discount: 10,
-      paymentMethod: "Tarjeta de débito",
-      categories: ["Perfumes Árabes"],
-      description: "10% off en perfumes árabes con débito.",
-      active: false,
-    },
-  ],
+  offers: [],
 
   fetchInformationData: async () => {
     set({ isUnauthorized: false });
@@ -485,32 +470,64 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       }));
     });
   },
-  addOffer: (data) =>
-    set((state) => ({
-      offers: [
-        ...state.offers,
-        {
-          ...data,
-          id: crypto.randomUUID(),
-          active: data.active ?? true,
-          categories: data.categories.length ? data.categories : ["Toda la colección"],
-        },
-      ],
-    })),
-  updateOffer: (id, data) =>
-    set((state) => ({
-      offers: state.offers.map((offer) =>
-        offer.id === id ? { ...offer, ...data } : offer,
-      ),
-    })),
-  toggleOfferActive: (id) =>
-    set((state) => ({
-      offers: state.offers.map((offer) =>
-        offer.id === id ? { ...offer, active: !offer.active } : offer,
-      ),
-    })),
-  removeOffer: (id) =>
-    set((state) => ({
-      offers: state.offers.filter((offer) => offer.id !== id),
-    })),
+  addOffer: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await offerService.createOffer({
+        discount: data.discount,
+        paymentMethod: data.paymentMethod,
+        categories: data.categories.length ? data.categories : ["Toda la colección"],
+        description: data.description,
+        active: data.active ?? true,
+      });
+      set((state) => ({
+        offers: [created, ...state.offers],
+      }));
+    });
+  },
+  updateOffer: async (id, data) => {
+    await withAuth(set)(async () => {
+      const updated = await offerService.updateOffer(id, {
+        ...(data.discount !== undefined && { discount: data.discount }),
+        ...(data.paymentMethod !== undefined && { paymentMethod: data.paymentMethod }),
+        ...(data.categories !== undefined && { categories: data.categories }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.active !== undefined && { active: data.active }),
+      });
+      set((state) => ({
+        offers: state.offers.map((offer) =>
+          offer.id === id ? updated : offer
+        ),
+      }));
+    });
+  },
+  toggleOfferActive: async (id) => {
+    await withAuth(set)(async () => {
+      const current = get().offers.find((o) => o.id === id);
+      if (!current) return;
+      const updated = await offerService.updateOffer(id, { active: !current.active });
+      const allOffers = await offerService.getAdminOffers();
+      set({ offers: allOffers });
+    });
+  },
+  removeOffer: async (id) => {
+    await withAuth(set)(async () => {
+      await offerService.deleteOffer(id);
+      set((state) => ({
+        offers: state.offers.filter((offer) => offer.id !== id),
+      }));
+    });
+  },
+  fetchOffers: async () => {
+    set({ isUnauthorized: false });
+    try {
+      const data = await offerService.getAdminOffers();
+      set({ offers: data });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return;
+      }
+      console.error("Failed to fetch offers:", error);
+    }
+  },
 }));
