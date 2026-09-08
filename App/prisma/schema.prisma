@@ -190,6 +190,7 @@ model Offer {
   id          String   @id @default(cuid())
   discount    Decimal? @db.Decimal(10, 2)
   description String?
+  active      Boolean  @default(false)
 
   offerPaymentMethods OfferPaymentMethod[]
   offerCategories     OfferCategory[]

@@ -189,6 +189,69 @@ async function seedCategories() {
   console.log("Categories seeded.")
 }
 
+async function seedOffers() {
+  const count = await prisma.offer.count()
+  if (count > 0) {
+    console.log("Offers already exist, skipping.")
+    return
+  }
+
+  const categories = await prisma.category.findMany()
+  if (categories.length === 0) {
+    console.log("No categories found, skipping offers seed.")
+    return
+  }
+
+  let efectivo = await prisma.paymentMethod.findFirst({ where: { method: "Efectivo" } })
+  if (!efectivo) {
+    efectivo = await prisma.paymentMethod.create({
+      data: { id: `pm_${randomUUID()}`, method: "Efectivo" },
+    })
+  }
+
+  let debito = await prisma.paymentMethod.findFirst({ where: { method: "Tarjeta de débito" } })
+  if (!debito) {
+    debito = await prisma.paymentMethod.create({
+      data: { id: `pm_${randomUUID()}`, method: "Tarjeta de débito" },
+    })
+  }
+
+  const allCategoryIds = categories.map((c) => c.id)
+  const arabesCategory = categories.find((c) => c.name === "Perfumes Árabes")
+
+  const offer1 = await prisma.offer.create({
+    data: {
+      id: `offer_${randomUUID()}`,
+      discount: 20,
+      description: "20% off pagando en efectivo en toda la colección.",
+      active: true,
+      offerPaymentMethods: {
+        create: [{ paymentMethodId: efectivo.id }],
+      },
+      offerCategories: {
+        create: allCategoryIds.map((categoryId) => ({ categoryId })),
+      },
+    },
+  })
+
+  const offer2 = await prisma.offer.create({
+    data: {
+      id: `offer_${randomUUID()}`,
+      discount: 10,
+      description: "10% off en perfumes árabes con débito.",
+      active: false,
+      offerPaymentMethods: {
+        create: [{ paymentMethodId: debito.id }],
+      },
+      offerCategories: {
+        create: arabesCategory ? [{ categoryId: arabesCategory.id }] : [],
+      },
+    },
+  })
+
+  console.log(`Offers seeded: ${offer1.id}, ${offer2.id}`)
+}
+
 async function main() {
   await seedAdmin()
   await seedHero()
@@ -196,6 +259,7 @@ async function main() {
   await seedContacts()
   await seedPaymentMethods()
   await seedCategories()
+  await seedOffers()
 }
 
 main()
