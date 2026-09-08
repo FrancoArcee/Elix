@@ -8,7 +8,7 @@ import * as paymentMethodsService from "@/services/payment-methods";
 export type HeroContent = {
   kicker: string;
   title: string;
-  imageUrl: string | null;
+  imageUrl: string;
 };
 
 export type AboutSection = {
@@ -129,7 +129,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   hero: {
     kicker: "",
     title: "",
-    imageUrl: null,
+    imageUrl: "",
   },
   aboutSections: [],
   contacts: [],

@@ -134,7 +134,7 @@ export default function AdminInformationPage() {
                       label="Imagen de fondo"
                       value={heroForm.imageUrl ?? undefined}
                       onChange={(url) =>
-                        setHeroForm((prev) => ({ ...prev, imageUrl: url ?? null }))
+                        setHeroForm((prev) => ({ ...prev, imageUrl: url ?? "" }))
                       }
                     />
                   </div>
