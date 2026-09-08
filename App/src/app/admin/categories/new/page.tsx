@@ -15,12 +15,12 @@ export default function AdminNewCategoryPage() {
       <main className="flex flex-1 justify-center px-6 py-8 md:px-10 md:py-10">
         <CategoryForm
           mode="create"
-          onSubmit={(values) => {
-            addCategory({
+          onSubmit={async (values) => {
+            await addCategory({
               name: values.name,
               description: values.description,
               color: values.color,
-              image: values.imageUrl || "/images/cat-perfumes-arabes.png",
+              image: values.imageUrl || "",
             });
             router.push("/admin/categories");
           }}

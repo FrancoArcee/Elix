@@ -161,12 +161,41 @@ async function seedPaymentMethods() {
   console.log("Payment methods seeded.")
 }
 
+async function seedCategories() {
+  const count = await prisma.category.count()
+  if (count > 0) {
+    console.log("Categories already exist, skipping.")
+    return
+  }
+
+  await prisma.category.createMany({
+    data: [
+      {
+        id: `cat_${randomUUID()}`,
+        name: "Perfumes Árabes",
+        color: 0xf2f1ee,
+        urlImage: "/images/cat-perfumes-arabes.png",
+        description: "Oud, ámbar, resinas y especias de Oriente Medio",
+      },
+      {
+        id: `cat_${randomUUID()}`,
+        name: "Body Splash",
+        color: 0xede8e3,
+        urlImage: "/images/cat-body-splash.png",
+        description: "Frescura cotidiana con fragancias irresistibles",
+      },
+    ],
+  })
+  console.log("Categories seeded.")
+}
+
 async function main() {
   await seedAdmin()
   await seedHero()
   await seedInformation()
   await seedContacts()
   await seedPaymentMethods()
+  await seedCategories()
 }
 
 main()

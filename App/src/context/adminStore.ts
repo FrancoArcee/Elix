@@ -4,6 +4,7 @@ import * as heroService from "@/services/hero";
 import * as informationService from "@/services/information";
 import * as contactsService from "@/services/contacts";
 import * as paymentMethodsService from "@/services/payment-methods";
+import * as categoryService from "@/services/categories";
 
 export type HeroContent = {
   kicker: string;
@@ -102,8 +103,10 @@ type AdminState = {
     data: Omit<AdminProduct, "id"> & { id?: string },
   ) => void;
   updateProduct: (id: string, data: Partial<AdminProduct>) => void;
-  addCategory: (data: Omit<AdminCategory, "id">) => void;
-  updateCategory: (id: string, data: Partial<AdminCategory>) => void;
+  fetchCategories: () => Promise<void>;
+  addCategory: (data: Omit<AdminCategory, "id">) => Promise<void>;
+  updateCategory: (id: string, data: Partial<AdminCategory>) => Promise<void>;
+  removeCategory: (id: string) => Promise<void>;
   addOffer: (data: Omit<Offer, "id" | "active"> & { active?: boolean }) => void;
   updateOffer: (id: string, data: Partial<Offer>) => void;
   toggleOfferActive: (id: string) => void;
@@ -199,20 +202,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       badge: "Nuevo",
     },
   ],
-  categories: [
-    {
-      id: "perfumes-arabes",
-      name: "Perfumes Árabes",
-      image: "/images/cat-perfumes-arabes.png",
-      color: "#F2F1EE",
-    },
-    {
-      id: "body-splash",
-      name: "Body Splash",
-      image: "/images/cat-body-splash.png",
-      color: "#EDE8E3",
-    },
-  ],
+  categories: [],
   offers: [
     {
       id: "offer-efectivo",
@@ -426,16 +416,75 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         product.id === id ? { ...product, ...data } : product,
       ),
     })),
-  addCategory: (data) =>
-    set((state) => ({
-      categories: [...state.categories, { ...data, id: crypto.randomUUID() }],
-    })),
-  updateCategory: (id, data) =>
-    set((state) => ({
-      categories: state.categories.map((category) =>
-        category.id === id ? { ...category, ...data } : category,
-      ),
-    })),
+  fetchCategories: async () => {
+    set({ isUnauthorized: false });
+    try {
+      const data = await categoryService.getAdminCategories();
+      set({
+        categories: data.map((c) => ({
+          id: c.id,
+          name: c.name,
+          description: c.description,
+          image: c.urlImage ?? "",
+          color: c.color,
+        })),
+      });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return;
+      }
+      console.error("Failed to fetch categories:", error);
+    }
+  },
+
+  addCategory: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await categoryService.createCategory({
+        name: data.name,
+        description: data.description ?? "",
+        color: data.color,
+        urlImage: data.image || null,
+      });
+      set((state) => ({
+        categories: [
+          ...state.categories,
+          {
+            id: created.id,
+            name: created.name,
+            description: created.description,
+            image: created.urlImage ?? "",
+            color: created.color,
+          },
+        ],
+      }));
+    });
+  },
+
+  updateCategory: async (id, data) => {
+    await withAuth(set)(async () => {
+      await categoryService.updateCategory(id, {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.color !== undefined && { color: data.color }),
+        ...(data.image !== undefined && { urlImage: data.image || null }),
+      });
+      set((state) => ({
+        categories: state.categories.map((category) =>
+          category.id === id ? { ...category, ...data } : category,
+        ),
+      }));
+    });
+  },
+
+  removeCategory: async (id) => {
+    await withAuth(set)(async () => {
+      await categoryService.deleteCategory(id);
+      set((state) => ({
+        categories: state.categories.filter((category) => category.id !== id),
+      }));
+    });
+  },
   addOffer: (data) =>
     set((state) => ({
       offers: [

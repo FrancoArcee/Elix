@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import CategoryForm from "@/components/admin/CategoryForm";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 import { useAdminStore } from "@/context/adminStore";
 
 export default function AdminEditCategoryPage() {
@@ -15,6 +17,13 @@ export default function AdminEditCategoryPage() {
     state.categories.find((item) => item.id === categoryId),
   );
   const updateCategory = useAdminStore((state) => state.updateCategory);
+  const removeCategory = useAdminStore((state) => state.removeCategory);
+  const fetchCategories = useAdminStore((state) => state.fetchCategories);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   if (!category) {
     return (
@@ -27,6 +36,11 @@ export default function AdminEditCategoryPage() {
     );
   }
 
+  const handleDelete = async () => {
+    await removeCategory(categoryId);
+    router.push("/admin/categories");
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <AdminHeader title="Editar categoría" backHref="/admin/categories" />
@@ -35,12 +49,12 @@ export default function AdminEditCategoryPage() {
           mode="edit"
           initialValues={{
             name: category.name,
-            description: "",
+            description: category.description ?? "",
             color: category.color,
             imageUrl: category.image,
           }}
-          onSubmit={(values) => {
-            updateCategory(categoryId, {
+          onSubmit={async (values) => {
+            await updateCategory(categoryId, {
               name: values.name,
               description: values.description,
               color: values.color,
@@ -51,6 +65,28 @@ export default function AdminEditCategoryPage() {
           onCancel={() => router.push("/admin/categories")}
         />
       </main>
+
+      <div className="flex justify-center pb-10">
+        <button
+          type="button"
+          onClick={() => setIsConfirmOpen(true)}
+          className="text-[9px] font-medium uppercase leading-[13.5px] tracking-[1.62px] text-muted transition-colors hover:text-ink"
+        >
+          Eliminar categoría
+        </button>
+      </div>
+
+      {isConfirmOpen && (
+        <ConfirmationModal
+          title="Eliminar categoría"
+          message={`¿Seguro que querés eliminar "${category.name}"? Esta acción no se puede deshacer.`}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+            handleDelete();
+          }}
+          onCancel={() => setIsConfirmOpen(false)}
+        />
+      )}
     </div>
   );
 }
