@@ -1,13 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-const SOCIAL_ICONS = [
-  { src: "/icons/icon-instagram.svg", alt: "Instagram" },
-  { src: "/icons/icon-facebook.svg", alt: "Facebook" },
-  { src: "/icons/icon-whatsapp.svg", alt: "WhatsApp" },
-];
+const SOCIAL_ICON_MAP: Record<string, string> = {
+  Instagram: "/icons/icon-instagram.svg",
+  Facebook: "/icons/icon-facebook.svg",
+  WhatsApp: "/icons/icon-whatsapp.svg",
+};
 
-export default function Footer() {
+function getSocialHref(application: string, value: string): string {
+  const lower = application.toLowerCase()
+  if (lower === "whatsapp") {
+    const phone = value.replace(/[^0-9+]/g, "")
+    return `https://wa.me/${phone.startsWith("+") ? phone.slice(1) : phone}`
+  }
+  if (lower === "instagram") {
+    const username = value.startsWith("@") ? value.slice(1) : value
+    return `https://instagram.com/${username}`
+  }
+  if (lower === "facebook") {
+    return value.startsWith("http") ? value : `https://facebook.com/${value}`
+  }
+  return "#"
+}
+
+export default async function Footer() {
+  const contacts = await prisma.contact.findMany({
+    orderBy: { displayOrder: "asc" },
+  })
+
+  const socialContacts = contacts.filter(
+    (c) => SOCIAL_ICON_MAP[c.application]
+  )
+
   return (
     <footer className="bg-ink px-4 pb-8 pt-14 md:px-6">
       <div className="mx-auto w-full max-w-[1280px]">
@@ -21,15 +46,17 @@ export default function Footer() {
         </p>
 
         <div className="flex gap-3 pt-6">
-          {SOCIAL_ICONS.map((icon) => (
+          {socialContacts.map((contact) => (
             <a
-              key={icon.alt}
-              href="#"
-              aria-label={icon.alt}
+              key={contact.id}
+              href={getSocialHref(contact.application, contact.value)}
+              aria-label={contact.application}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex size-[32px] items-center justify-center border border-background/15 transition-colors hover:border-background/40"
             >
               <Image
-                src={icon.src}
+                src={SOCIAL_ICON_MAP[contact.application]}
                 alt=""
                 width={13}
                 height={13}

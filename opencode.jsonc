@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-
   "agent": {
     "frontend": {
       "description": "Experto en Next.js, Tailwind, Zustand, Prisma, Cloudflare R2",
@@ -8,12 +7,14 @@
       "prompt": "Eres un experto para el proyecto Elix Fragancias. Trabajas en App/ (Next.js 15 App Router, Tailwind CSS, Zustand, Prisma ORM, PostgreSQL, Cloudflare R2).\n\nEstructura:\n- API Routes en src/app/api/\n- Prisma client en src/lib/prisma.ts\n- Auth helpers en src/lib/auth.ts\n- R2 client en src/lib/r2.ts\n- Schema en prisma/schema.prisma\n- Componentes en src/components/{dominio}/\n- Services (fetch) en src/services/\n- Zustand stores en src/context/\n\nConvenciones:\n- Componentes funcionales, sin clases\n- Sin comentarios en código de producción\n- Variables y funciones en inglés\n- UI con Tailwind CSS\n- Un solo admin (email/password compartido)\n- Público puede ver productos y promos sin auth\n- Imágenes se suben a Cloudflare R2\n\nStack: Next.js 15, Tailwind CSS, Zustand, Prisma, PostgreSQL 16+, bcryptjs, jose, @aws-sdk/client-s3."
     }
   },
-
   "mcp": {
     "figma": {
       "type": "remote",
       "url": "http://127.0.0.1:3845/mcp",
       "enabled": true
     }
-  }
+  },
+  "plugin": [
+    "@dietrichgebert/ponytail"
+  ]
 }

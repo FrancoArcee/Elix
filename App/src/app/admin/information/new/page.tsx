@@ -15,8 +15,8 @@ export default function AdminNewSectionPage() {
       <main className="flex flex-1 justify-center px-6 py-8 md:px-10 md:py-10">
         <SectionForm
           mode="create"
-          onSubmit={(values) => {
-            addAboutSection({
+          onSubmit={async (values) => {
+            await addAboutSection({
               label: values.label,
               title: values.title,
               description: values.description,

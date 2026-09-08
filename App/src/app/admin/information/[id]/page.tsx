@@ -39,8 +39,8 @@ export default function AdminEditSectionPage() {
             description: section.description,
             imageUrl: section.imageUrl ?? "",
           }}
-          onSubmit={(values) => {
-            updateAboutSection(sectionId, {
+          onSubmit={async (values) => {
+            await updateAboutSection(sectionId, {
               label: values.label,
               title: values.title,
               description: values.description,

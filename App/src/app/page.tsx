@@ -8,6 +8,8 @@ import Categories from "@/components/home/Categories";
 import BrandMarquee from "@/components/home/BrandMarquee";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <>
