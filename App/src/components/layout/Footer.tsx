@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { BASE_URL } from "@/lib/base-url";
+import type { ContactData } from "@/services/contacts";
 
 const SOCIAL_ICON_MAP: Record<string, string> = {
   Instagram: "/icons/icon-instagram.svg",
@@ -25,9 +26,8 @@ function getSocialHref(application: string, value: string): string {
 }
 
 export default async function Footer() {
-  const contacts = await prisma.contact.findMany({
-    orderBy: { displayOrder: "asc" },
-  })
+  const res = await fetch(`${BASE_URL}/api/contacts`, { cache: "no-store" })
+  const contacts: ContactData[] = res.ok ? await res.json() : []
 
   const socialContacts = contacts.filter(
     (c) => SOCIAL_ICON_MAP[c.application]

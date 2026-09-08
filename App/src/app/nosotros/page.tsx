@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { prisma } from "@/lib/prisma";
+import { BASE_URL } from "@/lib/base-url";
+import type { InformationSection } from "@/services/information";
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +29,8 @@ const STEPS = [
 ];
 
 export default async function NosotrosPage() {
-  const sections = await prisma.information.findMany({
-    where: { visible: true },
-    orderBy: { displayOrder: "asc" },
-  });
+  const res = await fetch(`${BASE_URL}/api/information`, { cache: "no-store" });
+  const sections: InformationSection[] = res.ok ? await res.json() : [];
 
   const [header, ...rest] = sections;
 

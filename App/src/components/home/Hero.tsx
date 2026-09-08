@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { BASE_URL } from "@/lib/base-url";
+import type { HeroData } from "@/services/hero";
 
 export default async function Hero() {
-  const hero = await prisma.hero.findFirst()
+  const res = await fetch(`${BASE_URL}/api/hero`, { cache: "no-store" })
+  const hero: HeroData | null = res.ok ? await res.json() : null
 
   if (!hero) return null
 
