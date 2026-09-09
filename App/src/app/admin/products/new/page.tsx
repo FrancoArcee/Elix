@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import ProductForm from "@/components/admin/ProductForm";
@@ -7,12 +8,17 @@ import { useAdminStore } from "@/context/adminStore";
 
 export default function AdminNewProductPage() {
   const router = useRouter();
-  const products = useAdminStore((state) => state.products);
+  const brands = useAdminStore((state) => state.brands);
+  const categories = useAdminStore((state) => state.categories);
   const addProduct = useAdminStore((state) => state.addProduct);
+  const fetchProducts = useAdminStore((state) => state.fetchProducts);
+  const fetchBrands = useAdminStore((state) => state.fetchBrands);
+  const fetchCategories = useAdminStore((state) => state.fetchCategories);
 
-  const brands = Array.from(
-    new Set(products.map((product) => product.brand)),
-  ).map((brand) => ({ name: brand }));
+  useEffect(() => {
+    fetchBrands();
+    fetchCategories();
+  }, [fetchBrands, fetchCategories]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -21,27 +27,45 @@ export default function AdminNewProductPage() {
         <ProductForm
           mode="create"
           brands={brands}
-          onSubmit={(values) => {
-            addProduct({
+          categories={categories}
+          onBrandCreated={(brand) => {
+            useAdminStore.setState((state) => ({
+              brands: [...state.brands, brand].sort((a, b) => a.name.localeCompare(b.name)),
+            }));
+          }}
+          onSubmit={async (values) => {
+            const isBodySplash = categories
+              .find((c) => c.id === values.categoryId)
+              ?.name.toLowerCase()
+              .includes("body splash") ?? false;
+
+            const notes: { noteName: string; type: string }[] = [];
+            const noteNames = (values.topNotes ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+            for (const n of noteNames) {
+              notes.push({ noteName: n, type: isBodySplash ? "unico" : "salida" });
+            }
+            if (!isBodySplash) {
+              for (const n of (values.heartNotes ?? "").split(",").map((s) => s.trim()).filter(Boolean)) {
+                notes.push({ noteName: n, type: "corazon" });
+              }
+              for (const n of (values.baseNotes ?? "").split(",").map((s) => s.trim()).filter(Boolean)) {
+                notes.push({ noteName: n, type: "fondo" });
+              }
+            }
+
+            await addProduct({
               name: values.name,
-              brand: values.brand,
-              category: values.category,
-              orientation: values.orientation,
-              olfactoryFamily: values.olfactoryFamily || undefined,
-              price: values.price ? Number(values.price) : undefined,
-              originalPrice: values.originalPrice
-                ? Number(values.originalPrice)
-                : undefined,
-              image:
-                values.images[0] || "/images/product-oud-royale.png",
-              images: values.images.length ? values.images : undefined,
-              badge: values.badge || undefined,
-              sizes: values.sizes || undefined,
-              topNotes: values.topNotes || undefined,
-              heartNotes: values.heartNotes || undefined,
-              baseNotes: values.baseNotes || undefined,
+              brandId: values.brandId,
+              categoryId: values.categoryId,
+              targetAudience: values.targetAudience,
               description: values.description || undefined,
+              price: values.price ? Number(values.price) : undefined,
+              fraganceFamily: values.olfactoryFamily || undefined,
+              presentation: values.sizes || undefined,
+              images: values.images.map((url) => ({ url })),
+              notes: notes.length ? notes : undefined,
             });
+            await fetchProducts();
             router.push("/admin/products");
           }}
           onCancel={() => router.push("/admin/products")}

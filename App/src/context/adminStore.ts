@@ -6,6 +6,9 @@ import * as contactsService from "@/services/contacts";
 import * as paymentMethodsService from "@/services/payment-methods";
 import * as categoryService from "@/services/categories";
 import * as offerService from "@/services/offers";
+import * as productService from "@/services/products";
+import * as brandService from "@/services/brands";
+import * as featuredService from "@/services/featured";
 
 export type HeroContent = {
   kicker: string;
@@ -41,12 +44,13 @@ export type ProductOrientation = "Unisex" | "Masculino" | "Femenino";
 export type AdminProduct = {
   id: string;
   brand: string;
+  brandId: string;
   name: string;
   image: string;
   images?: string[];
   category: ProductCategory;
+  categoryId: string;
   badge?: string;
-  outOfStock?: boolean;
   orientation?: ProductOrientation;
   olfactoryFamily?: string;
   price?: number;
@@ -66,6 +70,23 @@ export type AdminCategory = {
   color: string;
 };
 
+export type AdminBrand = {
+  id: string;
+  name: string;
+};
+
+export type AdminFeatured = {
+  id: string;
+  productId: string;
+  displayOrder: number;
+  product: {
+    id: string;
+    name: string;
+    brand: string;
+    image: string | null;
+  };
+};
+
 export type OfferCategory = ProductCategory | "Toda la colección";
 
 export type Offer = {
@@ -83,6 +104,8 @@ type AdminState = {
   contacts: ContactEntry[];
   paymentMethods: PaymentMethod[];
   products: AdminProduct[];
+  brands: AdminBrand[];
+  featured: AdminFeatured[];
   categories: AdminCategory[];
   offers: Offer[];
   isUnauthorized: boolean;
@@ -100,10 +123,40 @@ type AdminState = {
   addPaymentMethod: (data: Omit<PaymentMethod, "id">) => Promise<void>;
   updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => Promise<void>;
   removePaymentMethod: (id: string) => Promise<void>;
-  addProduct: (
-    data: Omit<AdminProduct, "id"> & { id?: string },
-  ) => void;
-  updateProduct: (id: string, data: Partial<AdminProduct>) => void;
+  fetchProducts: () => Promise<void>;
+  addProduct: (data: {
+    name: string;
+    brandId: string;
+    categoryId: string;
+    targetAudience: string;
+    description?: string;
+    price?: number;
+    fraganceFamily?: string;
+    presentation?: string;
+    concentration?: string;
+    images?: { url: string }[];
+    notes?: { noteName: string; type: string }[];
+  }) => Promise<void>;
+  updateProduct: (id: string, data: {
+    name: string;
+    brandId: string;
+    categoryId: string;
+    targetAudience: string;
+    description?: string;
+    price?: number;
+    fraganceFamily?: string;
+    presentation?: string;
+    concentration?: string;
+    images?: { url: string }[];
+    notes?: { noteName: string; type: string }[];
+  }) => Promise<void>;
+  removeProduct: (id: string) => Promise<void>;
+  fetchBrands: () => Promise<void>;
+  addBrand: (data: { name: string }) => Promise<void>;
+  fetchFeatured: () => Promise<void>;
+  addFeatured: (productId: string) => Promise<void>;
+  removeFeatured: (productId: string) => Promise<void>;
+  reorderFeatured: (orderedIds: string[]) => Promise<void>;
   fetchCategories: () => Promise<void>;
   addCategory: (data: Omit<AdminCategory, "id">) => Promise<void>;
   updateCategory: (id: string, data: Partial<AdminCategory>) => Promise<void>;
@@ -139,71 +192,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   aboutSections: [],
   contacts: [],
   paymentMethods: [],
-  products: [
-    {
-      id: "oud-royale",
-      brand: "Lattafa",
-      name: "Oud Royale",
-      image: "/images/product-oud-royale.png",
-      category: "Perfumes Árabes",
-      badge: "Más vendido",
-    },
-    {
-      id: "baccarat-rouge",
-      brand: "Maison Alhambra",
-      name: "Baccarat Rouge",
-      image: "/images/product-baccarat-rouge.png",
-      category: "Perfumes Árabes",
-      badge: "Oferta",
-    },
-    {
-      id: "velvet-rose",
-      brand: "Swiss Arabian",
-      name: "Velvet Rose",
-      image: "/images/product-velvet-rose.png",
-      category: "Perfumes Árabes",
-      badge: "Nuevo",
-    },
-    {
-      id: "noir-intense",
-      brand: "Ajmal",
-      name: "Noir Intense",
-      image: "/images/product-noir-intense.png",
-      category: "Perfumes Árabes",
-    },
-    {
-      id: "bloom-bliss",
-      brand: "ELIX Collection",
-      name: "Bloom Bliss",
-      image: "/images/product-bloom-bliss.png",
-      category: "Body Splash",
-      badge: "Más vendido",
-    },
-    {
-      id: "amber-luxe",
-      brand: "Lattafa",
-      name: "Amber Luxe",
-      image: "/images/product-amber-luxe.png",
-      category: "Perfumes Árabes",
-      badge: "Oferta",
-      outOfStock: true,
-    },
-    {
-      id: "fresh-bloom",
-      brand: "ELIX Collection",
-      name: "Fresh Bloom",
-      image: "/images/product-fresh-bloom.png",
-      category: "Body Splash",
-    },
-    {
-      id: "sweet-velvet",
-      brand: "ELIX Collection",
-      name: "Sweet Velvet",
-      image: "/images/product-sweet-velvet.png",
-      category: "Body Splash",
-      badge: "Nuevo",
-    },
-  ],
+  products: [],
+  brands: [],
+  featured: [],
   categories: [],
   offers: [],
 
@@ -388,19 +379,175 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     });
   },
 
-  addProduct: (data) =>
-    set((state) => ({
-      products: [
-        { ...data, id: data.id ?? crypto.randomUUID() },
-        ...state.products,
-      ],
-    })),
-  updateProduct: (id, data) =>
-    set((state) => ({
-      products: state.products.map((product) =>
-        product.id === id ? { ...product, ...data } : product,
-      ),
-    })),
+  fetchProducts: async () => {
+    set({ isUnauthorized: false });
+    try {
+      const data = await productService.getAdminProducts();
+      set({
+        products: data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand,
+          brandId: p.brandId,
+          category: p.category as ProductCategory,
+          categoryId: p.categoryId,
+          image: p.image ?? "/images/product-oud-royale.png",
+          images: Array.isArray(p.images)
+            ? p.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
+            : [],
+          price: p.price ?? undefined,
+          fraganceFamily: p.fraganceFamily ?? undefined,
+          concentration: p.concentration ?? undefined,
+          orientation: p.targetAudience === "masculino" ? "Masculino" : p.targetAudience === "femenino" ? "Femenino" : "Unisex",
+          presentation: p.presentation ?? undefined,
+          description: p.description ?? undefined,
+        })),
+      });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return;
+      }
+      console.error("Failed to fetch products:", error);
+    }
+  },
+
+  addProduct: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await productService.createProduct(data);
+      set((state) => ({
+        products: [
+          {
+            id: created.id,
+            name: created.name,
+            brand: created.brand,
+            brandId: created.brandId,
+            category: created.category as ProductCategory,
+            categoryId: created.categoryId,
+            image: created.image ?? "/images/product-oud-royale.png",
+            images: Array.isArray(created.images)
+              ? created.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
+              : [],
+            price: created.price ?? undefined,
+            fraganceFamily: created.fraganceFamily ?? undefined,
+            concentration: created.concentration ?? undefined,
+            orientation: created.targetAudience === "masculino" ? "Masculino" : created.targetAudience === "femenino" ? "Femenino" : "Unisex",
+            presentation: created.presentation ?? undefined,
+            description: created.description ?? undefined,
+          },
+          ...state.products,
+        ],
+      }));
+    });
+  },
+
+  updateProduct: async (id, data) => {
+    await withAuth(set)(async () => {
+      const updated = await productService.updateProduct(id, data);
+      set((state) => ({
+        products: state.products.map((product) =>
+          product.id === id
+            ? {
+                ...product,
+                name: updated.name,
+                brand: updated.brand,
+                brandId: updated.brandId,
+                category: updated.category as ProductCategory,
+                categoryId: updated.categoryId,
+                image: updated.image ?? product.image,
+                images: Array.isArray(updated.images)
+                  ? updated.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
+                  : product.images,
+                price: updated.price ?? undefined,
+                fraganceFamily: updated.fraganceFamily ?? undefined,
+                concentration: updated.concentration ?? undefined,
+                orientation: updated.targetAudience === "masculino" ? "Masculino" : updated.targetAudience === "femenino" ? "Femenino" : "Unisex",
+                presentation: updated.presentation ?? undefined,
+                description: updated.description ?? undefined,
+              }
+            : product,
+        ),
+      }));
+    });
+  },
+
+  removeProduct: async (id) => {
+    await withAuth(set)(async () => {
+      await productService.deleteProduct(id);
+      set((state) => ({
+        products: state.products.filter((product) => product.id !== id),
+      }));
+    });
+  },
+
+  fetchBrands: async () => {
+    set({ isUnauthorized: false });
+    try {
+      const data = await brandService.getAdminBrands();
+      set({ brands: data });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return;
+      }
+      console.error("Failed to fetch brands:", error);
+    }
+  },
+
+  addBrand: async (data) => {
+    await withAuth(set)(async () => {
+      const created = await brandService.createBrand(data);
+      set((state) => ({
+        brands: [...state.brands, created].sort((a, b) => a.name.localeCompare(b.name)),
+      }));
+    });
+  },
+
+  fetchFeatured: async () => {
+    set({ isUnauthorized: false });
+    try {
+      const data = await featuredService.getAdminFeatured();
+      set({ featured: data });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        set({ isUnauthorized: true });
+        return;
+      }
+      console.error("Failed to fetch featured products:", error);
+    }
+  },
+
+  addFeatured: async (productId) => {
+    await withAuth(set)(async () => {
+      const created = await featuredService.addFeatured(productId);
+      set((state) => ({
+        featured: [...state.featured, created].sort((a, b) => a.displayOrder - b.displayOrder),
+      }));
+    });
+  },
+
+  removeFeatured: async (productId) => {
+    await withAuth(set)(async () => {
+      await featuredService.removeFeatured(productId);
+      set((state) => ({
+        featured: state.featured.filter((f) => f.productId !== productId),
+      }));
+    });
+  },
+
+  reorderFeatured: async (orderedIds) => {
+    await withAuth(set)(async () => {
+      await featuredService.reorderFeatured(orderedIds);
+      set((state) => ({
+        featured: state.featured
+          .map((f) => ({
+            ...f,
+            displayOrder: orderedIds.indexOf(f.productId),
+          }))
+          .sort((a, b) => a.displayOrder - b.displayOrder),
+      }));
+    });
+  },
   fetchCategories: async () => {
     set({ isUnauthorized: false });
     try {

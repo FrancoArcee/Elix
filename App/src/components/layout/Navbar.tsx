@@ -10,8 +10,8 @@ const STATIC_ITEMS = [
   { label: "Nosotros", href: "/nosotros" },
 ];
 
-function categoryHref(name: string): string {
-  return `/products?type=${encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"))}`;
+function categoryHref(id: string): string {
+  return `/products?categoryId=${id}`;
 }
 
 type NavbarProps = {
@@ -29,7 +29,7 @@ export default function Navbar({
 
   useEffect(() => {
     getCategories().then((data) =>
-      setCategories(data.map((c) => ({ label: c.name, href: categoryHref(c.name) })))
+      setCategories(data.map((c) => ({ label: c.name, href: categoryHref(c.id) })))
     );
   }, []);
 

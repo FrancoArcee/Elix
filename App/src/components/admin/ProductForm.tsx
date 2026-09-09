@@ -6,16 +6,13 @@ import TextAreaField from "./TextAreaField";
 import AdminButton from "./AdminButton";
 import FilterChip from "./FilterChip";
 import ProductImagesField from "./ProductImagesField";
-import type {
-  ProductCategory,
-  ProductOrientation,
-} from "@/context/adminStore";
+import type { ProductOrientation } from "@/context/adminStore";
 
 export type ProductFormValues = {
   name: string;
-  brand: string;
-  category: ProductCategory;
-  orientation: ProductOrientation;
+  brandId: string;
+  categoryId: string;
+  targetAudience: string;
   olfactoryFamily: string;
   price: string;
   originalPrice: string;
@@ -30,16 +27,13 @@ export type ProductFormValues = {
 
 type ProductFormProps = {
   mode: "create" | "edit";
-  brands: { name: string }[];
+  brands: { id: string; name: string }[];
+  categories: { id: string; name: string }[];
   initialValues?: Partial<ProductFormValues>;
   onSubmit: (values: ProductFormValues) => void;
   onCancel: () => void;
+  onBrandCreated?: (brand: { id: string; name: string }) => void;
 };
-
-const CATEGORY_OPTIONS: ProductCategory[] = [
-  "Perfumes Árabes",
-  "Body Splash",
-];
 
 const ORIENTATION_OPTIONS: ProductOrientation[] = [
   "Unisex",
@@ -47,11 +41,23 @@ const ORIENTATION_OPTIONS: ProductOrientation[] = [
   "Femenino",
 ];
 
+const ORIENTATION_MAP: Record<ProductOrientation, string> = {
+  Unisex: "unisex",
+  Masculino: "masculino",
+  Femenino: "femenino",
+};
+
+const ORIENTATION_REVERSE: Record<string, ProductOrientation> = {
+  unisex: "Unisex",
+  masculino: "Masculino",
+  femenino: "Femenino",
+};
+
 const EMPTY_VALUES: ProductFormValues = {
   name: "",
-  brand: "",
-  category: "Perfumes Árabes",
-  orientation: "Unisex",
+  brandId: "",
+  categoryId: "",
+  targetAudience: "unisex",
   olfactoryFamily: "",
   price: "",
   originalPrice: "",
@@ -67,14 +73,28 @@ const EMPTY_VALUES: ProductFormValues = {
 export default function ProductForm({
   mode,
   brands,
+  categories,
   initialValues,
   onSubmit,
   onCancel,
+  onBrandCreated,
 }: ProductFormProps) {
   const [values, setValues] = useState<ProductFormValues>({
     ...EMPTY_VALUES,
     ...initialValues,
   });
+
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [brandError, setBrandError] = useState<string | null>(null);
+
+  const currentOrientation: ProductOrientation =
+    ORIENTATION_REVERSE[values.targetAudience] ?? "Unisex";
+
+  const isBodySplash = categories
+    .find((c) => c.id === values.categoryId)
+    ?.name.toLowerCase()
+    .includes("body splash") ?? false;
 
   const update =
     (field: keyof ProductFormValues) =>
@@ -112,11 +132,11 @@ export default function ProductForm({
         </span>
         <div className="flex items-center gap-2">
           <select
-            value={values.brand}
+            value={values.brandId}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
-                brand: event.target.value,
+                brandId: event.target.value,
               }))
             }
             className="h-9 min-w-0 flex-1 appearance-none border-b border-ink/10 bg-transparent text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
@@ -125,7 +145,7 @@ export default function ProductForm({
               Seleccioná una marca
             </option>
             {brands.map((brand) => (
-              <option key={brand.name} value={brand.name}>
+              <option key={brand.id} value={brand.id}>
                 {brand.name}
               </option>
             ))}
@@ -133,6 +153,7 @@ export default function ProductForm({
           <button
             type="button"
             aria-label="Agregar marca"
+            onClick={() => setShowBrandModal(true)}
             className="flex size-8 shrink-0 items-center justify-center border border-ink/10 text-[18px] font-medium leading-[18px] text-muted transition-colors hover:border-ink/35 hover:text-ink"
           >
             +
@@ -145,13 +166,13 @@ export default function ProductForm({
           Categoría
         </span>
         <div className="flex flex-wrap items-start gap-2">
-          {CATEGORY_OPTIONS.map((category) => (
+          {categories.map((category) => (
             <FilterChip
-              key={category}
-              label={category}
-              active={values.category === category}
+              key={category.id}
+              label={category.name}
+              active={values.categoryId === category.id}
               onClick={() =>
-                setValues((current) => ({ ...current, category }))
+                setValues((current) => ({ ...current, categoryId: category.id }))
               }
             />
           ))}
@@ -167,9 +188,12 @@ export default function ProductForm({
             <FilterChip
               key={orientation}
               label={orientation}
-              active={values.orientation === orientation}
+              active={currentOrientation === orientation}
               onClick={() =>
-                setValues((current) => ({ ...current, orientation }))
+                setValues((current) => ({
+                  ...current,
+                  targetAudience: ORIENTATION_MAP[orientation],
+                }))
               }
             />
           ))}
@@ -252,35 +276,49 @@ export default function ProductForm({
         Ingresá las notas separadas por coma.
       </p>
 
-      <div className="pt-6">
-        <TextField
-          label="Notas de salida"
-          tag="Opcional"
-          placeholder="Ej: Bergamota, Cardamomo"
-          value={values.topNotes}
-          onChange={update("topNotes")}
-        />
-      </div>
+      {isBodySplash ? (
+        <div className="pt-6">
+          <TextField
+            label="Nota"
+            tag="Opcional"
+            placeholder="Ej: Vainilla"
+            value={values.topNotes}
+            onChange={update("topNotes")}
+          />
+        </div>
+      ) : (
+        <>
+          <div className="pt-6">
+            <TextField
+              label="Notas de salida"
+              tag="Opcional"
+              placeholder="Ej: Bergamota, Cardamomo"
+              value={values.topNotes}
+              onChange={update("topNotes")}
+            />
+          </div>
 
-      <div className="pt-6">
-        <TextField
-          label="Notas de corazón"
-          tag="Opcional"
-          placeholder="Ej: Oud, Rosa de Damasco"
-          value={values.heartNotes}
-          onChange={update("heartNotes")}
-        />
-      </div>
+          <div className="pt-6">
+            <TextField
+              label="Notas de corazón"
+              tag="Opcional"
+              placeholder="Ej: Oud, Rosa de Damasco"
+              value={values.heartNotes}
+              onChange={update("heartNotes")}
+            />
+          </div>
 
-      <div className="pt-6">
-        <TextField
-          label="Notas de fondo"
-          tag="Opcional"
-          placeholder="Ej: Almizcle, Ámbar gris"
-          value={values.baseNotes}
-          onChange={update("baseNotes")}
-        />
-      </div>
+          <div className="pt-6">
+            <TextField
+              label="Notas de fondo"
+              tag="Opcional"
+              placeholder="Ej: Almizcle, Ámbar gris"
+              value={values.baseNotes}
+              onChange={update("baseNotes")}
+            />
+          </div>
+        </>
+      )}
 
       <h2 className="mt-8 border-b border-ink/10 pb-2 text-[9px] font-normal uppercase leading-[13.5px] tracking-[2.7px] text-muted">
         Descripción
@@ -313,6 +351,70 @@ export default function ProductForm({
           Cancelar
         </AdminButton>
       </div>
+
+      {showBrandModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+          <div className="w-full max-w-[400px] border border-ink/10 bg-background p-6">
+            <p className="font-serif text-[18px] font-bold leading-6 text-ink">
+              Nueva marca
+            </p>
+            <p className="pt-2 text-[12px] leading-4 text-muted">
+              Ingresá el nombre de la nueva marca.
+            </p>
+            <div className="pt-4">
+              <TextField
+                label="Nombre"
+                placeholder="Ej: Nueva Marca"
+                value={newBrandName}
+                onChange={(e) => {
+                  setNewBrandName(e.target.value);
+                  setBrandError(null);
+                }}
+              />
+              {brandError && (
+                <p className="pt-1 text-[11px] leading-4 text-red-700">
+                  {brandError}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col items-stretch gap-3 pt-6 sm:flex-row">
+              <AdminButton
+                variant="primary"
+                onClick={async () => {
+                  if (!newBrandName.trim()) {
+                    setBrandError("El nombre es requerido.");
+                    return;
+                  }
+                  try {
+                    const { createBrand } = await import("@/services/brands");
+                    const created = await createBrand({ name: newBrandName.trim() });
+                    onBrandCreated?.({ id: created.id, name: created.name });
+                    setValues((current) => ({ ...current, brandId: created.id }));
+                    setNewBrandName("");
+                    setShowBrandModal(false);
+                  } catch {
+                    setBrandError("No se pudo crear la marca. Puede que ya exista.");
+                  }
+                }}
+                className="h-[39px] flex-1 px-5 py-3"
+              >
+                Crear
+              </AdminButton>
+              <AdminButton
+                variant="outline"
+                onClick={() => {
+                  setShowBrandModal(false);
+                  setNewBrandName("");
+                  setBrandError(null);
+                }}
+                className="h-[39px] flex-1 px-5 py-3"
+              >
+                Cancelar
+              </AdminButton>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

@@ -83,7 +83,7 @@ export default function ProductListing({
           <div className="grid flex-1 grid-cols-1 gap-4 pb-14 sm:grid-cols-2 md:gap-6">
             {products.map((product) => (
               <ProductCard
-                key={product.name}
+                key={product.href}
                 {...product}
                 imageClassName="aspect-[3/4]"
               />

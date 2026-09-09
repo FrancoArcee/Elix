@@ -1,159 +1,108 @@
-import ProductDetail, {
-  type ProductDetailProps,
-} from "@/components/products/ProductDetail";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import ProductDetail from "@/components/products/ProductDetail";
+
+export const dynamic = "force-dynamic";
+
+type ProductFull = Prisma.ProductGetPayload<{
+  include: {
+    brand: true
+    category: true
+    images: true
+    notes: { include: { note: true } }
+    volumes: { include: { volume: true } }
+  }
+}>;
+
+type ProductWithBrandAndImages = Prisma.ProductGetPayload<{
+  include: { brand: true; images: true }
+}>;
 
 type ProductPageProps = {
   params: Promise<{ id: string }>;
 };
 
-const CATALOG = {
-  "amber-luxe": {
-    brand: "Lattafa",
-    name: "Amber Luxe",
-    image: "/images/product-amber-luxe.png",
-  },
-  "oud-royale": {
-    brand: "Lattafa",
-    name: "Oud Royale",
-    image: "/images/product-oud-royale.png",
-  },
-  "baccarat-rouge": {
-    brand: "Maison Alhambra",
-    name: "Baccarat Rouge",
-    image: "/images/product-baccarat-rouge.png",
-  },
-  "noir-intense": {
-    brand: "Ajmal",
-    name: "Noir Intense",
-    image: "/images/product-noir-intense.png",
-  },
-  "velvet-rose": {
-    brand: "Swiss Arabian",
-    name: "Velvet Rose",
-    image: "/images/product-velvet-rose.png",
-  },
-  "bloom-bliss": {
-    brand: "ELIX Collection",
-    name: "Bloom Bliss",
-    image: "/images/product-bloom-bliss.png",
-  },
-  "fresh-bloom": {
-    brand: "ELIX Collection",
-    name: "Fresh Bloom",
-    image: "/images/product-fresh-bloom.png",
-  },
-  "sweet-velvet": {
-    brand: "ELIX Collection",
-    name: "Sweet Velvet",
-    image: "/images/product-sweet-velvet.png",
-  },
-} as const;
-
-const RELATED_PRODUCTS: Omit<ProductDetailProps["related"][number], "key">[] = [
-  {
-    image: "/images/product-baccarat-rouge.png",
-    brand: "Maison Alhambra",
-    name: "Baccarat Rouge",
-    badge: "Oferta",
-    surface: "surface",
-    href: "/products/baccarat-rouge",
-  },
-  {
-    image: "/images/product-velvet-rose.png",
-    brand: "Swiss Arabian",
-    name: "Velvet Rose",
-    badge: "Nuevo",
-    surface: "surface",
-    href: "/products/velvet-rose",
-  },
-  {
-    image: "/images/product-noir-intense.png",
-    brand: "Ajmal",
-    name: "Noir Intense",
-    surface: "surface",
-    href: "/products/noir-intense",
-  },
-  {
-    image: "/images/product-bloom-bliss.png",
-    brand: "ELIX Collection",
-    name: "Bloom Bliss",
-    badge: "Más vendido",
-    surface: "surface-alt",
-    href: "/products/bloom-bliss",
-  },
-];
-
-const SIZES = ["30ml", "50ml", "100ml"];
-
-const BENEFITS = [
-  {
-    icon: "/icons/icon-shipping-muted.svg",
-    text: "Envío gratis en La Plata casco urbano",
-  },
-  {
-    icon: "/icons/icon-shield-check.svg",
-    text: "Productos importados 100% auténticos",
-  },
-  {
-    icon: "/icons/icon-chat-muted.svg",
-    text: "Cotización instantánea con servicio particular",
-  },
-];
-
-const OUD_ROYALE_NOTES = [
-  { label: "Salida", notes: ["Bergamota", "Cardamomo"] },
-  { label: "Corazón", notes: ["Oud", "Rosa de Damasco"] },
-  { label: "Fondo", notes: ["Almizcle", "Ámbar gris"] },
-];
-
-type DetailData = Omit<
-  ProductDetailProps,
-  "brand" | "name" | "image" | "related"
->;
-
-const DETAILS: Record<string, DetailData> = {
-  "oud-royale": {
-    sizes: SIZES,
-    defaultSize: "100ml",
-    benefits: BENEFITS,
-    olfactoryNotes: OUD_ROYALE_NOTES,
-    description:
-      "Fragancia árabe oriental y amaderada que combina la profundidad del oud con la frescura de la bergamota y el cardamomo, cerrando en un fondo cálido de almizcle y ámbar gris. Una estela intensa y elegante, pensada para las ocasiones donde querés dejar huella.",
-    characteristics: [
-      "Disponible en 30ml, 50ml y 100ml",
-      "Producto importado 100% auténtico",
-      "Envío gratis en La Plata casco urbano",
-      "Cotización instantánea con servicio particular",
-    ],
-  },
-};
-
-const DEFAULT_DETAIL: DetailData = {
-  sizes: SIZES,
-  defaultSize: "100ml",
-  benefits: BENEFITS,
-  olfactoryNotes: [],
-};
-
-export default async function ProductDetailPage({
-  params,
-}: ProductPageProps) {
+export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params;
-  const product = CATALOG[id as keyof typeof CATALOG] ?? CATALOG["oud-royale"];
-  const detail = DETAILS[id] ?? DEFAULT_DETAIL;
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      brand: true,
+      category: true,
+      images: { orderBy: { displayOrder: "asc" } },
+      notes: { include: { note: true } },
+      volumes: { include: { volume: true } },
+    },
+  }) as ProductFull | null;
+
+  if (!product) notFound();
+
+  const relatedProducts = await prisma.product.findMany({
+    where: { categoryId: product.categoryId, id: { not: id } },
+    include: {
+      brand: true,
+      images: { orderBy: { displayOrder: "asc" }, take: 1 },
+    },
+    take: 4,
+  }) as ProductWithBrandAndImages[];
+
+  const allImages = product.images.length > 0
+    ? product.images.map((img: { imageUrl: string }) => img.imageUrl)
+    : ["/images/product-oud-royale.png"];
+
+  const noteGroups: Record<string, string[]> = {};
+  for (const pn of product.notes) {
+    const label =
+      pn.type === "salida" ? "Salida" :
+      pn.type === "corazon" ? "Corazón" :
+      pn.type === "fondo" ? "Fondo" :
+      "Nota";
+    if (!noteGroups[label]) noteGroups[label] = [];
+    noteGroups[label].push(pn.note.name);
+  }
+  const olfactoryNotes = Object.entries(noteGroups).map(([label, notes]) => ({
+    label,
+    notes,
+  }));
+
+  const sizes = product.volumes.map((pv: { volume: { volume: number } }) => `${pv.volume.volume}ml`);
+
+  const benefits = [
+    { icon: "/icons/icon-shield-check.svg", text: "Productos importados 100% auténticos" },
+    { icon: "/icons/icon-chat-muted.svg", text: "Cotización instantánea con servicio particular" },
+  ];
 
   return (
-    <ProductDetail
-      brand={product.brand}
-      name={product.name}
-      image={product.image}
-      sizes={detail.sizes}
-      defaultSize={detail.defaultSize}
-      benefits={detail.benefits}
-      olfactoryNotes={detail.olfactoryNotes}
-      description={detail.description}
-      characteristics={detail.characteristics}
-      related={RELATED_PRODUCTS}
-    />
+    <>
+      <Navbar active={`/products?categoryId=${product.categoryId}`} withSearchBar={false} />
+      <ProductDetail
+        brand={product.brand.name}
+        name={product.name}
+        image={allImages[0]}
+        images={allImages}
+        sizes={sizes.length ? sizes : ["50ml", "100ml"]}
+        defaultSize={sizes.length ? sizes[sizes.length - 1] : "100ml"}
+        benefits={benefits}
+        olfactoryNotes={olfactoryNotes}
+        description={product.description ?? undefined}
+        characteristics={[
+          sizes.length ? `Disponible en ${sizes.join(", ")}` : "Disponible en 50ml y 100ml",
+          "Producto importado 100% auténtico",
+          "Cotización instantánea con servicio particular",
+        ]}
+        related={relatedProducts.map((p) => ({
+          image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
+          brand: p.brand.name,
+          name: p.name,
+          surface: "surface" as const,
+          href: `/products/${p.id}`,
+        }))}
+      />
+      <Footer />
+    </>
   );
 }

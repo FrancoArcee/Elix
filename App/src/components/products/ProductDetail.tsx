@@ -2,8 +2,6 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import ProductCard, {
   type ProductCardProps,
 } from "@/components/products/ProductCard";
@@ -22,6 +20,7 @@ export type ProductDetailProps = {
   brand: string;
   name: string;
   image: string;
+  images?: string[];
   sizes: string[];
   defaultSize?: string;
   benefits: ProductBenefit[];
@@ -39,6 +38,7 @@ export default function ProductDetail({
   brand,
   name,
   image,
+  images,
   sizes,
   defaultSize = sizes[0],
   benefits,
@@ -51,11 +51,12 @@ export default function ProductDetail({
   const [selectedSize, setSelectedSize] = useState(defaultSize);
   const [activeTab, setActiveTab] = useState<Tab>("Notas Olfativas");
 
-  const galleryImages = Array.from({ length: 4 }, () => image);
+  const galleryImages = images?.length
+    ? images
+    : Array.from({ length: 4 }, () => image);
 
   return (
     <>
-      <Navbar active="/products" withSearchBar={false} />
       <main className="bg-background">
         <div className="mx-auto w-full max-w-[1280px] px-6 py-12">
           <div className="grid grid-cols-1 gap-10 pt-8 lg:grid-cols-2">
@@ -70,7 +71,7 @@ export default function ProductDetail({
                   className="object-cover"
                 />
               </div>
-              <div className="grid grid-cols-4 gap-2 pt-3">
+              <div className={`grid gap-2 pt-3 ${galleryImages.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
                 {galleryImages.map((img, i) => (
                   <button
                     key={i}
@@ -260,7 +261,6 @@ export default function ProductDetail({
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

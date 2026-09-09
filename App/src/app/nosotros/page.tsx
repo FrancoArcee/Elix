@@ -139,7 +139,7 @@ export default async function NosotrosPage() {
             ¿Encontraste algo que te gustó?
           </p>
           <Link
-            href="/products"
+            href="/#categorias"
             className="mx-auto mt-6 flex h-[43px] w-full max-w-[159px] items-center justify-center bg-ink"
           >
             <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background">

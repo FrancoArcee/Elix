@@ -35,10 +35,6 @@ const FILTER_GROUPS: FilterGroup[] = [
       "Amaderado Especiado",
     ],
   },
-  {
-    title: "Disponibilidad",
-    options: ["Con stock"],
-  },
 ];
 
 type FilterPanelProps = {
