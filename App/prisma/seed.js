@@ -189,6 +189,220 @@ async function seedCategories() {
   console.log("Categories seeded.")
 }
 
+async function seedBrands() {
+  const count = await prisma.brand.count()
+  if (count > 0) {
+    console.log("Brands already exist, skipping.")
+    return
+  }
+
+  await prisma.brand.createMany({
+    data: [
+      { name: "Lattafa" },
+      { name: "Maison Alhambra" },
+      { name: "Swiss Arabian" },
+      { name: "Ajmal" },
+      { name: "Al Haramain" },
+      { name: "Rasasi" },
+      { name: "ELIX Collection" },
+    ],
+  })
+  console.log("Brands seeded.")
+}
+
+async function seedProducts() {
+  const count = await prisma.product.count()
+  if (count > 0) {
+    console.log("Products already exist, skipping.")
+    return
+  }
+
+  const brands = await prisma.brand.findMany()
+  const categories = await prisma.category.findMany()
+  if (brands.length === 0 || categories.length === 0) {
+    console.log("No brands or categories found, skipping products seed.")
+    return
+  }
+
+  const brandMap = Object.fromEntries(brands.map((b) => [b.name, b.id]))
+  const catMap = Object.fromEntries(categories.map((c) => [c.name, c.id]))
+
+  const products = [
+    {
+      name: "Oud Royale",
+      brandName: "Lattafa",
+      categoryName: "Perfumes Árabes",
+      targetAudience: "unisex",
+      price: 8900,
+      fraganceFamily: "Amaderado Oriental",
+      description: "Fragancia árabe oriental y amaderada que combina la profundidad del oud con la frescura de la bergamota y el cardamomo, cerrando en un fondo cálido de almizcle y ámbar gris.",
+      presentation: "30ml, 50ml, 100ml",
+      concentration: "edp",
+      image: "/images/product-oud-royale.png",
+      badge: "Más vendido",
+      notes: [
+        { type: "salida", noteNames: ["Bergamota", "Cardamomo"] },
+        { type: "corazon", noteNames: ["Oud", "Rosa de Damasco"] },
+        { type: "fondo", noteNames: ["Almizcle", "Ámbar gris"] },
+      ],
+    },
+    {
+      name: "Baccarat Rouge",
+      brandName: "Maison Alhambra",
+      categoryName: "Perfumes Árabes",
+      targetAudience: "unisex",
+      price: 12500,
+      fraganceFamily: "Oriental Ambarado",
+      description: "Inspirada en las fragancias más exclusivas de la perfumería internacional. Notas de azafrán, almarras y cedro se funden con un fondo ambarado de sensualidad envolvente.",
+      presentation: "50ml, 100ml",
+      concentration: "edp",
+      image: "/images/product-baccarat-rouge.png",
+      badge: "Oferta",
+      notes: [],
+    },
+    {
+      name: "Velvet Rose",
+      brandName: "Swiss Arabian",
+      categoryName: "Perfumes Árabes",
+      targetAudience: "femenino",
+      price: 7800,
+      fraganceFamily: "Floral",
+      description: "Un ramo de rosas envuelto en especias orientales. Rosa de Damasco, peonía y pimienta negra crean una fragancia femenina y envolvente.",
+      presentation: "50ml, 100ml",
+      concentration: "edp",
+      image: "/images/product-velvet-rose.png",
+      badge: "Nuevo",
+      notes: [],
+    },
+    {
+      name: "Noir Intense",
+      brandName: "Ajmal",
+      categoryName: "Perfumes Árabes",
+      targetAudience: "masculino",
+      price: 9500,
+      fraganceFamily: "Amaderado Especiado",
+      description: "Fragancia masculina intensa y misteriosa. Oud, cuero y especias se entrelazan para crear una estela de poder y elegancia.",
+      presentation: "50ml, 100ml",
+      concentration: "edp",
+      image: "/images/product-noir-intense.png",
+      notes: [],
+    },
+    {
+      name: "Amber Luxe",
+      brandName: "Lattafa",
+      categoryName: "Perfumes Árabes",
+      targetAudience: "unisex",
+      price: 6500,
+      fraganceFamily: "Oriental Ambarado",
+      description: "Ámbar cálido y resinas orientales. Una fragancia reconfortante y adictiva, perfecta para la temporada fría.",
+      presentation: "50ml, 100ml",
+      concentration: "edt",
+      image: "/images/product-amber-luxe.png",
+      badge: "Oferta",
+      notes: [],
+    },
+    {
+      name: "Bloom Bliss",
+      brandName: "ELIX Collection",
+      categoryName: "Body Splash",
+      targetAudience: "femenino",
+      price: 3500,
+      fraganceFamily: "Floral Frutal",
+      description: "Frescura y dulzura en cada spray. Notas de peonía, melocotón y almizcle suave para el día a día.",
+      presentation: "250ml",
+      image: "/images/product-bloom-bliss.png",
+      badge: "Más vendido",
+      notes: [],
+    },
+    {
+      name: "Fresh Bloom",
+      brandName: "ELIX Collection",
+      categoryName: "Body Splash",
+      targetAudience: "femenino",
+      price: 3500,
+      fraganceFamily: "Floral",
+      description: "Frescura floral con toques de cítricos y un fondo suave de almizcle. Ideal para el uso diario.",
+      presentation: "250ml",
+      image: "/images/product-fresh-bloom.png",
+      notes: [],
+    },
+    {
+      name: "Sweet Velvet",
+      brandName: "ELIX Collection",
+      categoryName: "Body Splash",
+      targetAudience: "femenino",
+      price: 3500,
+      fraganceFamily: "Floral Frutal",
+      description: "Dulzura envolvente con notas de vainilla, fresa y flores blancas. Un body splash irresistible.",
+      presentation: "250ml",
+      image: "/images/product-sweet-velvet.png",
+      badge: "Nuevo",
+      notes: [],
+    },
+  ]
+
+  for (const p of products) {
+    const product = await prisma.product.create({
+      data: {
+        name: p.name,
+        brandId: brandMap[p.brandName],
+        categoryId: catMap[p.categoryName],
+        targetAudience: p.targetAudience,
+        price: p.price,
+        fraganceFamily: p.fraganceFamily ?? null,
+        description: p.description ?? null,
+        presentation: p.presentation ?? null,
+        concentration: p.concentration ?? null,
+        images: {
+          create: { imageUrl: p.image, displayOrder: 0 },
+        },
+      },
+    })
+
+    if (p.notes) {
+      for (const group of p.notes) {
+        for (const noteName of group.noteNames) {
+          let note = await prisma.note.findFirst({ where: { name: noteName } })
+          if (!note) {
+            note = await prisma.note.create({ data: { name: noteName } })
+          }
+          await prisma.productNote.create({
+            data: {
+              productId: product.id,
+              noteId: note.id,
+              type: group.type,
+            },
+          })
+        }
+      }
+    }
+  }
+
+  console.log(`Products seeded: ${products.length}`)
+}
+
+async function seedFeaturedProducts() {
+  const count = await prisma.featuredProduct.count()
+  if (count > 0) {
+    console.log("Featured products already exist, skipping.")
+    return
+  }
+
+  const products = await prisma.product.findMany({ take: 6, orderBy: { name: "asc" } })
+  if (products.length === 0) {
+    console.log("No products found, skipping featured products seed.")
+    return
+  }
+
+  await prisma.featuredProduct.createMany({
+    data: products.map((p, i) => ({
+      productId: p.id,
+      displayOrder: i,
+    })),
+  })
+  console.log(`Featured products seeded: ${products.length}`)
+}
+
 async function seedOffers() {
   const count = await prisma.offer.count()
   if (count > 0) {
@@ -259,6 +473,9 @@ async function main() {
   await seedContacts()
   await seedPaymentMethods()
   await seedCategories()
+  await seedBrands()
+  await seedProducts()
+  await seedFeaturedProducts()
   await seedOffers()
 }
 
