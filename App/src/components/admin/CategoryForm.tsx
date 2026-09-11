@@ -83,6 +83,7 @@ export default function CategoryForm({
       <div className="pt-7">
         <ImageDropzone
           label="Imagen"
+          folder="categories"
           value={values.imageUrl}
           onChange={(imageUrl) =>
             setValues((current) => ({ ...current, imageUrl: imageUrl ?? "" }))

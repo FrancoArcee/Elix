@@ -132,6 +132,7 @@ export default function AdminInformationPage() {
                   <div className="pt-5">
                     <ImageDropzone
                       label="Imagen de fondo"
+                      folder="hero"
                       value={heroForm.imageUrl ?? undefined}
                       onChange={(url) =>
                         setHeroForm((prev) => ({ ...prev, imageUrl: url ?? "" }))

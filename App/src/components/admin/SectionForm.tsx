@@ -82,6 +82,7 @@ export default function SectionForm({
         <ImageDropzone
           label="Imagen"
           optional
+          folder="info"
           value={values.imageUrl}
           onChange={(imageUrl) =>
             setValues((current) => ({ ...current, imageUrl: imageUrl ?? "" }))
