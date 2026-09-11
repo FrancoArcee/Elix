@@ -6,7 +6,7 @@ import {
   MAX_IMAGE_SIZE_MB,
   validateImageFile,
 } from "@/utils/image";
-import { uploadImage, deleteImageByKey } from "@/services/products";
+import { uploadImage, deleteImageByKey } from "@/services/upload";
 
 type ProductImagesFieldProps = {
   images: string[];
@@ -48,7 +48,7 @@ export default function ProductImagesField({
     setUploading(true);
     setError(null);
     try {
-      const uploaded = await Promise.all(list.map((file) => uploadImage(file)));
+      const uploaded = await Promise.all(list.map((file) => uploadImage(file, 'products')));
       onChange([...images, ...uploaded.map((u) => u.url)]);
     } catch (err) {
       console.error("Error uploading image:", err);
@@ -62,7 +62,7 @@ export default function ProductImagesField({
     const url = images[index];
     const next = images.filter((_, i) => i !== index);
     onChange(next);
-    if (url.includes("r2.cloudflarestorage.com")) {
+    if (url.includes("r2.dev")) {
       const key = url.split("/").slice(-2).join("/");
       try { await deleteImageByKey(key); } catch {}
     }
@@ -126,25 +126,16 @@ export default function ProductImagesField({
                 unoptimized
                 className="object-cover"
               />
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent p-1.5">
-                <span className="text-[8px] uppercase leading-3 tracking-[0.6px] text-white">
-                  {index === 0 ? "Principal" : `${index + 1}`}
-                </span>
-                <button
+              <button
                   type="button"
                   aria-label={`Eliminar imagen ${index + 1}`}
                   onClick={() => void handleRemove(index)}
-                  className="flex size-4 items-center justify-center text-white transition-opacity hover:opacity-70"
+                  className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-black/60 text-white transition-opacity hover:bg-black/80"
                 >
-                  <Image
-                    src="/icons/icon-trash.svg"
-                    alt=""
-                    width={9}
-                    height={9}
-                    className="size-[9px]"
-                  />
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
                 </button>
-              </div>
             </div>
           ))}
         </div>

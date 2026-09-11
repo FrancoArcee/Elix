@@ -34,7 +34,7 @@ export async function PUT(
     const newUrls = new Set(images.map((img: { url: string }) => img.url))
 
     for (const oldUrl of oldUrls) {
-      if (!newUrls.has(oldUrl) && oldUrl.includes('r2.cloudflarestorage.com')) {
+      if (!newUrls.has(oldUrl) && oldUrl.includes('r2.dev')) {
         const key = oldUrl.split('/').slice(-2).join('/')
         try { await deleteImage(key) } catch {}
       }
@@ -119,7 +119,7 @@ export async function DELETE(
   if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
   for (const img of existing.images) {
-    if (img.imageUrl.includes('r2.cloudflarestorage.com')) {
+    if (img.imageUrl.includes('r2.dev')) {
       const key = img.imageUrl.split('/').slice(-2).join('/')
       try { await deleteImage(key) } catch {}
     }

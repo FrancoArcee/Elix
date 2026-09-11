@@ -14,7 +14,8 @@ export async function POST(request: Request) {
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
-  const key = `uploads/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+  const folder = (formData.get('folder') as string) || 'uploads'
+  const key = `${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
 
   try {
     const url = await uploadImage(key, buffer, file.type || 'image/jpeg')
