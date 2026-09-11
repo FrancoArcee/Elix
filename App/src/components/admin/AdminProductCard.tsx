@@ -6,8 +6,10 @@ type AdminProductCardProps = {
   brand: string;
   name: string;
   badge?: string;
-  outOfStock?: boolean;
   href?: string;
+  isFeatured?: boolean;
+  onToggleFeatured?: () => void;
+  featuredDisabled?: boolean;
 };
 
 function CardContent({
@@ -15,8 +17,7 @@ function CardContent({
   brand,
   name,
   badge,
-  outOfStock,
-}: Omit<AdminProductCardProps, "href">) {
+}: Omit<AdminProductCardProps, "href" | "isFeatured" | "onToggleFeatured" | "featuredDisabled">) {
   return (
     <>
       <Image
@@ -27,18 +28,11 @@ function CardContent({
         className="object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      {(badge || outOfStock) && (
+      {badge && (
         <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
-          {badge && (
-            <span className="bg-background px-1.5 py-0.5 text-[8px] uppercase leading-3 tracking-[0.96px] text-ink">
-              {badge}
-            </span>
-          )}
-          {outOfStock && (
-            <span className="bg-black/60 px-1.5 py-0.5 text-[8px] uppercase leading-3 tracking-[0.96px] text-white">
-              Sin stock
-            </span>
-          )}
+          <span className="bg-background px-1.5 py-0.5 text-[8px] uppercase leading-3 tracking-[0.96px] text-ink">
+            {badge}
+          </span>
         </div>
       )}
       <div className="absolute inset-x-0 bottom-0 p-3">
@@ -58,21 +52,49 @@ export default function AdminProductCard({
   brand,
   name,
   badge,
-  outOfStock = false,
   href,
+  isFeatured,
+  onToggleFeatured,
+  featuredDisabled,
 }: AdminProductCardProps) {
+  const starButton = onToggleFeatured ? (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onToggleFeatured();
+      }}
+      disabled={featuredDisabled && !isFeatured}
+      className="absolute right-2.5 top-2.5 z-10 flex size-[28px] items-center justify-center bg-black/40 transition-colors hover:bg-black/60 disabled:opacity-30"
+      aria-label={isFeatured ? "Quitar de destacados" : "Agregar a destacados"}
+      title={isFeatured ? "Quitar de destacados" : featuredDisabled ? "Máximo 6 destacados" : "Agregar a destacados"}
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill={isFeatured ? "#facc15" : "none"}
+        stroke={isFeatured ? "#facc15" : "white"}
+        strokeWidth="2"
+      >
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    </button>
+  ) : null;
+
   if (href) {
     return (
       <Link
         href={href}
         className="relative block aspect-[3/4] w-full overflow-hidden bg-surface transition-opacity hover:opacity-90"
       >
+        {starButton}
         <CardContent
           image={image}
           brand={brand}
           name={name}
           badge={badge}
-          outOfStock={outOfStock}
         />
       </Link>
     );
@@ -80,12 +102,12 @@ export default function AdminProductCard({
 
   return (
     <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface">
+      {starButton}
       <CardContent
         image={image}
         brand={brand}
         name={name}
         badge={badge}
-        outOfStock={outOfStock}
       />
     </div>
   );

@@ -4,12 +4,16 @@ type PromoSectionProps = {
   offer: {
     discount: number;
     categories: string[];
+    categoryId?: string | null;
     description: string;
   };
 };
 
 export default function PromoSection({ offer }: PromoSectionProps) {
   const isAllCategories = offer.categories.includes("Toda la colección");
+  const href = isAllCategories || !offer.categoryId
+    ? "#categorias"
+    : `/products?categoryId=${offer.categoryId}`;
 
   return (
     <section className="bg-ink px-4 py-20 md:px-6 md:py-24">
@@ -38,7 +42,7 @@ export default function PromoSection({ offer }: PromoSectionProps) {
         </p>
 
         <Link
-          href={isAllCategories ? "/products" : `/products?type=${encodeURIComponent(offer.categories[0])}`}
+          href={href}
           className="mt-11 inline-flex border border-background/30 px-8 py-3.5 text-[10px] font-medium uppercase tracking-[1.8px] text-background transition-colors hover:border-background/60"
         >
           Ver colección

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { intToHex } from "@/lib/colors";
 
 export default async function Categories() {
   const categories = await prisma.category.findMany({
@@ -11,7 +10,7 @@ export default async function Categories() {
   if (categories.length === 0) return null;
 
   return (
-    <section className="mx-auto w-full max-w-[1280px] px-4 py-16 md:px-6 md:py-24">
+    <section id="categorias" className="mx-auto w-full max-w-[1280px] px-4 py-16 md:px-6 md:py-24">
       <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
         Explorar por
       </p>
@@ -20,10 +19,10 @@ export default async function Categories() {
       </h2>
 
       <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-        {categories.map((category) => (
+        {categories.map((category: { id: string; name: string; description: string; urlImage: string | null }) => (
           <Link
             key={category.id}
-            href="/products"
+            href={`/products?categoryId=${category.id}`}
             className="group relative block aspect-[3/4] overflow-hidden bg-surface"
           >
             {category.urlImage && (

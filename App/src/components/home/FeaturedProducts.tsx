@@ -1,73 +1,49 @@
-import Image from "next/image";
-import Link from "next/link";
-import ProductCard, { type ProductCardProps } from "@/components/products/ProductCard";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import ProductCard from "@/components/products/ProductCard";
 
-const FEATURED_PRODUCTS: Omit<ProductCardProps, "key">[] = [
-  {
-    image: "/images/product-oud-royale.png",
-    brand: "Lattafa",
-    name: "Oud Royale",
-    badge: "Más vendido",
-    surface: "surface",
-    href: "/products/oud-royale",
-  },
-  {
-    image: "/images/product-velvet-rose.png",
-    brand: "Swiss Arabian",
-    name: "Velvet Rose",
-    badge: "Nuevo",
-    surface: "surface",
-    href: "/products/velvet-rose",
-  },
-  {
-    image: "/images/product-bloom-bliss.png",
-    brand: "ELIX Collection",
-    name: "Bloom Bliss",
-    badge: "Más vendido",
-    surface: "surface-alt",
-    href: "/products/bloom-bliss",
-  },
-  {
-    image: "/images/product-fresh-bloom.png",
-    brand: "ELIX Collection",
-    name: "Fresh Bloom",
-    surface: "surface-alt",
-    href: "/products/fresh-bloom",
-  },
-];
+type FeaturedWithProduct = Prisma.FeaturedProductGetPayload<{
+  include: { product: { include: { brand: true; images: true } } }
+}>;
 
-export default function FeaturedProducts() {
+export default async function FeaturedProducts() {
+  const featured = await prisma.featuredProduct.findMany({
+    orderBy: { displayOrder: "asc" },
+    include: {
+      product: {
+        include: {
+          brand: true,
+          images: { orderBy: { displayOrder: "asc" }, take: 1 },
+        },
+      },
+    },
+    take: 6,
+  }) as FeaturedWithProduct[];
+
+  const products = featured.map((fp) => fp.product);
+
+  if (products.length === 0) return null;
+
   return (
     <section id="destacados" className="mx-auto w-full max-w-[1280px] px-4 py-16 md:px-6 md:py-24">
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
-            Los favoritos
-          </p>
-          <h2 className="mt-3 font-serif text-[30px] leading-9 text-ink md:text-[36px] md:leading-10">
-            Destacados
-          </h2>
-        </div>
-        <Link
-          href="/products"
-          className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[1.8px] text-muted transition-colors hover:text-ink"
-        >
-          Ver todos
-          <Image
-            src="/icons/icon-arrow.svg"
-            alt=""
-            width={11}
-            height={11}
-            className="size-[11px]"
-          />
-        </Link>
+      <div>
+        <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-muted">
+          Los favoritos
+        </p>
+        <h2 className="mt-3 font-serif text-[30px] leading-9 text-ink md:text-[36px] md:leading-10">
+          Destacados
+        </h2>
       </div>
 
       <div className="mt-10 grid grid-cols-2 gap-4 md:mt-12 md:gap-6 sm:grid-cols-3">
-        {FEATURED_PRODUCTS.map((product) => (
+        {products.map((product) => (
           <ProductCard
-            key={product.name}
-            {...product}
+            key={product.id}
+            image={product.images[0]?.imageUrl ?? "/images/product-oud-royale.png"}
+            brand={product.brand.name}
+            name={product.name}
+            surface="surface"
+            href={`/products/${product.id}`}
             imageClassName="aspect-[3/4] md:h-[362px]"
           />
         ))}

@@ -39,7 +39,7 @@ export default async function Hero() {
 
         <div className="mt-9 flex w-full flex-col gap-3 md:mt-10 md:w-auto md:flex-row">
           <Link
-            href="/products"
+            href="#categorias"
             className="w-full bg-background px-8 py-4 text-center text-[10px] font-medium uppercase tracking-[1.8px] text-ink transition-opacity hover:opacity-90 md:w-auto md:bg-ink md:py-3.5 md:text-background"
           >
             Explorar colección

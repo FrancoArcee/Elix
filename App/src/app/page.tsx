@@ -30,6 +30,7 @@ async function getActiveOffer() {
     discount: Number(offer.discount),
     paymentMethod: offer.offerPaymentMethods[0]?.paymentMethod.method ?? "",
     categories: isAllCategories ? ["Toda la colección"] : categoryNames,
+    categoryId: !isAllCategories && offer.offerCategories[0] ? offer.offerCategories[0].category.id : null,
     description: offer.description ?? "",
   }
 }

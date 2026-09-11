@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import {
   MAX_IMAGE_SIZE_MB,
-  readImageAsDataUrl,
   validateImageFile,
 } from "@/utils/image";
+import { uploadImage, deleteImageByKey } from "@/services/upload";
 
 type ProductImagesFieldProps = {
   images: string[];
@@ -17,7 +17,7 @@ const FORMAT_HINT = `JPG, PNG o WebP · hasta ${MAX_IMAGE_SIZE_MB} MB`;
 const ERROR_MESSAGES = {
   format: "Alguno de los archivos tiene un formato no válido. Usá JPG, PNG o WebP.",
   size: `Alguno de los archivos supera el peso máximo de ${MAX_IMAGE_SIZE_MB} MB.`,
-  read: "No se pudieron cargar las imágenes. Intentá con otros archivos.",
+  upload: "No se pudieron subir las imágenes. Intentá con otros archivos.",
 };
 
 export default function ProductImagesField({
@@ -28,14 +28,15 @@ export default function ProductImagesField({
   const [isDragging, setIsDragging] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const openPicker = () => inputRef.current?.click();
 
   const addFiles = async (files: FileList | File[] | null) => {
     if (!files || !files.length) return;
+    const list = Array.from(files);
     if (inputRef.current) inputRef.current.value = "";
 
-    const list = Array.from(files);
     for (const file of list) {
       const validationError = validateImageFile(file);
       if (validationError) {
@@ -44,18 +45,27 @@ export default function ProductImagesField({
       }
     }
 
+    setUploading(true);
+    setError(null);
     try {
-      const dataUrls = await Promise.all(list.map(readImageAsDataUrl));
-      setError(null);
-      onChange([...images, ...dataUrls]);
-    } catch {
-      setError(ERROR_MESSAGES.read);
+      const uploaded = await Promise.all(list.map((file) => uploadImage(file, 'products')));
+      onChange([...images, ...uploaded.map((u) => u.url)]);
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      setError(err instanceof Error ? err.message : ERROR_MESSAGES.upload);
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleRemove = (index: number) => {
+  const handleRemove = async (index: number) => {
+    const url = images[index];
     const next = images.filter((_, i) => i !== index);
     onChange(next);
+    if (url.includes("r2.dev")) {
+      const key = url.split("/").slice(-2).join("/");
+      try { await deleteImageByKey(key); } catch {}
+    }
   };
 
   const handleDrop = (targetIndex: number) => {
@@ -116,25 +126,16 @@ export default function ProductImagesField({
                 unoptimized
                 className="object-cover"
               />
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent p-1.5">
-                <span className="text-[8px] uppercase leading-3 tracking-[0.6px] text-white">
-                  {index === 0 ? "Principal" : `${index + 1}`}
-                </span>
-                <button
+              <button
                   type="button"
                   aria-label={`Eliminar imagen ${index + 1}`}
-                  onClick={() => handleRemove(index)}
-                  className="flex size-4 items-center justify-center text-white transition-opacity hover:opacity-70"
+                  onClick={() => void handleRemove(index)}
+                  className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-black/60 text-white transition-opacity hover:bg-black/80"
                 >
-                  <Image
-                    src="/icons/icon-trash.svg"
-                    alt=""
-                    width={9}
-                    height={9}
-                    className="size-[9px]"
-                  />
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
                 </button>
-              </div>
             </div>
           ))}
         </div>
@@ -143,6 +144,7 @@ export default function ProductImagesField({
       <button
         type="button"
         onClick={openPicker}
+        disabled={uploading}
         onDragEnter={(event) => {
           event.preventDefault();
           setIsDragging(true);
@@ -162,7 +164,7 @@ export default function ProductImagesField({
         }}
         className={`mt-3 flex w-full flex-col items-center gap-2 border border-dashed px-4 py-6 text-center outline-none transition-colors focus-visible:border-ink/60 ${
           isDragging ? "border-ink/60 bg-surface" : "border-ink/20 hover:border-ink/40"
-        }`}
+        } ${uploading ? "opacity-50" : ""}`}
       >
         <Image
           src="/icons/icon-upload.svg"
@@ -172,10 +174,16 @@ export default function ProductImagesField({
           className="size-4 opacity-80"
         />
         <span className="text-[12px] leading-[18px] text-muted">
-          Arrastrá una o varias imágenes o{" "}
-          <span className="font-medium text-ink underline underline-offset-2">
-            seleccionalas
-          </span>
+          {uploading ? (
+            "Subiendo..."
+          ) : (
+            <>
+              Arrastrá una o varias imágenes o{" "}
+              <span className="font-medium text-ink underline underline-offset-2">
+                seleccionalas
+              </span>
+            </>
+          )}
         </span>
         <span className="text-[8px] uppercase leading-3 tracking-[1.2px] text-muted">
           {FORMAT_HINT}
