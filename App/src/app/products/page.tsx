@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductListing from "@/components/products/ProductListing";
+import { intToHex } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <ProductListing
         title={category.name}
         productCount={products.length}
+        backgroundColor={intToHex(category.color)}
         products={products.map((p) => ({
           image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
           brand: p.brand.name,
