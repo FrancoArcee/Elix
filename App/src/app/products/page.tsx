@@ -9,7 +9,7 @@ import { intToHex } from "@/lib/colors";
 export const dynamic = "force-dynamic";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
-  include: { brand: true; category: true; images: true }
+  include: { brand: true; category: true; images: true };
 }>;
 
 type ProductsPageProps = {
@@ -31,7 +31,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     redirect("/");
   }
 
-  const products = await prisma.product.findMany({
+  const products = (await prisma.product.findMany({
     where: { categoryId: category.id },
     include: {
       brand: true,
@@ -39,7 +39,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       images: { orderBy: { displayOrder: "asc" }, take: 1 },
     },
     orderBy: { name: "asc" },
-  }) as ProductWithRelations[];
+  })) as ProductWithRelations[];
 
   return (
     <>
@@ -52,9 +52,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         productCount={products.length}
         backgroundColor={intToHex(category.color)}
         products={products.map((p) => ({
-          image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
-          brand: p.brand.name,
+          id: p.id,
           name: p.name,
+          brand: p.brand.name,
+          targetAudience: p.targetAudience,
+          fraganceFamily: p.fraganceFamily,
+          concentration: p.concentration,
+          price: p.price ? Number(p.price) : null,
+          image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
           surface: "surface" as const,
           href: `/products/${p.id}`,
         }))}
