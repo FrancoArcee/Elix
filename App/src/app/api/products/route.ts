@@ -37,6 +37,7 @@ export async function GET(request: Request) {
       concentration: p.concentration,
       targetAudience: p.targetAudience,
       presentation: p.presentation,
+      badge: p.badge,
       description: p.description,
     }))
   )

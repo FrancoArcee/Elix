@@ -58,6 +58,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           targetAudience: p.targetAudience,
           fraganceFamily: p.fraganceFamily,
           concentration: p.concentration,
+          badge: p.badge ?? undefined,
           price: p.price ? Number(p.price) : null,
           image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
           surface: "surface" as const,

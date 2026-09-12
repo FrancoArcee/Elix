@@ -137,6 +137,7 @@ type AdminState = {
     fraganceFamily?: string;
     presentation?: string;
     concentration?: string;
+    badge?: string;
     images?: { url: string }[];
     notes?: { noteName: string; type: string }[];
   }) => Promise<void>;
@@ -150,6 +151,7 @@ type AdminState = {
     fraganceFamily?: string;
     presentation?: string;
     concentration?: string;
+    badge?: string;
     images?: { url: string }[];
     notes?: { noteName: string; type: string }[];
   }) => Promise<void>;
@@ -439,6 +441,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           concentration: p.concentration ?? undefined,
           orientation: p.targetAudience === "masculino" ? "Masculino" : p.targetAudience === "femenino" ? "Femenino" : "Unisex",
           presentation: p.presentation ?? undefined,
+          badge: p.badge ?? undefined,
           description: p.description ?? undefined,
         })),
       });
@@ -472,6 +475,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             concentration: created.concentration ?? undefined,
             orientation: created.targetAudience === "masculino" ? "Masculino" : created.targetAudience === "femenino" ? "Femenino" : "Unisex",
             presentation: created.presentation ?? undefined,
+            badge: created.badge ?? undefined,
             description: created.description ?? undefined,
           },
           ...state.products,
@@ -502,6 +506,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 concentration: updated.concentration ?? undefined,
                 orientation: updated.targetAudience === "masculino" ? "Masculino" : updated.targetAudience === "femenino" ? "Femenino" : "Unisex",
                 presentation: updated.presentation ?? undefined,
+                badge: updated.badge ?? undefined,
                 description: updated.description ?? undefined,
               }
             : product,

@@ -15,7 +15,7 @@ export async function PUT(
   if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
   const body = await request.json()
-  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, images, notes } = body
+  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, badge, images, notes } = body
 
   if (!name || !brandId || !categoryId || !targetAudience) {
     return NextResponse.json({ error: 'name, brandId, categoryId and targetAudience are required' }, { status: 400 })
@@ -55,6 +55,7 @@ export async function PUT(
       fraganceFamily: fraganceFamily || null,
       presentation: presentation || null,
       concentration: concentration || null,
+      badge: badge || null,
       ...(images && Array.isArray(images) && {
         images: {
           create: images.map((img: { url: string }, i: number) => ({
@@ -103,6 +104,7 @@ export async function PUT(
     concentration: product.concentration,
     targetAudience: product.targetAudience,
     presentation: product.presentation,
+    badge: product.badge,
     description: product.description,
   })
 }

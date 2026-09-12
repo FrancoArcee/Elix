@@ -70,6 +70,7 @@ model Product {
   fraganceFamily String?        @map("fragance_family")
   presentation   String?
   concentration  Concentration?
+  badge          String?
 
   brandId String @map("brand_id")
   brand   Brand  @relation(fields: [brandId], references: [id])

@@ -19,6 +19,7 @@ export type OlfactoryGroup = {
 export type ProductDetailProps = {
   brand: string;
   name: string;
+  concentration?: string | null;
   image: string;
   images?: string[];
   sizes: string[];
@@ -30,6 +31,13 @@ export type ProductDetailProps = {
   related: Omit<ProductCardProps, "key">[];
 };
 
+const CONCENTRATION_MAP: Record<string, string> = {
+  edt: "Eau de Toilette",
+  edp: "Eau de Parfum",
+  edc: "Eau de Cologne",
+  extrait: "Extrait de Parfum",
+};
+
 const TABS = ["Notas Olfativas", "Descripción", "Características"] as const;
 
 type Tab = (typeof TABS)[number];
@@ -37,6 +45,7 @@ type Tab = (typeof TABS)[number];
 export default function ProductDetail({
   brand,
   name,
+  concentration,
   image,
   images,
   sizes,
@@ -97,9 +106,19 @@ export default function ProductDetail({
             </div>
 
             <div className="flex flex-col">
-              <p className="pb-3 text-[9px] uppercase leading-[13.5px] tracking-[2.7px] text-muted">
-                {brand}
-              </p>
+              <div className="flex flex-wrap items-center gap-2 pb-3">
+                <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.7px] text-muted">
+                  {brand}
+                </p>
+                {concentration && (
+                  <>
+                    <span className="text-[10px] text-muted/40">·</span>
+                    <span className="border border-ink/15 bg-ink/[0.03] px-2 py-0.5 text-[8px] font-medium uppercase tracking-[1.4px] text-muted">
+                      {CONCENTRATION_MAP[concentration] ?? concentration.toUpperCase()}
+                    </span>
+                  </>
+                )}
+              </div>
               <h1 className="pb-10 font-serif text-[34px] font-bold leading-[42px] text-ink md:text-[48px] md:leading-[60px]">
                 {name}
               </h1>

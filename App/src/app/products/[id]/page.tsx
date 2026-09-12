@@ -76,12 +76,20 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     { icon: "/icons/icon-chat-muted.svg", text: "Cotización instantánea con servicio particular" },
   ];
 
+  const concentrationLabels: Record<string, string> = {
+    edt: "Eau de Toilette (EDT)",
+    edp: "Eau de Parfum (EDP)",
+    edc: "Eau de Cologne (EDC)",
+    extrait: "Extrait de Parfum",
+  };
+
   return (
     <>
       <Navbar active={`/products?categoryId=${product.categoryId}`} withSearchBar={false} />
       <ProductDetail
         brand={product.brand.name}
         name={product.name}
+        concentration={product.concentration}
         image={allImages[0]}
         images={allImages}
         sizes={sizes.length ? sizes : ["50ml", "100ml"]}
@@ -90,6 +98,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         olfactoryNotes={olfactoryNotes}
         description={product.description ?? undefined}
         characteristics={[
+          ...(product.concentration && concentrationLabels[product.concentration]
+            ? [`Concentración: ${concentrationLabels[product.concentration]}`]
+            : []),
           sizes.length ? `Disponible en ${sizes.join(", ")}` : "Disponible en 50ml y 100ml",
           "Producto importado 100% auténtico",
           "Cotización instantánea con servicio particular",
@@ -98,6 +109,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
           brand: p.brand.name,
           name: p.name,
+          badge: p.badge ?? undefined,
           surface: "surface" as const,
           href: `/products/${p.id}`,
         }))}

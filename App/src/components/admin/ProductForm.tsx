@@ -13,6 +13,7 @@ export type ProductFormValues = {
   brandId: string;
   categoryId: string;
   targetAudience: string;
+  concentration: string;
   olfactoryFamily: string;
   price: string;
   originalPrice: string;
@@ -53,11 +54,19 @@ const ORIENTATION_REVERSE: Record<string, ProductOrientation> = {
   femenino: "Femenino",
 };
 
+const CONCENTRATION_OPTIONS: { label: string; value: string }[] = [
+  { label: "EDT", value: "edt" },
+  { label: "EDP", value: "edp" },
+  { label: "EDC", value: "edc" },
+  { label: "Extrait", value: "extrait" },
+];
+
 const EMPTY_VALUES: ProductFormValues = {
   name: "",
   brandId: "",
   categoryId: "",
   targetAudience: "unisex",
+  concentration: "",
   olfactoryFamily: "",
   price: "",
   originalPrice: "",
@@ -193,6 +202,33 @@ export default function ProductForm({
                 setValues((current) => ({
                   ...current,
                   targetAudience: ORIENTATION_MAP[orientation],
+                }))
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-6">
+        <div className="flex items-center justify-between pb-2">
+          <span className="text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
+            Concentración
+          </span>
+          <span className="text-[9px] font-normal uppercase tracking-[1.35px] text-muted">
+            Opcional
+          </span>
+        </div>
+        <div className="flex flex-wrap items-start gap-2">
+          {CONCENTRATION_OPTIONS.map((c) => (
+            <FilterChip
+              key={c.value}
+              label={c.label}
+              active={values.concentration === c.value}
+              onClick={() =>
+                setValues((current) => ({
+                  ...current,
+                  concentration:
+                    current.concentration === c.value ? "" : c.value,
                 }))
               }
             />

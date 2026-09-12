@@ -58,6 +58,8 @@ export default function AdminNewProductPage() {
               brandId: values.brandId,
               categoryId: values.categoryId,
               targetAudience: values.targetAudience,
+              concentration: values.concentration || undefined,
+              badge: values.badge || undefined,
               description: values.description || undefined,
               price: values.price ? Number(values.price) : undefined,
               fraganceFamily: values.olfactoryFamily || undefined,
