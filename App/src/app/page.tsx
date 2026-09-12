@@ -42,8 +42,10 @@ export default async function Home() {
     <>
       <Navbar />
       <main>
-        {offer && <AnnouncementBar offer={offer} />}
-        <Hero />
+        <div className="flex min-h-[calc(100dvh-60px)] flex-col md:min-h-0 md:block">
+          {offer && <AnnouncementBar offer={offer} />}
+          <Hero />
+        </div>
         <Benefits />
         {offer && <PromoSection offer={offer} />}
         <Categories />

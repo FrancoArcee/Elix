@@ -89,7 +89,7 @@ export default function AdminProductsPage() {
           )}
         </p>
 
-        <div className="mx-auto grid w-full max-w-[960px] grid-cols-1 gap-4 pt-4 pb-14 sm:grid-cols-2 md:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-[960px] grid-cols-2 gap-3 pt-4 pb-14 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
           {filteredProducts.map((product) => (
             <AdminProductCard
               key={product.id}
