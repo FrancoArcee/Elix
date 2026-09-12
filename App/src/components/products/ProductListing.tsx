@@ -80,7 +80,7 @@ export default function ProductListing({
           >
             <FilterPanel onClose={() => setIsFiltersOpen(false)} />
           </div>
-          <div className="grid flex-1 grid-cols-1 gap-4 pb-14 sm:grid-cols-2 md:gap-6">
+          <div className="grid flex-1 grid-cols-2 gap-3 pb-14 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
                 key={product.href}

@@ -249,7 +249,7 @@ export default function ProductDetail({
             <h2 className="font-serif text-[24px] leading-8 text-ink">
               También te puede gustar
             </h2>
-            <div className="grid grid-cols-1 gap-6 pt-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 pt-10 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-4">
               {related.map((product) => (
                 <ProductCard
                   key={product.name}
