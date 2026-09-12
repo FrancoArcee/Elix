@@ -60,6 +60,7 @@ export async function createProduct(data: {
   fraganceFamily?: string
   presentation?: string
   concentration?: string
+  badge?: string
   images?: { url: string }[]
   notes?: { noteName: string; type: string }[]
 }): Promise<ProductData> {
@@ -82,6 +83,7 @@ export async function updateProduct(id: string, data: {
   fraganceFamily?: string
   presentation?: string
   concentration?: string
+  badge?: string
   images?: { url: string }[]
   notes?: { noteName: string; type: string }[]
 }): Promise<ProductData> {

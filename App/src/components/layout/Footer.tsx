@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BASE_URL } from "@/lib/base-url";
 import type { ContactData } from "@/services/contacts";
+import LegalFooterLinks from "./LegalFooterLinks";
 
 const SOCIAL_ICON_MAP: Record<string, string> = {
   Instagram: "/icons/icon-instagram.svg",
@@ -71,20 +72,7 @@ export default async function Footer() {
             © 2026 ELIX. Todos los derechos reservados.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <Link
-              href="#"
-              className="text-[12px] text-background/35 transition-colors hover:text-background/70"
-            >
-              Términos y condiciones
-            </Link>
-            <Link
-              href="#"
-              className="text-[12px] text-background/35 transition-colors hover:text-background/70"
-            >
-              Política de privacidad
-            </Link>
-          </div>
+          <LegalFooterLinks />
 
           <Link
             href="/login"

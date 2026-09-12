@@ -35,6 +35,7 @@ export async function GET() {
       concentration: p.concentration,
       targetAudience: p.targetAudience,
       presentation: p.presentation,
+      badge: p.badge,
       description: p.description,
     }))
   )
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, images, notes } = body
+  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, badge, images, notes } = body
 
   if (!name || !brandId || !categoryId || !targetAudience) {
     return NextResponse.json({ error: 'name, brandId, categoryId and targetAudience are required' }, { status: 400 })
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
       fraganceFamily: fraganceFamily || null,
       presentation: presentation || null,
       concentration: concentration || null,
+      badge: badge || null,
       images: {
         create: (images ?? []).map((img: { url: string }, i: number) => ({
           imageUrl: img.url,
@@ -111,6 +113,7 @@ export async function POST(request: Request) {
     concentration: product.concentration,
     targetAudience: product.targetAudience,
     presentation: product.presentation,
+    badge: product.badge,
     description: product.description,
   }, { status: 201 })
 }

@@ -23,6 +23,8 @@ export type AboutSection = {
   description: string;
   imageUrl?: string;
   visible: boolean;
+  displayOrder?: number;
+  isSystem?: boolean;
 };
 
 export type ContactEntry = {
@@ -115,6 +117,7 @@ type AdminState = {
     data: Omit<AboutSection, "id" | "visible"> & { visible?: boolean },
   ) => Promise<void>;
   updateAboutSection: (id: string, data: Partial<AboutSection>) => Promise<void>;
+  moveAboutSection: (id: string, direction: "up" | "down") => Promise<void>;
   toggleAboutVisibility: (id: string) => Promise<void>;
   removeAboutSection: (id: string) => Promise<void>;
   addContact: (data: Omit<ContactEntry, "id">) => Promise<void>;
@@ -134,6 +137,7 @@ type AdminState = {
     fraganceFamily?: string;
     presentation?: string;
     concentration?: string;
+    badge?: string;
     images?: { url: string }[];
     notes?: { noteName: string; type: string }[];
   }) => Promise<void>;
@@ -147,6 +151,7 @@ type AdminState = {
     fraganceFamily?: string;
     presentation?: string;
     concentration?: string;
+    badge?: string;
     images?: { url: string }[];
     notes?: { noteName: string; type: string }[];
   }) => Promise<void>;
@@ -219,6 +224,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           description: s.description,
           imageUrl: s.imageUrl ?? undefined,
           visible: s.visible,
+          displayOrder: s.displayOrder,
+          isSystem: s.id === "how_to_buy",
         })),
         contacts: contactData.map((c) => ({
           id: c.id,
@@ -289,14 +296,48 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     });
   },
 
+  moveAboutSection: async (id, direction) => {
+    await withAuth(set)(async () => {
+      const currentSections = [...get().aboutSections].sort(
+        (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+      );
+      const currentIndex = currentSections.findIndex((s) => s.id === id);
+      if (currentIndex === -1) return;
+
+      const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (targetIndex < 0 || targetIndex >= currentSections.length) return;
+
+      const [removed] = currentSections.splice(currentIndex, 1);
+      currentSections.splice(targetIndex, 0, removed);
+
+      const reordered = currentSections.map((s, index) => ({
+        ...s,
+        displayOrder: index,
+      }));
+
+      set({ aboutSections: reordered });
+
+      const orderedIds = reordered.map((s) => s.id);
+      await informationService.reorderInformation(orderedIds);
+    });
+  },
+
   toggleAboutVisibility: async (id) => {
     await withAuth(set)(async () => {
-      const updated = await informationService.toggleInformationVisibility(id);
-      set((state) => ({
-        aboutSections: state.aboutSections.map((section) =>
-          section.id === id ? { ...section, visible: updated.visible } : section,
-        ),
-      }));
+      await informationService.toggleInformationVisibility(id);
+      const updatedList = await informationService.getAdminInformation();
+      set({
+        aboutSections: updatedList.map((s) => ({
+          id: s.id,
+          label: s.label,
+          title: s.title,
+          description: s.description,
+          imageUrl: s.imageUrl ?? undefined,
+          visible: s.visible,
+          displayOrder: s.displayOrder,
+          isSystem: s.id === "how_to_buy",
+        })),
+      });
     });
   },
 
@@ -400,6 +441,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           concentration: p.concentration ?? undefined,
           orientation: p.targetAudience === "masculino" ? "Masculino" : p.targetAudience === "femenino" ? "Femenino" : "Unisex",
           presentation: p.presentation ?? undefined,
+          badge: p.badge ?? undefined,
           description: p.description ?? undefined,
         })),
       });
@@ -433,6 +475,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             concentration: created.concentration ?? undefined,
             orientation: created.targetAudience === "masculino" ? "Masculino" : created.targetAudience === "femenino" ? "Femenino" : "Unisex",
             presentation: created.presentation ?? undefined,
+            badge: created.badge ?? undefined,
             description: created.description ?? undefined,
           },
           ...state.products,
@@ -463,6 +506,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 concentration: updated.concentration ?? undefined,
                 orientation: updated.targetAudience === "masculino" ? "Masculino" : updated.targetAudience === "femenino" ? "Femenino" : "Unisex",
                 presentation: updated.presentation ?? undefined,
+                badge: updated.badge ?? undefined,
                 description: updated.description ?? undefined,
               }
             : product,

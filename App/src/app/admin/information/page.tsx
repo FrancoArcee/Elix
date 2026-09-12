@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -38,6 +38,7 @@ export default function AdminInformationPage() {
     (state) => state.fetchInformationData,
   );
   const updateHero = useAdminStore((state) => state.updateHero);
+  const moveAboutSection = useAdminStore((state) => state.moveAboutSection);
   const toggleAboutVisibility = useAdminStore(
     (state) => state.toggleAboutVisibility,
   );
@@ -95,7 +96,7 @@ export default function AdminInformationPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <AdminHeader title="Información" backHref="/admin" />
-      <main className="flex-1 px-6 py-8 md:px-10 md:py-10">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10">
         <div className="mx-auto w-full max-w-[672px]">
           <section>
             <div className="flex items-center justify-between gap-4">
@@ -179,19 +180,34 @@ export default function AdminInformationPage() {
               </Link>
             </div>
             <div className="flex flex-col gap-2 pt-4">
-              {aboutSections.map((section) => (
-                <InfoSectionCard
-                  key={section.id}
-                  id={section.id}
-                  label={section.label}
-                  title={section.title}
-                  visible={section.visible}
-                  onToggleVisibility={() =>
-                    toggleAboutVisibility(section.id)
-                  }
-                  onDelete={() => removeAboutSection(section.id)}
-                />
-              ))}
+              {aboutSections
+                .slice()
+                .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+                .map((section, index, arr) => (
+                  <InfoSectionCard
+                    key={section.id}
+                    id={section.id}
+                    label={section.label}
+                    title={section.title}
+                    visible={section.visible}
+                    displayNumber={index + 1}
+                    isSystem={section.id === "how_to_buy" || section.isSystem}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < arr.length - 1}
+                    onMoveUp={() => moveAboutSection(section.id, "up")}
+                    onMoveDown={() => moveAboutSection(section.id, "down")}
+                    onToggleVisibility={
+                      section.id === "how_to_buy"
+                        ? undefined
+                        : () => toggleAboutVisibility(section.id)
+                    }
+                    onDelete={
+                      section.id === "how_to_buy"
+                        ? undefined
+                        : () => removeAboutSection(section.id)
+                    }
+                  />
+                ))}
             </div>
           </section>
 

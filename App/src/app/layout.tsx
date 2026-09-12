@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import LegalDrawer from "@/components/layout/LegalDrawer";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -25,6 +26,7 @@ export default function RootLayout({
         className={`${dmSans.variable} bg-background font-sans text-ink antialiased`}
       >
         {children}
+        <LegalDrawer />
       </body>
     </html>
   );

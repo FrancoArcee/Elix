@@ -13,6 +13,7 @@ export type ProductFormValues = {
   brandId: string;
   categoryId: string;
   targetAudience: string;
+  concentration: string;
   olfactoryFamily: string;
   price: string;
   originalPrice: string;
@@ -53,11 +54,19 @@ const ORIENTATION_REVERSE: Record<string, ProductOrientation> = {
   femenino: "Femenino",
 };
 
+const CONCENTRATION_OPTIONS: { label: string; value: string }[] = [
+  { label: "EDT", value: "edt" },
+  { label: "EDP", value: "edp" },
+  { label: "EDC", value: "edc" },
+  { label: "Extrait", value: "extrait" },
+];
+
 const EMPTY_VALUES: ProductFormValues = {
   name: "",
   brandId: "",
   categoryId: "",
   targetAudience: "unisex",
+  concentration: "",
   olfactoryFamily: "",
   price: "",
   originalPrice: "",
@@ -111,260 +120,324 @@ export default function ProductForm({
         event.preventDefault();
         onSubmit(values);
       }}
-      className="w-full max-w-[512px]"
+      className="w-full max-w-[672px]"
     >
-      <h2 className="border-b border-ink/10 pb-2 text-[9px] font-normal uppercase leading-[13.5px] tracking-[2.7px] text-muted">
-        Identificación
-      </h2>
-
-      <div className="pt-6">
-        <TextField
-          label="Nombre"
-          placeholder="Ej: Oud Royale"
-          value={values.name}
-          onChange={update("name")}
-        />
-      </div>
-
-      <div className="pt-6">
-        <span className="block pb-2 text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
-          Marca
-        </span>
-        <div className="flex items-center gap-2">
-          <select
-            value={values.brandId}
-            onChange={(event) =>
-              setValues((current) => ({
-                ...current,
-                brandId: event.target.value,
-              }))
-            }
-            className="h-9 min-w-0 flex-1 appearance-none border-b border-ink/10 bg-transparent text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
-          >
-            <option value="" disabled>
-              Seleccioná una marca
-            </option>
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id}>
-                {brand.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            aria-label="Agregar marca"
-            onClick={() => setShowBrandModal(true)}
-            className="flex size-8 shrink-0 items-center justify-center border border-ink/10 text-[18px] font-medium leading-[18px] text-muted transition-colors hover:border-ink/35 hover:text-ink"
-          >
-            +
-          </button>
+      {/* 1. Datos Principales */}
+      <section className="border border-ink/10 bg-background p-5 sm:p-7">
+        <div className="flex items-center justify-between border-b border-ink/10 pb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[2px] text-ink">
+            Información del producto
+          </h2>
+          <span className="text-[8px] uppercase tracking-[1.2px] text-muted">
+            Datos principales
+          </span>
         </div>
-      </div>
 
-      <div className="pt-6">
-        <span className="block pb-2 text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
-          Categoría
-        </span>
-        <div className="flex flex-wrap items-start gap-2">
-          {categories.map((category) => (
-            <FilterChip
-              key={category.id}
-              label={category.name}
-              active={values.categoryId === category.id}
-              onClick={() =>
-                setValues((current) => ({ ...current, categoryId: category.id }))
-              }
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="pt-6">
-        <span className="block pb-2 text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
-          Orientación
-        </span>
-        <div className="flex flex-wrap items-start gap-2">
-          {ORIENTATION_OPTIONS.map((orientation) => (
-            <FilterChip
-              key={orientation}
-              label={orientation}
-              active={currentOrientation === orientation}
-              onClick={() =>
-                setValues((current) => ({
-                  ...current,
-                  targetAudience: ORIENTATION_MAP[orientation],
-                }))
-              }
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="pt-6">
-        <TextField
-          label="Familia olfativa"
-          tag="Opcional"
-          placeholder="Ej: Amaderado Oriental"
-          value={values.olfactoryFamily}
-          onChange={update("olfactoryFamily")}
-        />
-      </div>
-
-      <h2 className="mt-8 border-b border-ink/10 pb-2 text-[9px] font-normal uppercase leading-[13.5px] tracking-[2.7px] text-muted">
-        Precio
-      </h2>
-
-      <div className="grid grid-cols-1 gap-x-4 gap-y-6 pt-6 sm:grid-cols-2">
-        <TextField
-          label="Precio"
-          tag="Opcional"
-          type="number"
-          placeholder="Ej: 8900"
-          value={values.price}
-          onChange={update("price")}
-        />
-        <TextField
-          label="Precio original"
-          tag="Opcional"
-          type="number"
-          placeholder="Ej: 10500"
-          value={values.originalPrice}
-          onChange={update("originalPrice")}
-        />
-      </div>
-
-      <h2 className="mt-8 border-b border-ink/10 pb-2 text-[9px] font-normal uppercase leading-[13.5px] tracking-[2.7px] text-muted">
-        Presentación
-      </h2>
-
-      <div className="pt-6">
-        <ProductImagesField
-          images={values.images}
-          onChange={(images) =>
-            setValues((current) => ({ ...current, images }))
-          }
-        />
-      </div>
-
-      <div className="pt-6">
-        <TextField
-          label="Tamaños disponibles"
-          placeholder="30ml, 50ml, 100ml"
-          value={values.sizes}
-          onChange={update("sizes")}
-        />
-        <p className="pt-1 text-[9px] leading-[13.5px] text-muted">
-          Separados por coma.
-        </p>
-      </div>
-
-      <div className="pt-6">
-        <TextField
-          label="Badge"
-          tag="Opcional"
-          placeholder="Ej: Nuevo, Más vendido"
-          value={values.badge}
-          onChange={update("badge")}
-        />
-      </div>
-
-      <h2 className="mt-8 border-b border-ink/10 pb-2 text-[9px] font-normal uppercase leading-[13.5px] tracking-[2.7px] text-muted">
-        Notas olfativas
-      </h2>
-
-      <p className="pt-4 text-[9px] leading-[13.5px] text-muted">
-        Ingresá las notas separadas por coma.
-      </p>
-
-      {isBodySplash ? (
-        <div className="pt-6">
+        <div className="space-y-6 pt-5">
           <TextField
-            label="Nota"
-            tag="Opcional"
-            placeholder="Ej: Vainilla"
-            value={values.topNotes}
-            onChange={update("topNotes")}
+            label="Nombre del producto"
+            placeholder="Ej: Oud Royale"
+            value={values.name}
+            onChange={update("name")}
+            required
           />
-        </div>
-      ) : (
-        <>
-          <div className="pt-6">
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <div className="flex items-center justify-between pb-2">
+                <span className="text-[9px] font-medium uppercase tracking-[2px] text-ink">
+                  Marca
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowBrandModal(true)}
+                  className="text-[9px] font-medium uppercase tracking-[1px] text-muted transition-colors hover:text-ink"
+                >
+                  + Nueva marca
+                </button>
+              </div>
+              <div className="relative">
+                <select
+                  value={values.brandId}
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      brandId: event.target.value,
+                    }))
+                  }
+                  required
+                  className="h-9 w-full appearance-none border-b border-ink/10 bg-transparent pr-8 text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
+                >
+                  <option value="" disabled>
+                    Seleccioná una marca
+                  </option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center text-muted">
+                  <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <span className="block pb-2 text-[9px] font-medium uppercase tracking-[2px] text-ink">
+                Categoría
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {categories.map((category) => (
+                  <FilterChip
+                    key={category.id}
+                    label={category.name}
+                    active={values.categoryId === category.id}
+                    onClick={() =>
+                      setValues((current) => ({ ...current, categoryId: category.id }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 pt-1 sm:grid-cols-2">
+            <div>
+              <span className="block pb-2 text-[9px] font-medium uppercase tracking-[2px] text-ink">
+                Orientación
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {ORIENTATION_OPTIONS.map((orientation) => (
+                  <FilterChip
+                    key={orientation}
+                    label={orientation}
+                    active={currentOrientation === orientation}
+                    onClick={() =>
+                      setValues((current) => ({
+                        ...current,
+                        targetAudience: ORIENTATION_MAP[orientation],
+                      }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between pb-2">
+                <span className="text-[9px] font-medium uppercase tracking-[2px] text-ink">
+                  Concentración
+                </span>
+                <span className="text-[8px] uppercase tracking-[1px] text-muted">
+                  Opcional
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {CONCENTRATION_OPTIONS.map((c) => (
+                  <FilterChip
+                    key={c.value}
+                    label={c.label}
+                    active={values.concentration === c.value}
+                    onClick={() =>
+                      setValues((current) => ({
+                        ...current,
+                        concentration:
+                          current.concentration === c.value ? "" : c.value,
+                      }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-1">
             <TextField
-              label="Notas de salida"
+              label="Familia olfativa"
               tag="Opcional"
-              placeholder="Ej: Bergamota, Cardamomo"
+              placeholder="Ej: Amaderado Oriental, Floral Especiado"
+              value={values.olfactoryFamily}
+              onChange={update("olfactoryFamily")}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Precios y Presentación */}
+      <section className="mt-6 border border-ink/10 bg-background p-5 sm:p-7">
+        <div className="flex items-center justify-between border-b border-ink/10 pb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[2px] text-ink">
+            Comercial y Presentación
+          </h2>
+          <span className="text-[8px] uppercase tracking-[1.2px] text-muted">
+            Precios, tamaños e imágenes
+          </span>
+        </div>
+
+        <div className="space-y-6 pt-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <TextField
+              label="Precio de venta ($)"
+              tag="Opcional"
+              type="number"
+              placeholder="Ej: 8900"
+              value={values.price}
+              onChange={update("price")}
+            />
+            <TextField
+              label="Precio tachado / original ($)"
+              tag="Opcional"
+              type="number"
+              placeholder="Ej: 10500"
+              value={values.originalPrice}
+              onChange={update("originalPrice")}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <TextField
+                label="Tamaños disponibles"
+                tag="Opcional"
+                placeholder="Ej: 30ml, 50ml, 100ml"
+                value={values.sizes}
+                onChange={update("sizes")}
+              />
+              <p className="pt-1 text-[8px] tracking-[0.5px] text-muted">
+                Valores separados por coma
+              </p>
+            </div>
+
+            <div>
+              <TextField
+                label="Badge / Etiqueta destacada"
+                tag="Opcional"
+                placeholder="Ej: Nuevo, Más vendido, Oferta"
+                value={values.badge}
+                onChange={update("badge")}
+              />
+              <p className="pt-1 text-[8px] tracking-[0.5px] text-muted">
+                Etiqueta visible sobre la tarjeta
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-ink/[0.06] pt-5">
+            <ProductImagesField
+              images={values.images}
+              onChange={(images) =>
+                setValues((current) => ({ ...current, images }))
+              }
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Pirámide Olfativa */}
+      <section className="mt-6 border border-ink/10 bg-background p-5 sm:p-7">
+        <div className="flex items-center justify-between border-b border-ink/10 pb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[2px] text-ink">
+            Pirámide Olfativa
+          </h2>
+          <span className="text-[8px] uppercase tracking-[1.2px] text-muted">
+            Separar notas con coma
+          </span>
+        </div>
+
+        <div className="pt-5">
+          {isBodySplash ? (
+            <TextField
+              label="Notas olfativas"
+              tag="Opcional"
+              placeholder="Ej: Vainilla, Coco, Ámbar"
               value={values.topNotes}
               onChange={update("topNotes")}
             />
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+              <TextField
+                label="Notas de salida"
+                tag="Opcional"
+                placeholder="Ej: Bergamota, Cardamomo"
+                value={values.topNotes}
+                onChange={update("topNotes")}
+              />
+              <TextField
+                label="Notas de corazón"
+                tag="Opcional"
+                placeholder="Ej: Oud, Rosa de Damasco"
+                value={values.heartNotes}
+                onChange={update("heartNotes")}
+              />
+              <TextField
+                label="Notas de fondo"
+                tag="Opcional"
+                placeholder="Ej: Almizcle, Ámbar gris"
+                value={values.baseNotes}
+                onChange={update("baseNotes")}
+              />
+            </div>
+          )}
+        </div>
+      </section>
 
-          <div className="pt-6">
-            <TextField
-              label="Notas de corazón"
-              tag="Opcional"
-              placeholder="Ej: Oud, Rosa de Damasco"
-              value={values.heartNotes}
-              onChange={update("heartNotes")}
-            />
-          </div>
+      {/* 4. Descripción */}
+      <section className="mt-6 border border-ink/10 bg-background p-5 sm:p-7">
+        <div className="flex items-center justify-between border-b border-ink/10 pb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[2px] text-ink">
+            Descripción
+          </h2>
+          <span className="text-[8px] uppercase tracking-[1.2px] text-muted">
+            Opcional
+          </span>
+        </div>
 
-          <div className="pt-6">
-            <TextField
-              label="Notas de fondo"
-              tag="Opcional"
-              placeholder="Ej: Almizcle, Ámbar gris"
-              value={values.baseNotes}
-              onChange={update("baseNotes")}
-            />
-          </div>
-        </>
-      )}
+        <div className="pt-5">
+          <TextAreaField
+            label="Detalles de la fragancia"
+            placeholder="Escribí una descripción envolvente sobre el aroma, acordes principales, longevidad o inspiración del perfume..."
+            minHeightClass="min-h-[110px]"
+            value={values.description}
+            onChange={update("description")}
+          />
+        </div>
+      </section>
 
-      <h2 className="mt-8 border-b border-ink/10 pb-2 text-[9px] font-normal uppercase leading-[13.5px] tracking-[2.7px] text-muted">
-        Descripción
-      </h2>
-
-      <div className="pt-6">
-        <TextAreaField
-          label="Descripción del producto"
-          placeholder="Descripción del producto..."
-          minHeightClass="min-h-[97px]"
-          value={values.description}
-          onChange={update("description")}
-        />
-      </div>
-
-      <div className="flex flex-col items-stretch gap-3 pb-8 pt-10 sm:flex-row sm:items-start">
-        <AdminButton
-          type="submit"
-          variant="primary"
-          className="h-[39px] min-w-0 flex-1 px-5 py-3"
-        >
-          {mode === "create" ? "Crear producto" : "Guardar cambios"}
-        </AdminButton>
+      {/* Botones de acción */}
+      <div className="flex flex-col-reverse items-stretch gap-3 pt-8 pb-14 sm:flex-row sm:justify-end">
         <AdminButton
           type="button"
           variant="outline"
           onClick={onCancel}
-          className="h-[39px] px-5 py-3 sm:min-w-0"
+          className="h-[42px] px-6 text-[10px] tracking-[1.5px]"
         >
           Cancelar
+        </AdminButton>
+        <AdminButton
+          type="submit"
+          variant="primary"
+          className="h-[42px] px-8 text-[10px] tracking-[1.5px]"
+        >
+          {mode === "create" ? "Crear producto" : "Guardar cambios"}
         </AdminButton>
       </div>
 
       {showBrandModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
-          <div className="w-full max-w-[400px] border border-ink/10 bg-background p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6">
+          <div className="w-full max-w-[400px] border border-ink/10 bg-background p-6 shadow-2xl">
             <p className="font-serif text-[18px] font-bold leading-6 text-ink">
               Nueva marca
             </p>
             <p className="pt-2 text-[12px] leading-4 text-muted">
-              Ingresá el nombre de la nueva marca.
+              Ingresá el nombre de la nueva marca para incorporarla al catálogo.
             </p>
             <div className="pt-4">
               <TextField
-                label="Nombre"
-                placeholder="Ej: Nueva Marca"
+                label="Nombre de la marca"
+                placeholder="Ej: Lattafa, Maison Alhambra"
                 value={newBrandName}
                 onChange={(e) => {
                   setNewBrandName(e.target.value);

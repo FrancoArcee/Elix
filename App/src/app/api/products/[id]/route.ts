@@ -59,7 +59,7 @@ export async function GET(
     targetAudience: product.targetAudience,
     presentation: product.presentation,
     description: product.description,
-    badge: null,
+    badge: product.badge,
     olfactoryNotes: product.notes.map((pn) => ({
       type: pn.type,
       name: pn.note.name,
