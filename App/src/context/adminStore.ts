@@ -31,6 +31,7 @@ export type ContactEntry = {
   id: string;
   application: string;
   value: string;
+  isPrimary: boolean;
 };
 
 export type PaymentMethod = {
@@ -122,6 +123,7 @@ type AdminState = {
   removeAboutSection: (id: string) => Promise<void>;
   addContact: (data: Omit<ContactEntry, "id">) => Promise<void>;
   updateContact: (id: string, data: Partial<ContactEntry>) => Promise<void>;
+  setPrimaryContact: (id: string) => Promise<void>;
   removeContact: (id: string) => Promise<void>;
   addPaymentMethod: (data: Omit<PaymentMethod, "id">) => Promise<void>;
   updatePaymentMethod: (id: string, data: Partial<PaymentMethod>) => Promise<void>;
@@ -231,6 +233,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           id: c.id,
           application: c.application,
           value: c.value,
+          isPrimary: c.isPrimary,
         })),
         paymentMethods: pmData.map((p) => ({
           id: p.id,
@@ -356,7 +359,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       set((state) => ({
         contacts: [
           ...state.contacts,
-          { id: created.id, application: created.application, value: created.value },
+          { id: created.id, application: created.application, value: created.value, isPrimary: created.isPrimary },
         ],
       }));
     });
@@ -367,7 +370,20 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       await contactsService.updateContact(id, data);
       set((state) => ({
         contacts: state.contacts.map((contact) =>
-          contact.id === id ? { ...contact, ...data } : contact,
+          contact.id === id ? { ...contact, ...data } : contact
+        ),
+      }));
+    });
+  },
+
+  setPrimaryContact: async (id) => {
+    await withAuth(set)(async () => {
+      await contactsService.updateContact(id, { isPrimary: true });
+      set((state) => ({
+        contacts: state.contacts.map((contact) =>
+          contact.id === id
+            ? { ...contact, isPrimary: true }
+            : { ...contact, isPrimary: false }
         ),
       }));
     });

@@ -4,6 +4,7 @@ export interface ContactData {
   id: string
   application: string
   value: string
+  isPrimary: boolean
   displayOrder: number
 }
 
@@ -27,7 +28,10 @@ export async function createContact(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to create contact')
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new Error(body?.error ?? 'Failed to create contact')
+  }
   return res.json()
 }
 

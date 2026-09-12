@@ -17,22 +17,36 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { application, value, displayOrder } = body
+  const { application, value, isPrimary, displayOrder } = body
 
   if (!application || !value) {
     return NextResponse.json({ error: 'application and value are required' }, { status: 400 })
   }
 
+  if (isPrimary) {
+    await prisma.contact.updateMany({
+      where: { isPrimary: true },
+      data: { isPrimary: false },
+    })
+  }
+
   const maxOrder = await prisma.contact.aggregate({ _max: { displayOrder: true } })
   const nextOrder = (maxOrder._max.displayOrder ?? -1) + 1
 
-  const contact = await prisma.contact.create({
-    data: {
-      application,
-      value,
-      displayOrder: displayOrder ?? nextOrder,
-    },
-  })
-
-  return NextResponse.json(contact, { status: 201 })
+  try {
+    const contact = await prisma.contact.create({
+      data: {
+        application,
+        value,
+        isPrimary: isPrimary ?? false,
+        displayOrder: displayOrder ?? nextOrder,
+      },
+    })
+    return NextResponse.json(contact, { status: 201 })
+  } catch (e: any) {
+    if (e.code === 'P2002') {
+      return NextResponse.json({ error: `Ya existe un contacto para "${application}"` }, { status: 409 })
+    }
+    throw e
+  }
 }

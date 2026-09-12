@@ -170,10 +170,11 @@ model Information {
 }
 
 model Contact {
-  id           String @id @default(cuid())
-  application  String
+  id           String  @id @default(cuid())
+  application  String  @unique
   value        String
-  displayOrder Int    @default(0) @map("display_order")
+  isPrimary    Boolean @default(false) @map("is_primary")
+  displayOrder Int     @default(0) @map("display_order")
 
   @@map("contacts")
 }
