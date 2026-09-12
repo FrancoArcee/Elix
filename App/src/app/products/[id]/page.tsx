@@ -41,6 +41,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   if (!product) notFound();
 
+  const primaryContact = await prisma.contact.findFirst({
+    where: { isPrimary: true },
+  });
+
   const relatedProducts = await prisma.product.findMany({
     where: { categoryId: product.categoryId, id: { not: id } },
     include: {
@@ -105,6 +109,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           "Producto importado 100% auténtico",
           "Cotización instantánea con servicio particular",
         ]}
+        primaryContact={primaryContact ? { application: primaryContact.application, value: primaryContact.value } : null}
         related={relatedProducts.map((p) => ({
           image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
           brand: p.brand.name,

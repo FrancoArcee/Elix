@@ -16,6 +16,11 @@ export type OlfactoryGroup = {
   notes: string[];
 };
 
+export type PrimaryContact = {
+  application: string;
+  value: string;
+};
+
 export type ProductDetailProps = {
   brand: string;
   name: string;
@@ -29,6 +34,7 @@ export type ProductDetailProps = {
   description?: string;
   characteristics?: string[];
   related: Omit<ProductCardProps, "key">[];
+  primaryContact?: PrimaryContact | null;
 };
 
 const CONCENTRATION_MAP: Record<string, string> = {
@@ -41,6 +47,28 @@ const CONCENTRATION_MAP: Record<string, string> = {
 const TABS = ["Notas Olfativas", "Descripción", "Características"] as const;
 
 type Tab = (typeof TABS)[number];
+
+function buildContactHref(application: string, value: string, productName: string): string {
+  const message = encodeURIComponent(
+    `¡Hola! 👋 Estoy interesado/a en ${productName}. ¿Me podrían pasar más información y el precio?`
+  );
+  const lower = application.toLowerCase();
+
+  if (lower === "whatsapp") {
+    const phone = value.replace(/[^0-9+]/g, "");
+    const raw = phone.startsWith("+") ? phone.slice(1) : phone;
+    return `https://wa.me/${raw}?text=${message}`;
+  }
+  if (lower === "telegram") {
+    const username = value.replace(/^https?:\/\/(t\.me|telegram\.me)\//, "").replace(/^@/, "");
+    return `https://t.me/${username}?text=${message}`;
+  }
+  if (lower === "instagram") {
+    const username = value.replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/^@/, "").replace(/\/$/, "");
+    return `https://ig.me/m/${username}?text=${message}`;
+  }
+  return value;
+}
 
 export default function ProductDetail({
   brand,
@@ -55,6 +83,7 @@ export default function ProductDetail({
   description,
   characteristics,
   related,
+  primaryContact,
 }: ProductDetailProps) {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(defaultSize);
@@ -63,6 +92,10 @@ export default function ProductDetail({
   const galleryImages = images?.length
     ? images
     : Array.from({ length: 4 }, () => image);
+
+  const contactHref = primaryContact
+    ? buildContactHref(primaryContact.application, primaryContact.value, name)
+    : undefined;
 
   return (
     <>
@@ -146,21 +179,27 @@ export default function ProductDetail({
                 ))}
               </div>
 
-              <button
-                type="button"
-                className="mt-8 flex w-full items-center justify-center gap-2 bg-ink py-4 transition-colors hover:bg-ink/90"
-              >
-                <Image
-                  src="/icons/icon-chat-white.svg"
-                  alt=""
-                  width={14}
-                  height={14}
-                  className="size-[14px]"
-                />
-                <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background">
-                  Consultar por este producto
-                </span>
-              </button>
+              {contactHref ? (
+                <a
+                  href={contactHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 flex w-full items-center justify-center gap-2 bg-ink py-4 transition-colors hover:bg-ink/90"
+                >
+                  <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background">
+                    Consultar por este producto
+                  </span>
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="mt-8 flex w-full items-center justify-center gap-2 bg-ink py-4 transition-colors hover:bg-ink/90"
+                >
+                  <span className="text-[10px] font-medium uppercase leading-[15px] tracking-[1.8px] text-background">
+                    Consultar por este producto
+                  </span>
+                </button>
+              )}
 
               <div className="pt-8">
                 <div className="border-t border-ink/10 pt-7">
