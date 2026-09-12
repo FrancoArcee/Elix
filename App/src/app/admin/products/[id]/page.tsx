@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
+import Skeleton from "@/components/admin/Skeleton";
 import ProductForm from "@/components/admin/ProductForm";
 import { useAdminStore } from "@/context/adminStore";
 import { getProduct, type ProductDetailData } from "@/services/products";
@@ -35,8 +36,24 @@ export default function AdminEditProductPage() {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <AdminHeader title="Productos" backHref="/admin/products" />
-        <main className="flex flex-1 items-center justify-center px-6">
-          <p className="text-[12px] text-muted">Cargando...</p>
+        <main className="flex-1 px-6 py-8 md:px-10 md:py-10">
+          <div className="mx-auto w-full max-w-[672px] space-y-6">
+            {[1, 2, 3, 4].map((section) => (
+              <div key={section} className="border border-ink/10 bg-background p-5">
+                <Skeleton className="mb-4 h-3 w-28" />
+                <div className="space-y-4">
+                  <div>
+                    <Skeleton className="mb-2 h-3 w-16" />
+                    <Skeleton className="h-9 w-full" />
+                  </div>
+                  <div>
+                    <Skeleton className="mb-2 h-3 w-20" />
+                    <Skeleton className="h-9 w-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </main>
       </div>
     );
