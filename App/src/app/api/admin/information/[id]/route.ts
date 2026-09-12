@@ -11,6 +11,11 @@ export async function PUT(
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
+
+  if (id === 'how_to_buy') {
+    return NextResponse.json({ error: 'System section content cannot be modified' }, { status: 403 })
+  }
+
   const body = await request.json()
   const { label, title, description, imageUrl, visible, displayOrder } = body
 
@@ -44,6 +49,10 @@ export async function DELETE(
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
+
+  if (id === 'how_to_buy') {
+    return NextResponse.json({ error: 'System section cannot be deleted' }, { status: 403 })
+  }
 
   const existing = await prisma.information.findUnique({ where: { id } })
   if (!existing) {

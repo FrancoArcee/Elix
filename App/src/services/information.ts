@@ -61,3 +61,13 @@ export async function toggleInformationVisibility(id: string): Promise<Informati
   if (!res.ok) throw new Error('Failed to toggle visibility')
   return res.json()
 }
+
+export async function reorderInformation(orderedIds: string[]): Promise<InformationSection[]> {
+  const res = await fetchAdmin(`/api/admin/information/reorder`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderedIds }),
+  })
+  if (!res.ok) throw new Error('Failed to reorder sections')
+  return res.json()
+}
