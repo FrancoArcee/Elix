@@ -100,19 +100,6 @@ export default function Navbar({
               className="size-[18px]"
             />
           </button>
-          <Link
-            href="/login"
-            aria-label="Mi cuenta"
-            className="hidden items-center justify-center md:flex"
-          >
-            <Image
-              src="/icons/icon-user.svg"
-              alt=""
-              width={17}
-              height={17}
-              className="size-[17px]"
-            />
-          </Link>
         </div>
       </div>
 
