@@ -10,7 +10,7 @@ export default async function Hero() {
   if (!hero) return null
 
   return (
-    <section className="relative w-full md:h-[710px] md:grid md:grid-cols-2">
+    <section className="relative flex flex-1 flex-col w-full md:h-[710px] md:grid md:grid-cols-2">
       <div aria-hidden className="absolute inset-0 md:hidden">
         <Image
           src={hero.imageUrl}
@@ -23,16 +23,16 @@ export default async function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
       </div>
 
-      <div className="relative z-10 flex min-h-[600px] flex-col justify-end px-6 pb-12 pt-32 text-white md:min-h-full md:justify-center md:px-14 md:py-20 md:text-ink lg:px-[56px]">
+      <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pb-12 pt-28 text-white md:min-h-full md:justify-center md:pl-12 md:pr-8 md:py-20 md:text-ink lg:pl-16 lg:pr-10 xl:pl-20 xl:pr-14">
         <p className="text-[9px] uppercase leading-[13.5px] tracking-[3.15px] text-white/55 md:text-muted">
           {hero.kicker}
         </p>
 
-        <h1 className="mt-5 max-w-[344px] font-serif text-[40px] font-bold leading-[41px] text-white md:mt-8 md:leading-[1.03] md:text-ink md:text-[60px]">
+        <h1 className="mt-5 max-w-[344px] font-serif text-[40px] font-bold leading-[41px] text-white md:mt-8 md:max-w-none md:text-[54px] md:leading-[1.06] md:text-ink lg:text-[60px]">
           {hero.title}
         </h1>
 
-        <p className="mt-5 max-w-[340px] text-[14px] leading-[22.75px] text-white/60 md:mt-7 md:text-muted">
+        <p className="mt-5 max-w-[340px] text-[14px] leading-[22.75px] text-white/60 md:mt-7 md:max-w-[460px] md:text-muted">
           Perfumes árabes originales y body splash de las marcas más exclusivas
           de Oriente Medio, directo a tu puerta.
         </p>

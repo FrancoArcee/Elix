@@ -41,7 +41,7 @@ function AnnouncementRow({ offer }: { offer: AnnouncementBarProps["offer"] }) {
 
 export default function AnnouncementBar({ offer }: AnnouncementBarProps) {
   return (
-    <div className="w-full overflow-hidden border-b border-background/10 bg-ink py-4">
+    <div className="w-full shrink-0 overflow-hidden border-b border-background/10 bg-ink py-4">
       <div className="flex w-max animate-marquee">
         <AnnouncementRow offer={offer} />
         <AnnouncementRow offer={offer} />

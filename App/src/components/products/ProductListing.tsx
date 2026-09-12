@@ -11,6 +11,7 @@ type ProductListingProps = {
   title: string;
   productCount: number;
   products: Omit<ProductCardProps, "key">[];
+  backgroundColor?: string;
   backgroundClass?: string;
 };
 
@@ -18,12 +19,16 @@ export default function ProductListing({
   title,
   productCount,
   products,
+  backgroundColor,
   backgroundClass = "bg-background",
 }: ProductListingProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   return (
-    <main className={`min-h-screen px-4 py-10 md:px-6 md:py-12 ${backgroundClass}`}>
+    <main
+      className={`min-h-screen px-4 py-10 md:px-6 md:py-12 ${backgroundColor ? "" : backgroundClass}`}
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <div className="mx-auto w-full max-w-[1280px]">
         <h1 className="font-serif text-[30px] font-bold leading-9 text-ink md:text-[36px] md:leading-10">
           {title}
@@ -80,7 +85,7 @@ export default function ProductListing({
           >
             <FilterPanel onClose={() => setIsFiltersOpen(false)} />
           </div>
-          <div className="grid flex-1 grid-cols-1 gap-4 pb-14 sm:grid-cols-2 md:gap-6">
+          <div className="grid flex-1 grid-cols-2 gap-3 pb-14 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
                 key={product.href}
