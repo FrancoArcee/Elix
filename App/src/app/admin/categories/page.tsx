@@ -19,7 +19,7 @@ export default function AdminCategoriesPage() {
 
   useEffect(() => {
     if (isUnauthorized) {
-      router.replace("/login");
+      router.replace("/admin/unauthorized");
     }
   }, [isUnauthorized, router]);
 

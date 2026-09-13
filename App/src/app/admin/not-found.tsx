@@ -1,10 +1,5 @@
 import Link from "next/link";
-import type { Metadata } from "next";
 import AdminHeader from "@/components/admin/AdminHeader";
-
-export const metadata: Metadata = {
-  title: "ELIX — Página no encontrada",
-};
 
 export default function AdminNotFound() {
   return (

@@ -144,7 +144,7 @@ export default function AdminInformationPage() {
 
   useEffect(() => {
     if (isUnauthorized) {
-      router.replace("/login");
+      router.replace("/admin/unauthorized");
     }
   }, [isUnauthorized, router]);
 

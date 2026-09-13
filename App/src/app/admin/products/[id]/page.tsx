@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, notFound } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import Skeleton from "@/components/admin/Skeleton";
 import ProductForm from "@/components/admin/ProductForm";
@@ -32,7 +32,13 @@ export default function AdminEditProductPage() {
     });
   }, [productId, fetchBrands, fetchCategories]);
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !product) {
+      notFound();
+    }
+  }, [loading, product]);
+
+  if (loading || !product) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <AdminHeader title="Productos" backHref="/admin/products" />
@@ -54,17 +60,6 @@ export default function AdminEditProductPage() {
               </div>
             ))}
           </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <AdminHeader title="Productos" backHref="/admin/products" />
-        <main className="flex flex-1 items-center justify-center px-6">
-          <p className="text-[12px] text-muted">Producto no encontrado.</p>
         </main>
       </div>
     );
