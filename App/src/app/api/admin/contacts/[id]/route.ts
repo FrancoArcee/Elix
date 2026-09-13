@@ -11,23 +11,38 @@ export async function PUT(
 
   const { id } = await params
   const body = await request.json()
-  const { application, value, displayOrder } = body
+  const { application, value, isPrimary, displayOrder } = body
 
   const existing = await prisma.contact.findUnique({ where: { id } })
   if (!existing) {
     return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
   }
 
-  const contact = await prisma.contact.update({
-    where: { id },
-    data: {
-      ...(application !== undefined && { application }),
-      ...(value !== undefined && { value }),
-      ...(displayOrder !== undefined && { displayOrder }),
-    },
-  })
+  if (isPrimary) {
+    await prisma.contact.updateMany({
+      where: { isPrimary: true, id: { not: id } },
+      data: { isPrimary: false },
+    })
+  }
 
-  return NextResponse.json(contact)
+  try {
+    const contact = await prisma.contact.update({
+      where: { id },
+      data: {
+        ...(application !== undefined && { application }),
+        ...(value !== undefined && { value }),
+        ...(isPrimary !== undefined && { isPrimary }),
+        ...(displayOrder !== undefined && { displayOrder }),
+      },
+    })
+
+    return NextResponse.json(contact)
+  } catch (e: any) {
+    if (e.code === 'P2002') {
+      return NextResponse.json({ error: `Ya existe un contacto para "${application}"` }, { status: 409 })
+    }
+    throw e
+  }
 }
 
 export async function DELETE(

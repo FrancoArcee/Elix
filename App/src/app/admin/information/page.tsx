@@ -26,6 +26,71 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+const CONTACT_TYPES = [
+  { value: "Instagram", label: "Instagram", fieldLabel: "@ usuario", placeholder: "@tu_usuario" },
+  { value: "WhatsApp", label: "WhatsApp", fieldLabel: "Número", placeholder: "+54 9 11 0000-0000" },
+  { value: "Facebook", label: "Facebook", fieldLabel: "Usuario", placeholder: "tu_usuario" },
+  { value: "TikTok", label: "TikTok", fieldLabel: "@ usuario", placeholder: "@tu_usuario" },
+  { value: "Twitter", label: "Twitter", fieldLabel: "@ usuario", placeholder: "@tu_usuario" },
+  { value: "YouTube", label: "YouTube", fieldLabel: "Canal", placeholder: "@tu_canal" },
+  { value: "Email", label: "Email", fieldLabel: "Email", placeholder: "mail@ejemplo.com" },
+  { value: "Teléfono", label: "Teléfono", fieldLabel: "Número", placeholder: "+54 11 0000-0000" },
+];
+
+function getContactFieldFor(app: string) {
+  return CONTACT_TYPES.find((t) => t.value === app) ?? { fieldLabel: "Dato", placeholder: "" };
+}
+
+function buildContactValue(app: string, raw: string): string {
+  const lower = app.toLowerCase();
+  if (lower === "whatsapp") {
+    const phone = raw.replace(/[^0-9+]/g, "");
+    return phone.startsWith("+") ? phone.slice(1) : phone;
+  }
+  if (lower === "instagram" || lower === "tiktok") {
+    return raw.replace(/^@/, "").replace(/^https?:\/\/(www\.)?(instagram\.com|tiktok\.com)\//, "").replace(/\/$/, "");
+  }
+  if (lower === "twitter") {
+    return raw.replace(/^@/, "").replace(/^https?:\/\/(www\.)?(twitter\.com|x\.com)\//, "").replace(/\/$/, "");
+  }
+  if (lower === "facebook") {
+    return raw.replace(/^https?:\/\/(www\.)?facebook\.com\//, "").replace(/\/$/, "");
+  }
+  if (lower === "youtube") {
+    return raw.replace(/^https?:\/\/(www\.)?youtube\.com\//, "").replace(/\/$/, "");
+  }
+  return raw;
+}
+
+function validateContactValue(app: string, raw: string): string | null {
+  const lower = app.toLowerCase();
+  if (lower === "whatsapp" || lower === "teléfono" || lower === "telefono") {
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (!/[\d]/.test(raw) || digits.length < 8) return "Ingresá un número de teléfono válido (mínimo 8 dígitos)";
+  }
+  if (lower === "email") {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return "Ingresá un email válido";
+  }
+  return null;
+}
+
+function extractRawValue(app: string, stored: string): string {
+  const lower = app.toLowerCase();
+  if (lower === "whatsapp") {
+    return stored.startsWith("+") ? `+${stored}` : stored;
+  }
+  if (lower === "instagram") {
+    return `@${stored.replace(/^@/, "")}`;
+  }
+  if (lower === "tiktok") {
+    return `@${stored.replace(/^@/, "")}`;
+  }
+  if (lower === "twitter") {
+    return `@${stored.replace(/^@/, "")}`;
+  }
+  return stored;
+}
+
 export default function AdminInformationPage() {
   const router = useRouter();
   const isUnauthorized = useAdminStore((state) => state.isUnauthorized);
@@ -47,6 +112,7 @@ export default function AdminInformationPage() {
   );
   const addContact = useAdminStore((state) => state.addContact);
   const updateContact = useAdminStore((state) => state.updateContact);
+  const setPrimaryContact = useAdminStore((state) => state.setPrimaryContact);
   const removeContact = useAdminStore((state) => state.removeContact);
   const addPaymentMethod = useAdminStore((state) => state.addPaymentMethod);
   const updatePaymentMethod = useAdminStore(
@@ -68,6 +134,9 @@ export default function AdminInformationPage() {
   const [paymentForm, setPaymentForm] = useState<EntryFormState>({
     mode: "closed",
   });
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [contactApp, setContactApp] = useState("");
+  const [contactValue, setContactValue] = useState("");
 
   useEffect(() => {
     fetchInformationData();
@@ -75,7 +144,7 @@ export default function AdminInformationPage() {
 
   useEffect(() => {
     if (isUnauthorized) {
-      router.replace("/login");
+      router.replace("/admin/unauthorized");
     }
   }, [isUnauthorized, router]);
 
@@ -83,9 +152,25 @@ export default function AdminInformationPage() {
     setHeroForm({ kicker: hero.kicker, title: hero.title, imageUrl: hero.imageUrl });
   }, [hero]);
 
+  useEffect(() => {
+    if (contactForm.mode === "edit") {
+      const contact = contacts.find((c) => c.id === contactForm.id);
+      if (contact) {
+        setContactApp(contact.application);
+        setContactValue(extractRawValue(contact.application, contact.value));
+      }
+    } else if (contactForm.mode === "new") {
+      setContactApp("");
+      setContactValue("");
+    }
+  }, [contactForm, contacts]);
+
   const closeForms = () => {
     setContactForm({ mode: "closed" });
     setPaymentForm({ mode: "closed" });
+    setContactError(null);
+    setContactApp("");
+    setContactValue("");
   };
 
   const handleHeroSubmit = async () => {
@@ -230,74 +315,201 @@ export default function AdminInformationPage() {
               </button>
             </div>
             <div className="flex flex-col gap-2 pt-4">
-              {(contactForm.mode === "new" ||
-                contactForm.mode === "edit") && (
-                <InlineEntryForm
-                  key={
-                    contactForm.mode === "edit" ? contactForm.id : "new-contact"
-                  }
-                  title={
-                    contactForm.mode === "edit"
-                      ? "Editar contacto"
-                      : "Nuevo contacto"
-                  }
-                  fields={[
-                    {
-                      name: "application",
-                      label: "Aplicación",
-                      placeholder: "WhatsApp",
-                    },
-                    {
-                      name: "value",
-                      label: "Contacto",
-                      placeholder: "+54 9 11...",
-                    },
-                  ]}
-                  initialValues={
-                    contactForm.mode === "edit"
-                      ? (() => {
-                          const contact = contacts.find(
-                            (item) => item.id === contactForm.id,
-                          );
-                          return contact
-                            ? {
-                                application: contact.application,
-                                value: contact.value,
-                              }
-                            : undefined;
-                        })()
-                      : undefined
-                  }
-                  onSubmit={(values) => {
-                    if (
-                      contactForm.mode === "edit"
-                    ) {
-                      updateContact(contactForm.id, {
-                        application: values.application,
-                        value: values.value,
-                      });
-                    } else {
-                      addContact({
-                        application: values.application,
-                        value: values.value,
-                      });
+              {contactForm.mode === "new" && (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setContactError(null);
+                    const trimmed = contactValue.trim();
+                    if (!contactApp || !trimmed) {
+                      setContactError("Completá todos los campos");
+                      return;
                     }
-                    closeForms();
+                    const validationError = validateContactValue(contactApp, trimmed);
+                    if (validationError) {
+                      setContactError(validationError);
+                      return;
+                    }
+                    const value = buildContactValue(contactApp, trimmed);
+                    try {
+                      await addContact({
+                        application: contactApp,
+                        value,
+                        isPrimary: false,
+                      });
+                      closeForms();
+                    } catch (err: any) {
+                      setContactError(err.message ?? "Error al guardar el contacto");
+                    }
                   }}
-                  onCancel={closeForms}
-                />
+                  className="w-full border border-ink/20 bg-background p-4"
+                >
+                  <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-muted">
+                    Nuevo contacto
+                  </p>
+                  <div className="grid grid-cols-1 gap-x-3 gap-y-3 pt-4 sm:grid-cols-2">
+                    <label className="block w-full">
+                      <span className="pb-1.5 text-[9px] font-medium uppercase leading-[13.5px] tracking-[1.8px] text-ink">
+                        Red social
+                      </span>
+                      <select
+                        className="h-[33px] w-full appearance-none border-b border-ink/10 bg-transparent py-1.5 text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
+                        value={contactApp}
+                        onChange={(e) => {
+                          setContactApp(e.target.value);
+                          setContactValue("");
+                        }}
+                      >
+                        <option value="" disabled>
+                          Seleccionar...
+                        </option>
+                        {CONTACT_TYPES.map((t) => (
+                          <option key={t.value} value={t.value}>
+                            {t.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {contactApp && (
+                      <TextField
+                        compact
+                        label={getContactFieldFor(contactApp).fieldLabel}
+                        placeholder={getContactFieldFor(contactApp).placeholder}
+                        value={contactValue}
+                        onChange={(e) => setContactValue(e.target.value)}
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-col items-stretch gap-2 pt-4 sm:flex-row sm:items-start">
+                    <AdminButton
+                      type="submit"
+                      variant="primary"
+                      className="h-[31px] min-w-0 flex-1 px-4 py-2"
+                    >
+                      Guardar
+                    </AdminButton>
+                    <AdminButton
+                      type="button"
+                      variant="outline"
+                      onClick={closeForms}
+                      className="h-[31px] px-4 py-2"
+                    >
+                      Cancelar
+                    </AdminButton>
+                  </div>
+                </form>
               )}
-              {contacts.map((contact) => (
-                <InfoRow
-                  key={contact.id}
-                  name={contact.application}
-                  value={contact.value}
-                  onEdit={() =>
-                    setContactForm({ mode: "edit", id: contact.id })
-                  }
-                  onDelete={() => removeContact(contact.id)}
-                />
-              ))}
+              {contactError && contactForm.mode === "new" && (
+                <p className="text-[11px] leading-[16px] text-red-500">
+                  {contactError}
+                </p>
+              )}
+              {contacts.map((contact) => {
+                if (contactForm.mode === "edit" && contactForm.id === contact.id) {
+                  return (
+                    <form
+                      key={contact.id}
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setContactError(null);
+                        const trimmed = contactValue.trim();
+                        if (!contactApp || !trimmed) {
+                          setContactError("Completá todos los campos");
+                          return;
+                        }
+                        const validationError = validateContactValue(contactApp, trimmed);
+                        if (validationError) {
+                          setContactError(validationError);
+                          return;
+                        }
+                        const value = buildContactValue(contactApp, trimmed);
+                        try {
+                          await updateContact(contact.id, {
+                            application: contactApp,
+                            value,
+                          });
+                          closeForms();
+                        } catch (err: any) {
+                          setContactError(err.message ?? "Error al guardar el contacto");
+                        }
+                      }}
+                      className="w-full border border-ink/20 bg-background p-4"
+                    >
+                      <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-muted">
+                        Editar contacto
+                      </p>
+                      <div className="grid grid-cols-1 gap-x-3 gap-y-3 pt-4 sm:grid-cols-2">
+                        <label className="block w-full">
+                          <span className="pb-1.5 text-[9px] font-medium uppercase leading-[13.5px] tracking-[1.8px] text-ink">
+                            Red social
+                          </span>
+                          <select
+                            className="h-[33px] w-full appearance-none border-b border-ink/10 bg-transparent py-1.5 text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
+                            value={contactApp}
+                            onChange={(e) => {
+                              setContactApp(e.target.value);
+                              setContactValue("");
+                            }}
+                          >
+                            <option value="" disabled>
+                              Seleccionar...
+                            </option>
+                            {CONTACT_TYPES.map((t) => (
+                              <option key={t.value} value={t.value}>
+                                {t.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        {contactApp && (
+                          <TextField
+                            compact
+                            label={getContactFieldFor(contactApp).fieldLabel}
+                            placeholder={getContactFieldFor(contactApp).placeholder}
+                            value={contactValue}
+                            onChange={(e) => setContactValue(e.target.value)}
+                          />
+                        )}
+                      </div>
+                      {contactError && (
+                        <p className="pt-2 text-[11px] leading-[16px] text-red-500">
+                          {contactError}
+                        </p>
+                      )}
+                      <div className="flex flex-col items-stretch gap-2 pt-4 sm:flex-row sm:items-start">
+                        <AdminButton
+                          type="submit"
+                          variant="primary"
+                          className="h-[31px] min-w-0 flex-1 px-4 py-2"
+                        >
+                          Guardar
+                        </AdminButton>
+                        <AdminButton
+                          type="button"
+                          variant="outline"
+                          onClick={closeForms}
+                          className="h-[31px] px-4 py-2"
+                        >
+                          Cancelar
+                        </AdminButton>
+                      </div>
+                    </form>
+                  );
+                }
+                return (
+                  <InfoRow
+                    key={contact.id}
+                    name={contact.application}
+                    value={contact.value}
+                    isPrimary={contact.isPrimary}
+                    onEdit={() =>
+                      setContactForm({ mode: "edit", id: contact.id })
+                    }
+                    onDelete={() => removeContact(contact.id)}
+                    onSetPrimary={() => setPrimaryContact(contact.id)}
+                  />
+                );
+              })}
             </div>
           </section>
 

@@ -401,7 +401,7 @@ export default function AdminProductsPage() {
             {filteredProducts.map((product) => (
               <AdminProductCard
                 key={product.id}
-                image={product.image ?? "/images/product-oud-royale.png"}
+                image={product.image ?? null}
                 brand={product.brand}
                 name={product.name}
                 badge={product.badge}

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export type ProductCardProps = {
-  image: string;
+  image: string | null;
   brand: string;
   name: string;
   badge?: string;
@@ -27,13 +27,21 @@ export default function ProductCard({
           surface === "surface" ? "bg-surface" : "bg-surface-alt"
         }`}
       >
-        <Image
-          src={image}
-          alt={name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <p className="text-[10px] uppercase tracking-[1.5px] text-muted">
+              Sin imagen
+            </p>
+          </div>
+        )}
         {badge && (
           <span className="absolute left-3 top-3 bg-ink px-2 py-1 text-[9px] font-medium uppercase tracking-[1.35px] text-background">
             {badge}

@@ -1,38 +1,64 @@
 import Image from "next/image";
-import Link from "next/link";
 import { BASE_URL } from "@/lib/base-url";
 import type { ContactData } from "@/services/contacts";
 import LegalFooterLinks from "./LegalFooterLinks";
 
 const SOCIAL_ICON_MAP: Record<string, string> = {
-  Instagram: "/icons/icon-instagram.svg",
   Facebook: "/icons/icon-facebook.svg",
+  Instagram: "/icons/icon-instagram.svg",
   WhatsApp: "/icons/icon-whatsapp.svg",
+  TikTok: "/icons/icon-tiktok.svg",
+  Twitter: "/icons/icon-x.svg",
+  X: "/icons/icon-x.svg",
+  YouTube: "/icons/icon-youtube.svg",
+  Telegram: "/icons/icon-telegram.svg",
+  Pinterest: "/icons/icon-pinterest.svg",
+  Discord: "/icons/icon-discord.svg",
+  Email: "/icons/icon-email.svg",
+  Teléfono: "/icons/icon-phone.svg",
 };
 
-function getSocialHref(application: string, value: string): string {
-  const lower = application.toLowerCase()
+function buildSocialHref(application: string, value: string): string {
+  const lower = application.toLowerCase();
   if (lower === "whatsapp") {
-    const phone = value.replace(/[^0-9+]/g, "")
-    return `https://wa.me/${phone.startsWith("+") ? phone.slice(1) : phone}`
+    const phone = value.replace(/[^0-9]/g, "");
+    return `https://wa.me/${phone}`;
   }
   if (lower === "instagram") {
-    const username = value.startsWith("@") ? value.slice(1) : value
-    return `https://instagram.com/${username}`
+    return `https://instagram.com/${value.replace(/^@/, "")}`;
+  }
+  if (lower === "tiktok") {
+    return `https://tiktok.com/@${value.replace(/^@/, "")}`;
+  }
+  if (lower === "twitter" || lower === "x") {
+    return `https://x.com/${value.replace(/^@/, "")}`;
   }
   if (lower === "facebook") {
-    return value.startsWith("http") ? value : `https://facebook.com/${value}`
+    return `https://facebook.com/${value.replace(/^@/, "")}`;
   }
-  return "#"
+  if (lower === "telegram") {
+    const username = value.replace(/^https?:\/\/(t\.me|telegram\.me)\//, "").replace(/^@/, "");
+    return `https://t.me/${username}`;
+  }
+  if (lower === "youtube") {
+    return value.startsWith("http") ? value : `https://youtube.com/${value.replace(/^@/, "")}`;
+  }
+  if (lower === "email") {
+    return `mailto:${value}`;
+  }
+  if (lower === "teléfono" || lower === "telefono" || lower === "phone") {
+    return `tel:${value.replace(/[^0-9+]/g, "")}`;
+  }
+  return value.startsWith("http") ? value : `https://${value}`;
 }
 
 export default async function Footer() {
-  const res = await fetch(`${BASE_URL}/api/contacts`, { cache: "no-store" })
-  const contacts: ContactData[] = res.ok ? await res.json() : []
+  const res = await fetch(`${BASE_URL}/api/contacts`, { cache: "no-store" });
+  const contacts: ContactData[] = res.ok ? await res.json() : [];
 
   const socialContacts = contacts.filter(
     (c) => SOCIAL_ICON_MAP[c.application]
-  )
+  );
 
   return (
     <footer className="bg-ink px-4 pb-8 pt-14 md:px-6">
@@ -50,7 +76,7 @@ export default async function Footer() {
           {socialContacts.map((contact) => (
             <a
               key={contact.id}
-              href={getSocialHref(contact.application, contact.value)}
+              href={buildSocialHref(contact.application, contact.value)}
               aria-label={contact.application}
               target="_blank"
               rel="noopener noreferrer"
@@ -74,7 +100,7 @@ export default async function Footer() {
 
           <LegalFooterLinks />
 
-          <Link
+          <a
             href="/login"
             className="flex items-center gap-1.5 text-[12px] text-background/35 transition-colors hover:text-background/70"
           >
@@ -86,7 +112,7 @@ export default async function Footer() {
               className="size-[12px]"
             />
             Acceso
-          </Link>
+          </a>
         </div>
       </div>
     </footer>

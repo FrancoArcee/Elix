@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
+import { useRouter, useParams, notFound } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
+import Skeleton from "@/components/admin/Skeleton";
 import CategoryForm from "@/components/admin/CategoryForm";
 import ConfirmationModal from "@/components/admin/ConfirmationModal";
 import { useAdminStore } from "@/context/adminStore";
@@ -13,24 +13,49 @@ export default function AdminEditCategoryPage() {
   const params = useParams<{ id: string }>();
   const categoryId = params.id;
 
-  const category = useAdminStore((state) =>
-    state.categories.find((item) => item.id === categoryId),
-  );
+  const categories = useAdminStore((state) => state.categories);
+  const category = categories.find((item) => item.id === categoryId);
   const updateCategory = useAdminStore((state) => state.updateCategory);
   const removeCategory = useAdminStore((state) => state.removeCategory);
   const fetchCategories = useAdminStore((state) => state.fetchCategories);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
+    fetchCategories().then(() => setReady(true));
   }, [fetchCategories]);
 
-  if (!category) {
+  useEffect(() => {
+    if (ready && !category) {
+      notFound();
+    }
+  }, [ready, category]);
+
+  if (!ready || !category) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <AdminHeader title="Categorías" backHref="/admin/categories" />
-        <main className="flex flex-1 items-center justify-center px-6">
-          <p className="text-[12px] text-muted">Categoría no encontrada.</p>
+        <main className="flex-1 px-6 py-8 md:px-10 md:py-10">
+          <div className="mx-auto w-full max-w-[672px]">
+            <div className="border border-ink/10 bg-background p-5 space-y-4">
+              <div>
+                <Skeleton className="mb-2 h-3 w-16" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+              <div>
+                <Skeleton className="mb-2 h-3 w-20" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+              <div>
+                <Skeleton className="mb-2 h-3 w-12" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+              <div>
+                <Skeleton className="mb-2 h-3 w-16" />
+                <Skeleton className="aspect-[16/9] w-full" />
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     );

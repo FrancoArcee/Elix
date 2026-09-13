@@ -32,7 +32,7 @@ export default function AdminOffersPage() {
 
   useEffect(() => {
     if (isUnauthorized) {
-      router.replace("/login");
+      router.replace("/admin/unauthorized");
     }
   }, [isUnauthorized, router]);
 

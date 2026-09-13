@@ -60,7 +60,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           concentration: p.concentration,
           badge: p.badge ?? undefined,
           price: p.price ? Number(p.price) : null,
-          image: p.images[0]?.imageUrl ?? "/images/product-oud-royale.png",
+          image: p.images[0]?.imageUrl ?? null,
           surface: "surface" as const,
           href: `/products/${p.id}`,
         }))}

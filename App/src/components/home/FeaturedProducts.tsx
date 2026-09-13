@@ -39,7 +39,7 @@ export default async function FeaturedProducts() {
         {products.map((product) => (
           <ProductCard
             key={product.id}
-            image={product.images[0]?.imageUrl ?? "/images/product-oud-royale.png"}
+            image={product.images[0]?.imageUrl ?? null}
             brand={product.brand.name}
             name={product.name}
             surface="surface"

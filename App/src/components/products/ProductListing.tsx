@@ -16,7 +16,7 @@ export type CatalogProduct = {
   fraganceFamily: string | null;
   concentration: string | null;
   price: number | null;
-  image: string;
+  image: string | null;
   href: string;
   surface?: "surface" | "surface-alt";
   badge?: string;

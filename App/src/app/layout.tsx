@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Montserrat, Libre_Baskerville } from "next/font/google";
 import "./globals.css";
 import LegalDrawer from "@/components/layout/LegalDrawer";
 
-const dmSans = DM_Sans({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
+const libreBaskerville = Libre_Baskerville({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-libre-baskerville",
   display: "swap",
 });
 
@@ -23,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${dmSans.variable} bg-background font-sans text-ink antialiased`}
+        className={`${montserrat.variable} ${libreBaskerville.variable} bg-background font-sans text-ink antialiased`}
       >
         {children}
         <LegalDrawer />

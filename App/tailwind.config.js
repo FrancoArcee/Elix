@@ -15,8 +15,8 @@ module.exports = {
         "surface-alt": "#ede8e3",
       },
       fontFamily: {
-        sans: ["var(--font-dm-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
-        serif: ["Georgia", "ui-serif", "Times New Roman", "serif"],
+        sans: ["var(--font-montserrat)", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["var(--font-libre-baskerville)", "ui-serif", "Georgia", "serif"],
       },
       keyframes: {
         marquee: {
