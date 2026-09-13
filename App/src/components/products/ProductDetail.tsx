@@ -25,7 +25,7 @@ export type ProductDetailProps = {
   brand: string;
   name: string;
   concentration?: string | null;
-  image: string;
+  image: string | null;
   images?: string[];
   sizes: string[];
   defaultSize?: string;
@@ -89,9 +89,7 @@ export default function ProductDetail({
   const [selectedSize, setSelectedSize] = useState(defaultSize);
   const [activeTab, setActiveTab] = useState<Tab>("Notas Olfativas");
 
-  const galleryImages = images?.length
-    ? images
-    : Array.from({ length: 4 }, () => image);
+  const galleryImages = images?.length ? images : image ? [image] : [];
 
   const contactHref = primaryContact
     ? buildContactHref(primaryContact.application, primaryContact.value, name)
@@ -156,28 +154,32 @@ export default function ProductDetail({
                 {name}
               </h1>
 
-              <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-ink">
-                <span>Tamaño — </span>
-                <span className="text-[11px] leading-[16.5px] text-muted">
-                  {selectedSize}
-                </span>
-              </p>
-              <div className="flex flex-wrap gap-2 pt-3">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => setSelectedSize(size)}
-                    className={`border-[0.667px] px-4 py-2.5 text-[12px] font-medium leading-4 transition-colors ${
-                      size === selectedSize
-                        ? "border-ink bg-ink text-background"
-                        : "border-ink/10 bg-background text-ink hover:border-ink/40"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
+              {sizes.length > 0 && (
+                <>
+                  <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-ink">
+                    <span>Tamaño — </span>
+                    <span className="text-[11px] leading-[16.5px] text-muted">
+                      {selectedSize}
+                    </span>
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-3">
+                    {sizes.map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`border-[0.667px] px-4 py-2.5 text-[12px] font-medium leading-4 transition-colors ${
+                          size === selectedSize
+                            ? "border-ink bg-ink text-background"
+                            : "border-ink/10 bg-background text-ink hover:border-ink/40"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               {contactHref ? (
                 <a
@@ -201,29 +203,31 @@ export default function ProductDetail({
                 </button>
               )}
 
-              <div className="pt-8">
-                <div className="border-t border-ink/10 pt-7">
-                  {benefits.map((benefit, i) => (
-                    <div
-                      key={benefit.text}
-                      className={`flex items-center gap-3 ${
-                        i > 0 ? "pt-3" : ""
-                      }`}
-                    >
-                      <Image
-                        src={benefit.icon}
-                        alt=""
-                        width={13}
-                        height={13}
-                        className="size-[13px]"
-                      />
-                      <p className="text-[12px] leading-4 text-muted">
-                        {benefit.text}
-                      </p>
-                    </div>
-                  ))}
+              {benefits.length > 0 && (
+                <div className="pt-8">
+                  <div className="border-t border-ink/10 pt-7">
+                    {benefits.map((benefit, i) => (
+                      <div
+                        key={benefit.text}
+                        className={`flex items-center gap-3 ${
+                          i > 0 ? "pt-3" : ""
+                        }`}
+                      >
+                        <Image
+                          src={benefit.icon}
+                          alt=""
+                          width={13}
+                          height={13}
+                          className="size-[13px]"
+                        />
+                        <p className="text-[12px] leading-4 text-muted">
+                          {benefit.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -271,14 +275,13 @@ export default function ProductDetail({
                     </div>
                   ) : (
                     <p className="max-w-[672px] text-[14px] leading-6 text-muted">
-                      Notas olfativas próximamente disponibles.
+                      No disponible.
                     </p>
                   ))}
 
                 {activeTab === "Descripción" && (
                   <p className="max-w-[672px] text-[14px] leading-6 text-ink">
-                    {description ??
-                      "Descripción próximamente disponible."}
+                    {description ?? "No disponible."}
                   </p>
                 )}
 
@@ -296,7 +299,7 @@ export default function ProductDetail({
                     </ul>
                   ) : (
                     <p className="max-w-[672px] text-[14px] leading-6 text-muted">
-                      Características próximamente disponibles.
+                      No disponible.
                     </p>
                   ))}
               </div>

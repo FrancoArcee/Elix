@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 type AdminProductCardProps = {
-  image: string;
+  image: string | null;
   brand: string;
   name: string;
   badge?: string;
@@ -20,13 +20,21 @@ function CardContent({
 }: Omit<AdminProductCardProps, "href" | "isFeatured" | "onToggleFeatured" | "featuredDisabled">) {
   return (
     <>
-      <Image
-        src={image}
-        alt={name}
-        fill
-        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 266px"
-        className="object-cover"
-      />
+      {image ? (
+        <Image
+          src={image}
+          alt={name}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 266px"
+          className="object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-surface">
+          <p className="text-[9px] uppercase tracking-[1.35px] text-muted">
+            Sin imagen
+          </p>
+        </div>
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       {badge && (
         <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">

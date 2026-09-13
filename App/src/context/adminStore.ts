@@ -448,7 +448,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           brandId: p.brandId,
           category: p.category as ProductCategory,
           categoryId: p.categoryId,
-          image: p.image ?? "/images/product-oud-royale.png",
+          image: p.image ?? null,
           images: Array.isArray(p.images)
             ? p.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
             : [],
@@ -482,7 +482,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             brandId: created.brandId,
             category: created.category as ProductCategory,
             categoryId: created.categoryId,
-            image: created.image ?? "/images/product-oud-royale.png",
+            image: created.image ?? null,
             images: Array.isArray(created.images)
               ? created.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
               : [],
