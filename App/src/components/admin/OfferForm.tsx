@@ -3,6 +3,12 @@
 import { useState } from "react";
 import AdminButton from "./AdminButton";
 import FilterChip from "./FilterChip";
+import { offerFormSchema } from "@/schemas/offer";
+import {
+  validateSingleField,
+  validateFormData,
+  type ValidationErrors,
+} from "@/lib/validation";
 
 export type OfferFormValues = {
   discount: string;
@@ -35,36 +41,58 @@ export default function OfferForm({
   onSubmit,
   onCancel,
 }: OfferFormProps) {
-  const categoryOptions = [...categories.map((c) => c.name), "Toda la colección"];
+  const categoryOptions = [
+    ...categories.map((c) => c.name),
+    "Toda la colección",
+  ];
   const [values, setValues] = useState<OfferFormValues>({
     ...EMPTY_VALUES,
     ...initialValues,
   });
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const handleFieldChange = (field: keyof OfferFormValues, value: any) => {
+    const next = { ...values, [field]: value };
+    setValues(next);
+    const fieldError = validateSingleField(offerFormSchema, field, next);
+    setErrors((prev) => ({
+      ...prev,
+      [field]: fieldError ?? "",
+    }));
+  };
 
   const toggleCategory = (category: string) => {
-    setValues((current) => {
-      if (category === "Toda la colección") {
-        return {
-          ...current,
-          categories: current.categories.includes("Toda la colección")
-            ? []
-            : ["Toda la colección"],
-        };
-      }
-      let next = current.categories.filter((item) => item !== "Toda la colección");
-      next = next.includes(category)
-        ? next.filter((item) => item !== category)
-        : [...next, category];
-      return { ...current, categories: next };
-    });
+    let nextCategories: string[];
+    if (category === "Toda la colección") {
+      nextCategories = values.categories.includes("Toda la colección")
+        ? []
+        : ["Toda la colección"];
+    } else {
+      let filtered = values.categories.filter(
+        (item) => item !== "Toda la colección",
+      );
+      filtered = filtered.includes(category)
+        ? filtered.filter((item) => item !== category)
+        : [...filtered, category];
+      nextCategories = filtered;
+    }
+
+    handleFieldChange("categories", nextCategories);
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const result = validateFormData(offerFormSchema, values);
+    if (!result.success) {
+      setErrors(result.errors);
+      return;
+    }
+    onSubmit(values);
   };
 
   return (
     <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(values);
-      }}
+      onSubmit={handleSubmit}
       className="flex w-full flex-col items-start border-t border-ink/10 bg-[#eceae6]/40 px-5 py-6"
     >
       <div className="flex w-full flex-col items-start">
@@ -78,27 +106,34 @@ export default function OfferForm({
           placeholder="Ej: 20"
           value={values.discount}
           onChange={(event) =>
-            setValues((current) => ({
-              ...current,
-              discount: event.target.value,
-            }))
+            handleFieldChange("discount", event.target.value)
           }
-          className="h-9 w-full border-b border-ink/10 bg-transparent py-2 text-[14px] text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/40"
+          className={`h-9 w-full border-b bg-transparent py-2 text-[14px] text-ink outline-none transition-colors placeholder:text-muted ${
+            errors.discount
+              ? "border-red-500 focus:border-red-500"
+              : "border-ink/10 focus:border-ink/40"
+          }`}
         />
+        {errors.discount && (
+          <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+            {errors.discount}
+          </p>
+        )}
       </div>
 
       <div className="flex w-full flex-col items-start pt-5">
         <span className="pb-2 text-[9px] font-medium uppercase leading-[13.5px] tracking-[2.25px] text-ink">
           Método de pago
         </span>
-        <div className="flex h-9 w-full items-center border-b border-ink/10">
+        <div
+          className={`flex h-9 w-full items-center border-b ${
+            errors.paymentMethod ? "border-red-500" : "border-ink/10"
+          }`}
+        >
           <select
             value={values.paymentMethod}
             onChange={(event) =>
-              setValues((current) => ({
-                ...current,
-                paymentMethod: event.target.value,
-              }))
+              handleFieldChange("paymentMethod", event.target.value)
             }
             className="h-full w-full appearance-none bg-transparent text-[14px] text-ink outline-none"
           >
@@ -112,6 +147,11 @@ export default function OfferForm({
             ))}
           </select>
         </div>
+        {errors.paymentMethod && (
+          <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+            {errors.paymentMethod}
+          </p>
+        )}
       </div>
 
       <div className="flex w-full flex-col items-start pt-5">
@@ -128,6 +168,11 @@ export default function OfferForm({
             />
           ))}
         </div>
+        {errors.categories && (
+          <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+            {errors.categories}
+          </p>
+        )}
       </div>
 
       <div className="flex w-full flex-col items-start pt-5">
@@ -139,10 +184,7 @@ export default function OfferForm({
           placeholder="Ej: 20% off pagando en efectivo."
           value={values.description}
           onChange={(event) =>
-            setValues((current) => ({
-              ...current,
-              description: event.target.value,
-            }))
+            handleFieldChange("description", event.target.value)
           }
           className="h-9 w-full border-b border-ink/10 bg-transparent py-2 text-[14px] text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/40"
         />

@@ -6,12 +6,14 @@ type TextFieldProps = {
   label: string;
   tag?: string;
   compact?: boolean;
+  error?: string;
 } & InputHTMLAttributes<HTMLInputElement>;
 
 export default function TextField({
   label,
   tag,
   compact = false,
+  error,
   className = "",
   ...props
 }: TextFieldProps) {
@@ -36,11 +38,16 @@ export default function TextField({
         )}
       </span>
       <input
-        className={`w-full border-b border-ink/10 bg-transparent text-[14px] text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/40 ${
-          compact ? "h-[33px] py-1.5" : "h-[36px] py-2"
-        } ${className}`}
+        className={`w-full border-b bg-transparent text-[14px] text-ink outline-none transition-colors placeholder:text-muted ${
+          error
+            ? "border-red-500 focus:border-red-500"
+            : "border-ink/10 focus:border-ink/40"
+        } ${compact ? "h-[33px] py-1.5" : "h-[36px] py-2"} ${className}`}
         {...props}
       />
+      {error && (
+        <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">{error}</p>
+      )}
     </label>
   );
 }

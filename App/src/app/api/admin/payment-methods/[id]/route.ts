@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { paymentMethodUpdateSchema } from '@/schemas/payment-method'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(
   request: Request,
@@ -11,7 +13,12 @@ export async function PUT(
 
   const { id } = await params
   const body = await request.json()
-  const { method, identifier } = body
+  const validation = validateApiRequest(paymentMethodUpdateSchema, body)
+  if (!validation.success) {
+    return validation.response
+  }
+
+  const { method, identifier } = validation.data
 
   const existing = await prisma.paymentMethod.findUnique({ where: { id } })
   if (!existing) {

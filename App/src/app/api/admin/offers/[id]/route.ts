@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { offerApiSchema } from '@/schemas/offer'
+import { validateApiRequest } from '@/lib/validation'
 
 type OfferWithRelations = {
   id: string
@@ -64,7 +66,12 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { discount, description, paymentMethod, categories, active } = body
+  const validation = validateApiRequest(offerApiSchema, body)
+  if (!validation.success) {
+    return validation.response
+  }
+
+  const { discount, description, paymentMethod, categories, active } = validation.data
 
   if (active && !existing.active) {
     await prisma.offer.updateMany({

@@ -6,6 +6,8 @@ import TextAreaField from "./TextAreaField";
 import ColorField from "./ColorField";
 import ImageDropzone from "./ImageDropzone";
 import AdminButton from "./AdminButton";
+import { categorySchema } from "@/schemas/category";
+import { validateSingleField, validateFormData, type ValidationErrors } from "@/lib/validation";
 
 export type CategoryFormValues = {
   name: string;
@@ -38,29 +40,39 @@ export default function CategoryForm({
     ...EMPTY_VALUES,
     ...initialValues,
   });
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const update =
-    (field: keyof CategoryFormValues) =>
-    (
-      event: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement
-      >,
-    ) =>
-      setValues((current) => ({ ...current, [field]: event.target.value }));
+  const handleFieldChange = (field: keyof CategoryFormValues, value: string) => {
+    const next = { ...values, [field]: value };
+    setValues(next);
+    const fieldError = validateSingleField(categorySchema, field, next);
+    setErrors((prev) => ({
+      ...prev,
+      [field]: fieldError ?? "",
+    }));
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const result = validateFormData(categorySchema, values);
+    if (!result.success) {
+      setErrors(result.errors);
+      return;
+    }
+    onSubmit({
+      ...result.data,
+      imageUrl: result.data.imageUrl ?? "",
+    });
+  };
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(values);
-      }}
-      className="w-full max-w-[512px]"
-    >
+    <form onSubmit={handleSubmit} className="w-full max-w-[512px]">
       <TextField
         label="Nombre"
         placeholder="Ej: Perfumes Árabes"
         value={values.name}
-        onChange={update("name")}
+        error={errors.name}
+        onChange={(e) => handleFieldChange("name", e.target.value)}
       />
 
       <div className="pt-7">
@@ -68,7 +80,8 @@ export default function CategoryForm({
           label="Descripción"
           placeholder="Breve descripción de la categoría"
           value={values.description}
-          onChange={update("description")}
+          error={errors.description}
+          onChange={(e) => handleFieldChange("description", e.target.value)}
         />
       </div>
 
@@ -76,7 +89,8 @@ export default function CategoryForm({
         <ColorField
           label="Color de fondo"
           value={values.color}
-          onChange={(color) => setValues((current) => ({ ...current, color }))}
+          error={errors.color}
+          onChange={(color) => handleFieldChange("color", color)}
         />
       </div>
 
@@ -86,7 +100,7 @@ export default function CategoryForm({
           folder="categories"
           value={values.imageUrl}
           onChange={(imageUrl) =>
-            setValues((current) => ({ ...current, imageUrl: imageUrl ?? "" }))
+            handleFieldChange("imageUrl", imageUrl ?? "")
           }
         />
       </div>

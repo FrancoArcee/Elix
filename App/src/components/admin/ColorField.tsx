@@ -3,12 +3,14 @@
 type ColorFieldProps = {
   label: string;
   value: string;
+  error?: string;
   onChange: (value: string) => void;
 };
 
 export default function ColorField({
   label,
   value,
+  error,
   onChange,
 }: ColorFieldProps) {
   return (
@@ -32,6 +34,9 @@ export default function ColorField({
           style={{ backgroundColor: value }}
         />
       </div>
+      {error && (
+        <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">{error}</p>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 set -e
 
 echo "⏳ Waiting for PostgreSQL..."
-until npx prisma db push > /dev/null 2>&1; do
+until npx prisma db push --accept-data-loss > /dev/null 2>&1; do
   echo "  Database not ready, retrying in 2s..."
   sleep 2
 done
