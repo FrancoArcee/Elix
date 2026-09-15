@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
 import AdminSearchInput from "@/components/admin/AdminSearchInput";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 import FilterChip from "@/components/admin/FilterChip";
 import AdminProductCard from "@/components/admin/AdminProductCard";
 import { useAdminStore } from "@/context/adminStore";
@@ -27,11 +28,13 @@ export default function AdminProductsPage() {
   const fetchCategories = useAdminStore((state) => state.fetchCategories);
   const addFeatured = useAdminStore((state) => state.addFeatured);
   const removeFeatured = useAdminStore((state) => state.removeFeatured);
+  const removeProduct = useAdminStore((state) => state.removeProduct);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("Todas");
   const [onlyFeatured, setOnlyFeatured] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedOrientations, setSelectedOrientations] = useState<string[]>([]);
@@ -179,6 +182,12 @@ export default function AdminProductsPage() {
     } else if (featuredIds.size < MAX_FEATURED) {
       addFeatured(productId);
     }
+  }
+
+  function handleDeleteProduct() {
+    if (!productToDelete) return;
+    removeProduct(productToDelete.id);
+    setProductToDelete(null);
   }
 
   const hasAnyFilterOptions =
@@ -409,11 +418,23 @@ export default function AdminProductsPage() {
                 isFeatured={featuredIds.has(product.id)}
                 onToggleFeatured={() => handleToggleFeatured(product.id)}
                 featuredDisabled={featuredIds.size >= MAX_FEATURED}
+                onDelete={() => setProductToDelete({ id: product.id, name: product.name })}
               />
             ))}
           </div>
         )}
       </main>
+
+      {productToDelete && (
+        <ConfirmationModal
+          title="Eliminar producto"
+          message={`¿Seguro que querés eliminar "${productToDelete.name}"? Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          onConfirm={handleDeleteProduct}
+          onCancel={() => setProductToDelete(null)}
+        />
+      )}
     </div>
   );
 }

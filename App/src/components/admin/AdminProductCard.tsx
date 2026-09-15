@@ -10,6 +10,7 @@ type AdminProductCardProps = {
   isFeatured?: boolean;
   onToggleFeatured?: () => void;
   featuredDisabled?: boolean;
+  onDelete?: () => void;
 };
 
 function CardContent({
@@ -17,7 +18,7 @@ function CardContent({
   brand,
   name,
   badge,
-}: Omit<AdminProductCardProps, "href" | "isFeatured" | "onToggleFeatured" | "featuredDisabled">) {
+}: Omit<AdminProductCardProps, "href" | "isFeatured" | "onToggleFeatured" | "featuredDisabled" | "onDelete">) {
   return (
     <>
       {image ? (
@@ -64,32 +65,64 @@ export default function AdminProductCard({
   isFeatured,
   onToggleFeatured,
   featuredDisabled,
+  onDelete,
 }: AdminProductCardProps) {
-  const starButton = onToggleFeatured ? (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onToggleFeatured();
-      }}
-      disabled={featuredDisabled && !isFeatured}
-      className="absolute right-2.5 top-2.5 z-10 flex size-[28px] items-center justify-center bg-black/40 transition-colors hover:bg-black/60 disabled:opacity-30"
-      aria-label={isFeatured ? "Quitar de destacados" : "Agregar a destacados"}
-      title={isFeatured ? "Quitar de destacados" : featuredDisabled ? "Máximo 6 destacados" : "Agregar a destacados"}
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill={isFeatured ? "#facc15" : "none"}
-        stroke={isFeatured ? "#facc15" : "white"}
-        strokeWidth="2"
-      >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    </button>
-  ) : null;
+  const actions = (onToggleFeatured || onDelete) && (
+    <div className="absolute right-2.5 top-2.5 z-10 flex flex-col gap-1">
+      {onToggleFeatured && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleFeatured();
+          }}
+          disabled={featuredDisabled && !isFeatured}
+          className="flex size-[28px] items-center justify-center bg-black/40 transition-colors hover:bg-black/60 disabled:opacity-30"
+          aria-label={isFeatured ? "Quitar de destacados" : "Agregar a destacados"}
+          title={isFeatured ? "Quitar de destacados" : featuredDisabled ? "Máximo 6 destacados" : "Agregar a destacados"}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill={isFeatured ? "#facc15" : "none"}
+            stroke={isFeatured ? "#facc15" : "white"}
+            strokeWidth="2"
+          >
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="flex size-[28px] items-center justify-center bg-black/40 transition-colors hover:bg-black/60"
+          aria-label="Eliminar producto"
+          title="Eliminar producto"
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
 
   if (href) {
     return (
@@ -97,7 +130,7 @@ export default function AdminProductCard({
         href={href}
         className="relative block aspect-[3/4] w-full overflow-hidden bg-surface transition-opacity hover:opacity-90"
       >
-        {starButton}
+        {actions}
         <CardContent
           image={image}
           brand={brand}
@@ -110,7 +143,7 @@ export default function AdminProductCard({
 
   return (
     <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface">
-      {starButton}
+      {actions}
       <CardContent
         image={image}
         brand={brand}
