@@ -7,3 +7,8 @@ next-env.d.ts
 .env
 .env*.local
 npm-debug.log*
+.git
+.gitignore
+prisma/migrations
+*.md
+.eslintrc.json

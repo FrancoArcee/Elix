@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import ProductCard from "@/components/products/ProductCard";
 import FilterPanel, {
   type FilterGroup,
@@ -42,12 +43,44 @@ const CONCENTRATION_MAP: Record<string, string> = {
   extrait: "Extrait de Parfum",
 };
 
-const INITIAL_FILTERS: SelectedFilters = {
-  brand: [],
-  targetAudience: [],
-  fraganceFamily: [],
-  concentration: [],
-};
+const FILTER_KEYS: (keyof SelectedFilters)[] = [
+  "brand",
+  "targetAudience",
+  "fraganceFamily",
+  "concentration",
+];
+
+function readFilters(params: URLSearchParams): SelectedFilters {
+  const filters: SelectedFilters = {
+    brand: [],
+    targetAudience: [],
+    fraganceFamily: [],
+    concentration: [],
+  };
+  for (const key of FILTER_KEYS) {
+    const val = params.get(key);
+    if (val) filters[key] = val.split(",").filter(Boolean);
+  }
+  return filters;
+}
+
+function buildParams(
+  base: URLSearchParams,
+  filters: SelectedFilters,
+  sort: SortOption,
+): string {
+  const p = new URLSearchParams();
+  for (const key of FILTER_KEYS) {
+    if (filters[key].length > 0) p.set(key, filters[key].join(","));
+  }
+  if (sort !== "name-asc") p.set("sort", sort);
+  for (const [k, v] of base.entries()) {
+    if (!FILTER_KEYS.includes(k as keyof SelectedFilters) && k !== "sort") {
+      p.set(k, v);
+    }
+  }
+  return p.toString();
+}
 
 type ProductListingProps = {
   title: string;
@@ -55,6 +88,8 @@ type ProductListingProps = {
   products: CatalogProduct[];
   backgroundColor?: string;
   backgroundClass?: string;
+  emptyMessage?: string;
+  titleClassName?: string;
 };
 
 export default function ProductListing({
@@ -62,9 +97,15 @@ export default function ProductListing({
   products,
   backgroundColor,
   backgroundClass = "bg-background",
+  emptyMessage,
+  titleClassName,
 }: ProductListingProps) {
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(INITIAL_FILTERS);
-  const [sortOption, setSortOption] = useState<SortOption>("name-asc");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const selectedFilters = useMemo(() => readFilters(searchParams), [searchParams]);
+  const sortOption = (searchParams.get("sort") as SortOption) || "name-asc";
+
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
@@ -78,6 +119,14 @@ export default function ProductListing({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const updateParams = useCallback(
+    (filters: SelectedFilters, sort: SortOption) => {
+      const qs = buildParams(searchParams, filters, sort);
+      router.push(`?${qs}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   const filterGroups = useMemo<FilterGroup[]>(() => {
     const groups: FilterGroup[] = [];
@@ -144,17 +193,22 @@ export default function ProductListing({
   }, [products]);
 
   const toggleFilter = (groupId: keyof SelectedFilters, value: string) => {
-    setSelectedFilters((prev) => {
-      const current = prev[groupId];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      return { ...prev, [groupId]: next };
-    });
+    const next = { ...selectedFilters };
+    const current = next[groupId];
+    next[groupId] = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    updateParams(next, sortOption);
   };
 
   const clearFilters = () => {
-    setSelectedFilters(INITIAL_FILTERS);
+    const empty: SelectedFilters = {
+      brand: [],
+      targetAudience: [],
+      fraganceFamily: [],
+      concentration: [],
+    };
+    updateParams(empty, sortOption);
   };
 
   const hasActiveFilters =
@@ -216,7 +270,7 @@ export default function ProductListing({
       style={backgroundColor ? { backgroundColor } : undefined}
     >
       <div className="mx-auto w-full max-w-[1280px]">
-        <h1 className="font-serif text-[30px] font-bold leading-9 text-ink md:text-[36px] md:leading-10">
+        <h1 className={`font-serif text-[18px] font-bold leading-6 text-ink md:text-[24px] md:leading-8 ${titleClassName ?? ""}`}>
           {title}
         </h1>
 
@@ -279,7 +333,7 @@ export default function ProductListing({
                         key={opt.value}
                         type="button"
                         onClick={() => {
-                          setSortOption(opt.value);
+                          updateParams(selectedFilters, opt.value);
                           setIsSortOpen(false);
                         }}
                         className={`flex w-full items-center justify-between px-3 py-2 text-left text-[11px] uppercase tracking-[1px] transition-colors ${
@@ -301,12 +355,18 @@ export default function ProductListing({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
+        <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
+          {filterGroups.length > 0 && isFiltersOpen && (
+            <div
+              className="fixed inset-0 z-10 bg-ink/20 lg:hidden"
+              onClick={() => setIsFiltersOpen(false)}
+            />
+          )}
           {filterGroups.length > 0 && (
             <div
               className={`${
                 isFiltersOpen ? "block" : "hidden"
-              } w-full lg:block lg:w-[220px] lg:shrink-0`}
+              } absolute inset-x-0 top-0 z-20 max-h-[80vh] overflow-y-auto bg-background p-4 shadow-lg lg:relative lg:block lg:max-h-none lg:w-[220px] lg:shrink-0 lg:overflow-visible lg:bg-transparent lg:p-0 lg:shadow-none`}
             >
               <FilterPanel
                 filterGroups={filterGroups}
@@ -323,19 +383,22 @@ export default function ProductListing({
             {sortedProducts.length === 0 ? (
               <div className="flex min-h-[320px] flex-col items-center justify-center border border-dashed border-ink/15 p-8 text-center">
                 <p className="font-serif text-[20px] font-semibold text-ink">
-                  No se encontraron productos
+                  {emptyMessage ?? "No se encontraron productos"}
                 </p>
                 <p className="mt-2 max-w-[360px] text-[13px] text-muted">
-                  No hay fragancias que coincidan con la combinación de filtros
-                  seleccionada en esta categoría.
+                  {emptyMessage
+                    ? "Intenta con otro término de búsqueda."
+                    : "No hay fragancias que coincidan con la combinación de filtros seleccionada en esta categoría."}
                 </p>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="mt-5 border border-ink bg-ink px-5 py-2.5 text-[10px] font-medium uppercase tracking-[2px] text-background transition-colors hover:bg-ink/85"
-                >
-                  Restablecer filtros
-                </button>
+                {!emptyMessage && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="mt-5 border border-ink bg-ink px-5 py-2.5 text-[10px] font-medium uppercase tracking-[2px] text-background transition-colors hover:bg-ink/85"
+                  >
+                    Restablecer filtros
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 pb-14 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-3">

@@ -9,8 +9,19 @@ type ProductWithRelations = Prisma.ProductGetPayload<{
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const categoryId = searchParams.get('categoryId')
+  const search = searchParams.get('search')
+  const limit = searchParams.get('limit')
 
-  const where = categoryId ? { categoryId } : {}
+  const where = {
+    ...(categoryId && { categoryId }),
+    ...(search && {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' as const } },
+        { brand: { name: { contains: search, mode: 'insensitive' as const } } },
+        { notes: { some: { note: { name: { contains: search, mode: 'insensitive' as const } } } } },
+      ],
+    }),
+  }
 
   const products = await prisma.product.findMany({
     where,
@@ -20,6 +31,7 @@ export async function GET(request: Request) {
       images: { orderBy: { displayOrder: 'asc' } },
     },
     orderBy: { name: 'asc' },
+    ...(limit ? { take: parseInt(limit) } : {}),
   }) as ProductWithRelations[]
 
   return NextResponse.json(
