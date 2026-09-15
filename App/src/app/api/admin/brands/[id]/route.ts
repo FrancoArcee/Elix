@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { brandSchema } from '@/schemas/brand'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(
   request: Request,
@@ -10,7 +12,12 @@ export async function PUT(
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const { name } = await request.json()
+  const body = await request.json()
+  const validation = validateApiRequest(brandSchema, body)
+  if (!validation.success) {
+    return validation.response
+  }
+  const { name } = validation.data
 
   const existing = await prisma.brand.findUnique({ where: { id } })
   if (!existing) {

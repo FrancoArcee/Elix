@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 import { intToHex, hexToInt } from '@/lib/colors'
 
+import { categorySchema } from '@/schemas/category'
+import { validateApiRequest } from '@/lib/validation'
+
 export async function GET() {
   const session = await getAdminSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -27,11 +30,12 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { name, color, urlImage, description } = body
-
-  if (!name || !color || !description) {
-    return NextResponse.json({ error: 'name, color and description are required' }, { status: 400 })
+  const validation = validateApiRequest(categorySchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { name, color, urlImage, description } = validation.data
 
   const category = await prisma.category.create({
     data: {

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { offerApiSchema } from '@/schemas/offer'
+import { validateApiRequest } from '@/lib/validation'
 
 type OfferWithRelations = {
   id: string
@@ -47,11 +49,12 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { discount, description, paymentMethod, categories, active } = body
-
-  if (discount === undefined || discount === null) {
-    return NextResponse.json({ error: 'discount is required' }, { status: 400 })
+  const validation = validateApiRequest(offerApiSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { discount, description, paymentMethod, categories, active } = validation.data
 
   if (active) {
     await prisma.offer.updateMany({

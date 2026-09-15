@@ -100,19 +100,33 @@ export default async function Footer() {
 
           <LegalFooterLinks />
 
-          <a
-            href="/login"
-            className="flex items-center gap-1.5 text-[12px] text-background/35 transition-colors hover:text-background/70"
-          >
-            <Image
-              src="/icons/icon-lock.svg"
-              alt=""
-              width={12}
-              height={12}
-              className="size-[12px]"
-            />
-            Acceso
-          </a>
+          <div className="flex items-center gap-4 text-[12px] text-background/35">
+            <a
+              href="https://diagonalstudios.com.ar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-background/70"
+            >
+              Desarrollado por{" "}
+              <span className="font-medium text-background/55 transition-colors hover:text-background/90">
+                Diagonal Studios
+              </span>
+            </a>
+            <span>•</span>
+            <a
+              href="/login"
+              className="flex items-center gap-1.5 transition-colors hover:text-background/70"
+            >
+              <Image
+                src="/icons/icon-lock.svg"
+                alt=""
+                width={12}
+                height={12}
+                className="size-[12px]"
+              />
+              Acceso
+            </a>
+          </div>
         </div>
       </div>
     </footer>

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 
+import { paymentMethodSchema } from '@/schemas/payment-method'
+import { validateApiRequest } from '@/lib/validation'
+
 export async function GET() {
   const session = await getAdminSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,11 +18,12 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { method, identifier } = body
-
-  if (!method) {
-    return NextResponse.json({ error: 'method is required' }, { status: 400 })
+  const validation = validateApiRequest(paymentMethodSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { method, identifier } = validation.data
 
   const paymentMethod = await prisma.paymentMethod.create({
     data: {

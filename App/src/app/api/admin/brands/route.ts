@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 
+import { brandSchema } from '@/schemas/brand'
+import { validateApiRequest } from '@/lib/validation'
+
 export async function GET() {
   const session = await getAdminSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -14,10 +17,12 @@ export async function POST(request: Request) {
   const session = await getAdminSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { name } = await request.json()
-  if (!name || typeof name !== 'string' || !name.trim()) {
-    return NextResponse.json({ error: 'name is required' }, { status: 400 })
+  const body = await request.json()
+  const validation = validateApiRequest(brandSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+  const { name } = validation.data
 
   const existing = await prisma.brand.findFirst({ where: { name: { equals: name.trim(), mode: 'insensitive' } } })
   if (existing) {

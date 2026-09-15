@@ -2,17 +2,20 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { heroSchema } from '@/schemas/information'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(request: Request) {
   const session = await getAdminSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { kicker, title, imageUrl } = body
-
-  if (!kicker || !title || !imageUrl) {
-    return NextResponse.json({ error: 'kicker, title and imageUrl are required' }, { status: 400 })
+  const validation = validateApiRequest(heroSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { kicker, title, imageUrl } = validation.data
 
   const existing = await prisma.hero.findFirst()
 

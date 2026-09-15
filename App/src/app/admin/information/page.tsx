@@ -12,6 +12,14 @@ import TextField from "@/components/admin/TextField";
 import ImageDropzone from "@/components/admin/ImageDropzone";
 import AdminButton from "@/components/admin/AdminButton";
 import { useAdminStore } from "@/context/adminStore";
+import { heroSchema } from "@/schemas/information";
+import { contactSchema } from "@/schemas/contact";
+import { paymentMethodFormSchema } from "@/schemas/payment-method";
+import {
+  validateSingleField,
+  validateFormData,
+  type ValidationErrors,
+} from "@/lib/validation";
 
 type EntryFormState =
   | { mode: "closed" }
@@ -63,13 +71,9 @@ function buildContactValue(app: string, raw: string): string {
 }
 
 function validateContactValue(app: string, raw: string): string | null {
-  const lower = app.toLowerCase();
-  if (lower === "whatsapp" || lower === "teléfono" || lower === "telefono") {
-    const digits = raw.replace(/[^0-9]/g, "");
-    if (!/[\d]/.test(raw) || digits.length < 8) return "Ingresá un número de teléfono válido (mínimo 8 dígitos)";
-  }
-  if (lower === "email") {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return "Ingresá un email válido";
+  const result = contactSchema.safeParse({ application: app, value: raw });
+  if (!result.success) {
+    return result.error.issues[0]?.message ?? "Dato de contacto inválido";
   }
   return null;
 }
@@ -128,6 +132,7 @@ export default function AdminInformationPage() {
     title: hero.title,
     imageUrl: hero.imageUrl,
   });
+  const [heroErrors, setHeroErrors] = useState<ValidationErrors>({});
   const [contactForm, setContactForm] = useState<EntryFormState>({
     mode: "closed",
   });
@@ -135,6 +140,7 @@ export default function AdminInformationPage() {
     mode: "closed",
   });
   const [contactError, setContactError] = useState<string | null>(null);
+  const [contactErrors, setContactErrors] = useState<ValidationErrors>({});
   const [contactApp, setContactApp] = useState("");
   const [contactValue, setContactValue] = useState("");
 
@@ -169,12 +175,28 @@ export default function AdminInformationPage() {
     setContactForm({ mode: "closed" });
     setPaymentForm({ mode: "closed" });
     setContactError(null);
+    setContactErrors({});
     setContactApp("");
     setContactValue("");
   };
 
+  const handleHeroFieldChange = (
+    field: "kicker" | "title" | "imageUrl",
+    value: string,
+  ) => {
+    const next = { ...heroForm, [field]: value };
+    setHeroForm(next);
+    const err = validateSingleField(heroSchema, field, next);
+    setHeroErrors((prev) => ({ ...prev, [field]: err ?? "" }));
+  };
+
   const handleHeroSubmit = async () => {
-    await updateHero(heroForm);
+    const validation = validateFormData(heroSchema, heroForm);
+    if (!validation.success) {
+      setHeroErrors(validation.errors);
+      return;
+    }
+    await updateHero(validation.data);
     setHeroEdit(false);
   };
 
@@ -188,7 +210,10 @@ export default function AdminInformationPage() {
               <SectionLabel>Inicio</SectionLabel>
               <button
                 type="button"
-                onClick={() => setHeroEdit(!heroEdit)}
+                onClick={() => {
+                  setHeroEdit(!heroEdit);
+                  setHeroErrors({});
+                }}
                 className="border border-ink/10 px-3 py-1.5 text-[9px] font-medium uppercase leading-[13.5px] tracking-[1.62px] text-muted transition-colors hover:border-ink/35 hover:text-ink"
               >
                 {heroEdit ? "Cancelar" : "Editar"}
@@ -201,8 +226,9 @@ export default function AdminInformationPage() {
                     label="Kicker"
                     placeholder="Ej: Nueva colección — 2026"
                     value={heroForm.kicker}
+                    error={heroErrors.kicker}
                     onChange={(e) =>
-                      setHeroForm((prev) => ({ ...prev, kicker: e.target.value }))
+                      handleHeroFieldChange("kicker", e.target.value)
                     }
                   />
                   <div className="pt-5">
@@ -210,8 +236,9 @@ export default function AdminInformationPage() {
                       label="Título"
                       placeholder="Ej: Descubrí el arte de las fragancias árabes."
                       value={heroForm.title}
+                      error={heroErrors.title}
                       onChange={(e) =>
-                        setHeroForm((prev) => ({ ...prev, title: e.target.value }))
+                        handleHeroFieldChange("title", e.target.value)
                       }
                     />
                   </div>
@@ -221,9 +248,14 @@ export default function AdminInformationPage() {
                       folder="hero"
                       value={heroForm.imageUrl ?? undefined}
                       onChange={(url) =>
-                        setHeroForm((prev) => ({ ...prev, imageUrl: url ?? "" }))
+                        handleHeroFieldChange("imageUrl", url ?? "")
                       }
                     />
+                    {heroErrors.imageUrl && (
+                      <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+                        {heroErrors.imageUrl}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col items-stretch gap-3 pt-6 sm:flex-row sm:items-start">
                     <AdminButton
@@ -376,7 +408,16 @@ export default function AdminInformationPage() {
                         label={getContactFieldFor(contactApp).fieldLabel}
                         placeholder={getContactFieldFor(contactApp).placeholder}
                         value={contactValue}
-                        onChange={(e) => setContactValue(e.target.value)}
+                        error={contactErrors.value}
+                        onChange={(e) => {
+                          setContactValue(e.target.value);
+                          const err = validateSingleField(contactSchema, "value", {
+                            application: contactApp,
+                            value: e.target.value,
+                          });
+                          setContactErrors((prev) => ({ ...prev, value: err ?? "" }));
+                          if (contactError) setContactError(null);
+                        }}
                       />
                     )}
                   </div>
@@ -467,7 +508,16 @@ export default function AdminInformationPage() {
                             label={getContactFieldFor(contactApp).fieldLabel}
                             placeholder={getContactFieldFor(contactApp).placeholder}
                             value={contactValue}
-                            onChange={(e) => setContactValue(e.target.value)}
+                            error={contactErrors.value}
+                            onChange={(e) => {
+                              setContactValue(e.target.value);
+                              const err = validateSingleField(contactSchema, "value", {
+                                application: contactApp,
+                                value: e.target.value,
+                              });
+                              setContactErrors((prev) => ({ ...prev, value: err ?? "" }));
+                              if (contactError) setContactError(null);
+                            }}
                           />
                         )}
                       </div>
@@ -543,6 +593,7 @@ export default function AdminInformationPage() {
                       ? "Editar método de pago"
                       : "Nuevo método de pago"
                   }
+                  schema={paymentMethodFormSchema}
                   fields={[
                     {
                       name: "name",

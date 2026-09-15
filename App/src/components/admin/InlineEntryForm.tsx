@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import type { ZodType } from "zod";
 import TextField from "./TextField";
 import AdminButton from "./AdminButton";
+import {
+  validateSingleField,
+  validateFormData,
+  type ValidationErrors,
+} from "@/lib/validation";
 
 export type InlineFieldConfig = {
   name: string;
@@ -16,6 +22,7 @@ export type InlineFieldConfig = {
 type InlineEntryFormProps = {
   title: string;
   fields: InlineFieldConfig[];
+  schema?: ZodType<any>;
   initialValues?: Record<string, string>;
   submitLabel?: string;
   onSubmit: (values: Record<string, string>) => void;
@@ -25,6 +32,7 @@ type InlineEntryFormProps = {
 export default function InlineEntryForm({
   title,
   fields,
+  schema,
   initialValues,
   submitLabel = "Guardar",
   onSubmit,
@@ -37,13 +45,32 @@ export default function InlineEntryForm({
     }
     return initial;
   });
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const handleFieldChange = (fieldName: string, value: string) => {
+    const next = { ...values, [fieldName]: value };
+    setValues(next);
+    if (schema) {
+      const err = validateSingleField(schema, fieldName, next);
+      setErrors((prev) => ({ ...prev, [fieldName]: err ?? "" }));
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (schema) {
+      const result = validateFormData(schema, values);
+      if (!result.success) {
+        setErrors(result.errors);
+        return;
+      }
+    }
+    onSubmit(values);
+  };
 
   return (
     <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(values);
-      }}
+      onSubmit={handleSubmit}
       className="w-full border border-ink/20 bg-background p-4"
     >
       <p className="text-[9px] uppercase leading-[13.5px] tracking-[2.25px] text-muted">
@@ -57,7 +84,7 @@ export default function InlineEntryForm({
               <span
                 className={`flex items-center ${
                   field.optional ? "gap-2" : ""
-                } ${"pb-1.5"}`}
+                } pb-1.5`}
               >
                 <span className="text-[9px] font-medium uppercase leading-[13.5px] tracking-[1.8px] text-ink">
                   {field.label}
@@ -69,13 +96,14 @@ export default function InlineEntryForm({
                 )}
               </span>
               <select
-                className="h-[33px] w-full appearance-none border-b border-ink/10 bg-transparent py-1.5 text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
+                className={`h-[33px] w-full appearance-none border-b bg-transparent py-1.5 text-[14px] text-ink outline-none transition-colors ${
+                  errors[field.name]
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-ink/10 focus:border-ink/40"
+                }`}
                 value={values[field.name]}
                 onChange={(event) =>
-                  setValues((current) => ({
-                    ...current,
-                    [field.name]: event.target.value,
-                  }))
+                  handleFieldChange(field.name, event.target.value)
                 }
               >
                 <option value="">{field.placeholder}</option>
@@ -85,6 +113,11 @@ export default function InlineEntryForm({
                   </option>
                 ))}
               </select>
+              {errors[field.name] && (
+                <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+                  {errors[field.name]}
+                </p>
+              )}
             </label>
           ) : (
             <TextField
@@ -94,11 +127,9 @@ export default function InlineEntryForm({
               tag={field.optional ? "Opcional" : undefined}
               placeholder={field.placeholder}
               value={values[field.name]}
+              error={errors[field.name]}
               onChange={(event) =>
-                setValues((current) => ({
-                  ...current,
-                  [field.name]: event.target.value,
-                }))
+                handleFieldChange(field.name, event.target.value)
               }
             />
           ),

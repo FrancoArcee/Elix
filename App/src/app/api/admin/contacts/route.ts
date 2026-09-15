@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 
+import { contactSchema } from '@/schemas/contact'
+import { validateApiRequest } from '@/lib/validation'
+
 export async function GET() {
   const session = await getAdminSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,11 +20,12 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { application, value, isPrimary, displayOrder } = body
-
-  if (!application || !value) {
-    return NextResponse.json({ error: 'application and value are required' }, { status: 400 })
+  const validation = validateApiRequest(contactSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { application, value, isPrimary, displayOrder } = validation.data
 
   if (isPrimary) {
     await prisma.contact.updateMany({
