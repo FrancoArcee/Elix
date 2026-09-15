@@ -68,7 +68,7 @@ export default function AdminNewProductPage() {
               notes: notes.length ? notes : undefined,
             });
             await fetchProducts();
-            router.push("/admin/products");
+            router.push("/admin/products?success=created");
           }}
           onCancel={() => router.push("/admin/products")}
         />

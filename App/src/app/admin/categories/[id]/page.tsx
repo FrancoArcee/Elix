@@ -63,7 +63,7 @@ export default function AdminEditCategoryPage() {
 
   const handleDelete = async () => {
     await removeCategory(categoryId);
-    router.push("/admin/categories");
+    router.push("/admin/categories?success=deleted");
   };
 
   return (
@@ -85,7 +85,7 @@ export default function AdminEditCategoryPage() {
               color: values.color,
               image: values.imageUrl || category.image,
             });
-            router.push("/admin/categories");
+            router.push("/admin/categories?success=updated");
           }}
           onCancel={() => router.push("/admin/categories")}
         />

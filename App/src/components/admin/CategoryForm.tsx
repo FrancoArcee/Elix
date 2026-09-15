@@ -41,8 +41,10 @@ export default function CategoryForm({
     ...initialValues,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleFieldChange = (field: keyof CategoryFormValues, value: string) => {
+    setSubmitError(null);
     const next = { ...values, [field]: value };
     setValues(next);
     const fieldError = validateSingleField(categorySchema, field, next);
@@ -52,17 +54,23 @@ export default function CategoryForm({
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSubmitError(null);
     const result = validateFormData(categorySchema, values);
     if (!result.success) {
       setErrors(result.errors);
+      setSubmitError("Revisá los campos con errores en el formulario.");
       return;
     }
-    onSubmit({
-      ...result.data,
-      imageUrl: result.data.imageUrl ?? "",
-    });
+    try {
+      await onSubmit({
+        ...result.data,
+        imageUrl: result.data.imageUrl ?? "",
+      });
+    } catch (err: any) {
+      setSubmitError(err.message ?? "Error al guardar. Intentá de nuevo.");
+    }
   };
 
   return (
@@ -105,7 +113,13 @@ export default function CategoryForm({
         />
       </div>
 
-      <div className="flex flex-col items-stretch gap-3 pt-9 sm:flex-row sm:items-start">
+      {submitError && (
+        <p className="pt-7 text-[11px] leading-[14px] text-red-500">
+          {submitError}
+        </p>
+      )}
+
+      <div className="flex flex-col items-stretch gap-3 pt-3 sm:flex-row sm:items-start">
         <AdminButton
           type="submit"
           variant="primary"

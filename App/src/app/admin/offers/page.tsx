@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
 import OfferCreateCard from "@/components/admin/OfferCreateCard";
@@ -55,6 +56,7 @@ export default function AdminOffersPage() {
       description: values.description,
     });
     setCreateOpen(false);
+    toast.success("Oferta creada");
   };
 
   const handleEdit = (id: string, values: OfferFormValues) => {
@@ -65,6 +67,7 @@ export default function AdminOffersPage() {
       description: values.description,
     });
     setEditingId(null);
+    toast.success("Oferta actualizada");
   };
 
   const renderCard = (offer: (typeof offers)[number]) => {
@@ -80,12 +83,18 @@ export default function AdminOffersPage() {
         editing={editing}
         paymentMethods={paymentMethods}
         allCategories={categories}
-        onToggleActive={() => toggleOfferActive(offer.id)}
+        onToggleActive={() => {
+          toggleOfferActive(offer.id);
+          toast.success("Oferta actualizada");
+        }}
         onEdit={() => {
           setCreateOpen(false);
           setEditingId(editing ? null : offer.id);
         }}
-        onDelete={() => removeOffer(offer.id)}
+        onDelete={() => {
+          removeOffer(offer.id);
+          toast.success("Oferta eliminada");
+        }}
         onSubmit={(values) => handleEdit(offer.id, values)}
         onCancelEdit={() => setEditingId(null)}
       />

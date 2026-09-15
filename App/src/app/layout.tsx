@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, Libre_Baskerville } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import LegalDrawer from "@/components/layout/LegalDrawer";
 
@@ -34,6 +35,22 @@ export default function RootLayout({
       >
         {children}
         <LegalDrawer />
+        <Toaster
+          position="top-right"
+          richColors={false}
+          toastOptions={{
+            style: {
+              background: "#1a1a1a",
+              color: "#f5f5f5",
+              borderRadius: "0px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              fontFamily: "var(--font-montserrat)",
+              fontSize: "12px",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            },
+          }}
+        />
       </body>
     </html>
   );

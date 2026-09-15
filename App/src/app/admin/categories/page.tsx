@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
 import AdminCategoryCard from "@/components/admin/AdminCategoryCard";
@@ -22,6 +23,20 @@ export default function AdminCategoriesPage() {
       router.replace("/admin/unauthorized");
     }
   }, [isUnauthorized, router]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get("success");
+    if (success) {
+      const messages: Record<string, string> = {
+        created: "Categoría creada",
+        updated: "Categoría actualizada",
+        deleted: "Categoría eliminada",
+      };
+      if (messages[success]) toast.success(messages[success]);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

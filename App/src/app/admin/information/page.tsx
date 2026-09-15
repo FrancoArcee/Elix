@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Link from "next/link";
 import AdminHeader from "@/components/admin/AdminHeader";
 import HeroPreviewCard from "@/components/admin/HeroPreviewCard";
@@ -155,6 +156,19 @@ export default function AdminInformationPage() {
   }, [isUnauthorized, router]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get("success");
+    if (success) {
+      const messages: Record<string, string> = {
+        created: "Sección creada",
+        updated: "Sección actualizada",
+      };
+      if (messages[success]) toast.success(messages[success]);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     setHeroForm({ kicker: hero.kicker, title: hero.title, imageUrl: hero.imageUrl });
   }, [hero]);
 
@@ -198,6 +212,7 @@ export default function AdminInformationPage() {
     }
     await updateHero(validation.data);
     setHeroEdit(false);
+    toast.success("Inicio actualizado");
   };
 
   return (
@@ -316,12 +331,18 @@ export default function AdminInformationPage() {
                     onToggleVisibility={
                       section.id === "how_to_buy"
                         ? undefined
-                        : () => toggleAboutVisibility(section.id)
+                        : () => {
+                            toggleAboutVisibility(section.id);
+                            toast.success("Visibilidad actualizada");
+                          }
                     }
                     onDelete={
                       section.id === "how_to_buy"
                         ? undefined
-                        : () => removeAboutSection(section.id)
+                        : () => {
+                            removeAboutSection(section.id);
+                            toast.success("Sección eliminada");
+                          }
                     }
                   />
                 ))}
@@ -370,6 +391,7 @@ export default function AdminInformationPage() {
                         isPrimary: false,
                       });
                       closeForms();
+                      toast.success("Contacto creado");
                     } catch (err: any) {
                       setContactError(err.message ?? "Error al guardar el contacto");
                     }
@@ -470,6 +492,7 @@ export default function AdminInformationPage() {
                             value,
                           });
                           closeForms();
+                          toast.success("Contacto actualizado");
                         } catch (err: any) {
                           setContactError(err.message ?? "Error al guardar el contacto");
                         }
@@ -555,8 +578,14 @@ export default function AdminInformationPage() {
                     onEdit={() =>
                       setContactForm({ mode: "edit", id: contact.id })
                     }
-                    onDelete={() => removeContact(contact.id)}
-                    onSetPrimary={() => setPrimaryContact(contact.id)}
+                    onDelete={() => {
+                      removeContact(contact.id);
+                      toast.success("Contacto eliminado");
+                    }}
+                    onSetPrimary={() => {
+                      setPrimaryContact(contact.id);
+                      toast.success("Contacto principal actualizado");
+                    }}
                   />
                 );
               })}
@@ -628,11 +657,13 @@ export default function AdminInformationPage() {
                         name: values.name,
                         identifier: values.identifier || undefined,
                       });
+                      toast.success("Método de pago actualizado");
                     } else {
                       addPaymentMethod({
                         name: values.name,
                         identifier: values.identifier || undefined,
                       });
+                      toast.success("Método de pago creado");
                     }
                     closeForms();
                   }}
@@ -647,7 +678,10 @@ export default function AdminInformationPage() {
                   onEdit={() =>
                     setPaymentForm({ mode: "edit", id: method.id })
                   }
-                  onDelete={() => removePaymentMethod(method.id)}
+                  onDelete={() => {
+                    removePaymentMethod(method.id);
+                    toast.success("Método de pago eliminado");
+                  }}
                 />
               ))}
             </div>

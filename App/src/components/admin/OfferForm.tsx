@@ -50,8 +50,10 @@ export default function OfferForm({
     ...initialValues,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleFieldChange = (field: keyof OfferFormValues, value: any) => {
+    setSubmitError(null);
     const next = { ...values, [field]: value };
     setValues(next);
     const fieldError = validateSingleField(offerFormSchema, field, next);
@@ -80,14 +82,20 @@ export default function OfferForm({
     handleFieldChange("categories", nextCategories);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSubmitError(null);
     const result = validateFormData(offerFormSchema, values);
     if (!result.success) {
       setErrors(result.errors);
+      setSubmitError("Revisá los campos con errores en el formulario.");
       return;
     }
-    onSubmit(values);
+    try {
+      await onSubmit(values);
+    } catch (err: any) {
+      setSubmitError(err.message ?? "Error al guardar. Intentá de nuevo.");
+    }
   };
 
   return (
@@ -190,7 +198,13 @@ export default function OfferForm({
         />
       </div>
 
-      <div className="flex flex-col items-stretch gap-3 pt-6 sm:flex-row sm:items-start">
+      {submitError && (
+        <p className="pt-5 text-[11px] leading-[14px] text-red-500">
+          {submitError}
+        </p>
+      )}
+
+      <div className="flex flex-col items-stretch gap-3 pt-3 sm:flex-row sm:items-start">
         <AdminButton
           type="submit"
           variant="primary"

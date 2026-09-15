@@ -149,7 +149,7 @@ export default function AdminEditProductPage() {
               notes: notes.length ? notes : undefined,
             });
             await fetchProducts();
-            router.push("/admin/products");
+            router.push("/admin/products?success=updated");
           }}
           onCancel={() => router.push("/admin/products")}
         />

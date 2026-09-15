@@ -22,7 +22,7 @@ export default function AdminNewCategoryPage() {
               color: values.color,
               image: values.imageUrl || "",
             });
-            router.push("/admin/categories");
+            router.push("/admin/categories?success=created");
           }}
           onCancel={() => router.push("/admin/categories")}
         />

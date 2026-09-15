@@ -22,7 +22,7 @@ export default function AdminNewSectionPage() {
               description: values.description,
               imageUrl: values.imageUrl || undefined,
             });
-            router.push("/admin/information");
+            router.push("/admin/information?success=created");
           }}
           onCancel={() => router.push("/admin/information")}
         />

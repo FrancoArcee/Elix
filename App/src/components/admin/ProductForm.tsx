@@ -100,6 +100,7 @@ export default function ProductForm({
     ...initialValues,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [newBrandName, setNewBrandName] = useState("");
@@ -115,6 +116,7 @@ export default function ProductForm({
       .includes("body splash") ?? false;
 
   const handleFieldChange = (field: keyof ProductFormValues, value: any) => {
+    setSubmitError(null);
     const next = { ...values, [field]: value };
     setValues(next);
     const fieldError = validateSingleField(productFormSchema, field, next);
@@ -124,14 +126,20 @@ export default function ProductForm({
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSubmitError(null);
     const result = validateFormData(productFormSchema, values);
     if (!result.success) {
       setErrors(result.errors);
+      setSubmitError("Revisá los campos con errores en el formulario.");
       return;
     }
-    onSubmit(values);
+    try {
+      await onSubmit(values);
+    } catch (err: any) {
+      setSubmitError(err.message ?? "Error al guardar. Intentá de nuevo.");
+    }
   };
 
   return (
@@ -447,7 +455,12 @@ export default function ProductForm({
       </section>
 
       {/* Botones de acción */}
-      <div className="flex flex-col-reverse items-stretch gap-3 pt-8 pb-14 sm:flex-row sm:justify-end">
+      {submitError && (
+        <p className="pt-8 text-[11px] leading-[14px] text-red-500">
+          {submitError}
+        </p>
+      )}
+      <div className="flex flex-col-reverse items-stretch gap-3 pt-3 pb-14 sm:flex-row sm:justify-end">
         <AdminButton
           type="button"
           variant="outline"

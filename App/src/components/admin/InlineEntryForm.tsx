@@ -46,8 +46,10 @@ export default function InlineEntryForm({
     return initial;
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleFieldChange = (fieldName: string, value: string) => {
+    setSubmitError(null);
     const next = { ...values, [fieldName]: value };
     setValues(next);
     if (schema) {
@@ -56,16 +58,22 @@ export default function InlineEntryForm({
     }
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSubmitError(null);
     if (schema) {
       const result = validateFormData(schema, values);
       if (!result.success) {
         setErrors(result.errors);
+        setSubmitError("Revisá los campos con errores en el formulario.");
         return;
       }
     }
-    onSubmit(values);
+    try {
+      await onSubmit(values);
+    } catch (err: any) {
+      setSubmitError(err.message ?? "Error al guardar. Intentá de nuevo.");
+    }
   };
 
   return (
@@ -136,7 +144,13 @@ export default function InlineEntryForm({
         )}
       </div>
 
-      <div className="flex flex-col items-stretch gap-2 pt-4 sm:flex-row sm:items-start">
+      {submitError && (
+        <p className="pt-4 text-[11px] leading-[14px] text-red-500">
+          {submitError}
+        </p>
+      )}
+
+      <div className="flex flex-col items-stretch gap-2 pt-2 sm:flex-row sm:items-start">
         <AdminButton
           type="submit"
           variant="primary"

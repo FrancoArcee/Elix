@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminHeading from "@/components/admin/AdminHeading";
 import AdminSearchInput from "@/components/admin/AdminSearchInput";
@@ -46,6 +47,19 @@ export default function AdminProductsPage() {
     fetchFeatured();
     fetchCategories();
   }, [fetchProducts, fetchFeatured, fetchCategories]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get("success");
+    if (success) {
+      const messages: Record<string, string> = {
+        created: "Producto creado",
+        updated: "Producto actualizado",
+      };
+      if (messages[success]) toast.success(messages[success]);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const featuredIds = useMemo(
     () => new Set(featured.map((f) => f.productId)),
@@ -179,8 +193,10 @@ export default function AdminProductsPage() {
   function handleToggleFeatured(productId: string) {
     if (featuredIds.has(productId)) {
       removeFeatured(productId);
+      toast.success("Destacado removido");
     } else if (featuredIds.size < MAX_FEATURED) {
       addFeatured(productId);
+      toast.success("Producto destacado");
     }
   }
 
@@ -188,6 +204,7 @@ export default function AdminProductsPage() {
     if (!productToDelete) return;
     removeProduct(productToDelete.id);
     setProductToDelete(null);
+    toast.success("Producto eliminado");
   }
 
   const hasAnyFilterOptions =

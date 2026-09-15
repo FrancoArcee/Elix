@@ -77,7 +77,7 @@ export default function AdminEditSectionPage() {
               description: values.description,
               imageUrl: values.imageUrl || undefined,
             });
-            router.push("/admin/information");
+            router.push("/admin/information?success=updated");
           }}
           onCancel={() => router.push("/admin/information")}
         />
