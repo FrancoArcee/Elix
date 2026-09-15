@@ -38,6 +38,12 @@ export async function getProducts(categoryId?: string): Promise<ProductData[]> {
   return res.json()
 }
 
+export async function searchProducts(query: string): Promise<ProductData[]> {
+  const res = await fetch(`/api/products?search=${encodeURIComponent(query)}&limit=5`, { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json()
+}
+
 export async function getProduct(id: string): Promise<ProductDetailData | null> {
   const res = await fetch(`/api/products/${id}`, { cache: 'no-store' })
   if (!res.ok) return null
