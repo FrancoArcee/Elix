@@ -46,7 +46,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   });
 
   const relatedProducts = await prisma.product.findMany({
-    where: { categoryId: product.categoryId, id: { not: id } },
+    where: {
+      id: { not: id },
+      OR: [
+        { concentration: product.concentration },
+        { fraganceFamily: product.fraganceFamily },
+      ],
+    },
     include: {
       brand: true,
       images: { orderBy: { displayOrder: "asc" }, take: 1 },

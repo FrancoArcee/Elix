@@ -37,8 +37,14 @@ export async function GET(
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
-  const sameCategory = await prisma.product.findMany({
-    where: { categoryId: product.categoryId, id: { not: id } },
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      id: { not: id },
+      OR: [
+        { concentration: product.concentration },
+        { fraganceFamily: product.fraganceFamily },
+      ],
+    },
     include: { brand: true, images: { orderBy: { displayOrder: 'asc' } } },
     take: 4,
   }) as ProductWithBrandAndImages[]
@@ -68,7 +74,7 @@ export async function GET(
       id: pv.volume.id,
       volume: pv.volume.volume,
     })),
-    related: sameCategory.map((p) => ({
+    related: relatedProducts.map((p) => ({
       id: p.id,
       name: p.name,
       brand: p.brand.name,
