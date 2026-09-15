@@ -86,17 +86,15 @@ export default function Navbar({
 
   function handleResultClick() {
     if (!searchQuery.trim()) return;
-    setIsDropdownOpen(false);
-    setIsSearchOpen(false);
-    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    const q = searchQuery.trim();
+    router.push(`/products?search=${encodeURIComponent(q)}`);
   }
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    setIsDropdownOpen(false);
-    setIsSearchOpen(false);
-    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    const q = searchQuery.trim();
+    router.push(`/products?search=${encodeURIComponent(q)}`);
   }
 
   function toggleSearch() {
