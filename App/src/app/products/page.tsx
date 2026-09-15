@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
@@ -48,24 +49,26 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           active={`/products?categoryId=${category.id}`}
           withSearchBar={false}
         />
-        <ProductListing
-          title={category.name}
-          productCount={products.length}
-          backgroundColor={intToHex(category.color)}
-          products={products.map((p) => ({
-            id: p.id,
-            name: p.name,
-            brand: p.brand.name,
-            targetAudience: p.targetAudience,
-            fraganceFamily: p.fraganceFamily,
-            concentration: p.concentration,
-            badge: p.badge ?? undefined,
-            price: p.price ? Number(p.price) : null,
-            image: p.images[0]?.imageUrl ?? null,
-            surface: "surface" as const,
-            href: `/products/${p.id}`,
-          }))}
-        />
+        <Suspense>
+          <ProductListing
+            title={category.name}
+            productCount={products.length}
+            backgroundColor={intToHex(category.color)}
+            products={products.map((p) => ({
+              id: p.id,
+              name: p.name,
+              brand: p.brand.name,
+              targetAudience: p.targetAudience,
+              fraganceFamily: p.fraganceFamily,
+              concentration: p.concentration,
+              badge: p.badge ?? undefined,
+              price: p.price ? Number(p.price) : null,
+              image: p.images[0]?.imageUrl ?? null,
+              surface: "surface" as const,
+              href: `/products/${p.id}`,
+            }))}
+          />
+        </Suspense>
         <Footer />
       </>
     );
@@ -128,26 +131,28 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <>
       <Navbar active="/" withSearchBar={false} />
-      <ProductListing
-        title={title}
-        productCount={products.length}
-        emptyMessage={showEmptyMessage ? title : undefined}
-        backgroundClass="bg-surface"
-        titleClassName="text-muted"
-        products={products.map((p) => ({
-          id: p.id,
-          name: p.name,
-          brand: p.brand.name,
-          targetAudience: p.targetAudience,
-          fraganceFamily: p.fraganceFamily,
-          concentration: p.concentration,
-          badge: p.badge ?? undefined,
-          price: p.price ? Number(p.price) : null,
-          image: p.images[0]?.imageUrl ?? null,
-          surface: "surface" as const,
-          href: `/products/${p.id}`,
-        }))}
-      />
+      <Suspense>
+        <ProductListing
+          title={title}
+          productCount={products.length}
+          emptyMessage={showEmptyMessage ? title : undefined}
+          backgroundClass="bg-surface"
+          titleClassName="text-muted"
+          products={products.map((p) => ({
+            id: p.id,
+            name: p.name,
+            brand: p.brand.name,
+            targetAudience: p.targetAudience,
+            fraganceFamily: p.fraganceFamily,
+            concentration: p.concentration,
+            badge: p.badge ?? undefined,
+            price: p.price ? Number(p.price) : null,
+            image: p.images[0]?.imageUrl ?? null,
+            surface: "surface" as const,
+            href: `/products/${p.id}`,
+          }))}
+        />
+      </Suspense>
       <Footer />
     </>
   );

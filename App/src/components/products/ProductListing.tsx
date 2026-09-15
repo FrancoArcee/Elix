@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import ProductCard from "@/components/products/ProductCard";
 import FilterPanel, {
   type FilterGroup,
@@ -42,12 +43,44 @@ const CONCENTRATION_MAP: Record<string, string> = {
   extrait: "Extrait de Parfum",
 };
 
-const INITIAL_FILTERS: SelectedFilters = {
-  brand: [],
-  targetAudience: [],
-  fraganceFamily: [],
-  concentration: [],
-};
+const FILTER_KEYS: (keyof SelectedFilters)[] = [
+  "brand",
+  "targetAudience",
+  "fraganceFamily",
+  "concentration",
+];
+
+function readFilters(params: URLSearchParams): SelectedFilters {
+  const filters: SelectedFilters = {
+    brand: [],
+    targetAudience: [],
+    fraganceFamily: [],
+    concentration: [],
+  };
+  for (const key of FILTER_KEYS) {
+    const val = params.get(key);
+    if (val) filters[key] = val.split(",").filter(Boolean);
+  }
+  return filters;
+}
+
+function buildParams(
+  base: URLSearchParams,
+  filters: SelectedFilters,
+  sort: SortOption,
+): string {
+  const p = new URLSearchParams();
+  for (const key of FILTER_KEYS) {
+    if (filters[key].length > 0) p.set(key, filters[key].join(","));
+  }
+  if (sort !== "name-asc") p.set("sort", sort);
+  for (const [k, v] of base.entries()) {
+    if (!FILTER_KEYS.includes(k as keyof SelectedFilters) && k !== "sort") {
+      p.set(k, v);
+    }
+  }
+  return p.toString();
+}
 
 type ProductListingProps = {
   title: string;
@@ -67,8 +100,12 @@ export default function ProductListing({
   emptyMessage,
   titleClassName,
 }: ProductListingProps) {
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(INITIAL_FILTERS);
-  const [sortOption, setSortOption] = useState<SortOption>("name-asc");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const selectedFilters = useMemo(() => readFilters(searchParams), [searchParams]);
+  const sortOption = (searchParams.get("sort") as SortOption) || "name-asc";
+
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
@@ -82,6 +119,14 @@ export default function ProductListing({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const updateParams = useCallback(
+    (filters: SelectedFilters, sort: SortOption) => {
+      const qs = buildParams(searchParams, filters, sort);
+      router.push(`?${qs}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   const filterGroups = useMemo<FilterGroup[]>(() => {
     const groups: FilterGroup[] = [];
@@ -148,17 +193,22 @@ export default function ProductListing({
   }, [products]);
 
   const toggleFilter = (groupId: keyof SelectedFilters, value: string) => {
-    setSelectedFilters((prev) => {
-      const current = prev[groupId];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      return { ...prev, [groupId]: next };
-    });
+    const next = { ...selectedFilters };
+    const current = next[groupId];
+    next[groupId] = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    updateParams(next, sortOption);
   };
 
   const clearFilters = () => {
-    setSelectedFilters(INITIAL_FILTERS);
+    const empty: SelectedFilters = {
+      brand: [],
+      targetAudience: [],
+      fraganceFamily: [],
+      concentration: [],
+    };
+    updateParams(empty, sortOption);
   };
 
   const hasActiveFilters =
@@ -283,7 +333,7 @@ export default function ProductListing({
                         key={opt.value}
                         type="button"
                         onClick={() => {
-                          setSortOption(opt.value);
+                          updateParams(selectedFilters, opt.value);
                           setIsSortOpen(false);
                         }}
                         className={`flex w-full items-center justify-between px-3 py-2 text-left text-[11px] uppercase tracking-[1px] transition-colors ${
