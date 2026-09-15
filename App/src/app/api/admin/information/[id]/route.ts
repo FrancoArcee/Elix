@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { informationSectionUpdateSchema } from '@/schemas/information'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(
   request: Request,
@@ -17,7 +19,12 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { label, title, description, imageUrl, visible, displayOrder } = body
+  const validation = validateApiRequest(informationSectionUpdateSchema, body)
+  if (!validation.success) {
+    return validation.response
+  }
+
+  const { label, title, description, imageUrl, visible, displayOrder } = validation.data
 
   const existing = await prisma.information.findUnique({ where: { id } })
   if (!existing) {

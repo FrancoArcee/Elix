@@ -5,6 +5,12 @@ import TextField from "./TextField";
 import TextAreaField from "./TextAreaField";
 import ImageDropzone from "./ImageDropzone";
 import AdminButton from "./AdminButton";
+import { informationSectionSchema } from "@/schemas/information";
+import {
+  validateSingleField,
+  validateFormData,
+  type ValidationErrors,
+} from "@/lib/validation";
 
 export type SectionFormValues = {
   label: string;
@@ -34,29 +40,43 @@ export default function SectionForm({
   onCancel,
 }: SectionFormProps) {
   const [values, setValues] = useState<SectionFormValues>(initialValues);
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const update =
-    (field: keyof SectionFormValues) =>
-    (
-      event: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement
-      >,
-    ) =>
-      setValues((current) => ({ ...current, [field]: event.target.value }));
+  const handleFieldChange = (field: keyof SectionFormValues, value: string) => {
+    const next = { ...values, [field]: value };
+    setValues(next);
+    const fieldError = validateSingleField(
+      informationSectionSchema,
+      field,
+      next,
+    );
+    setErrors((prev) => ({
+      ...prev,
+      [field]: fieldError ?? "",
+    }));
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const result = validateFormData(informationSectionSchema, values);
+    if (!result.success) {
+      setErrors(result.errors);
+      return;
+    }
+    onSubmit({
+      ...result.data,
+      imageUrl: result.data.imageUrl ?? "",
+    });
+  };
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(values);
-      }}
-      className="w-full max-w-[512px]"
-    >
+    <form onSubmit={handleSubmit} className="w-full max-w-[512px]">
       <TextField
         label="Label"
         placeholder="Ej: Quiénes somos"
         value={values.label}
-        onChange={update("label")}
+        error={errors.label}
+        onChange={(e) => handleFieldChange("label", e.target.value)}
       />
 
       <div className="pt-7">
@@ -64,7 +84,8 @@ export default function SectionForm({
           label="Título"
           placeholder="Ej: ELIX nació de la pasión por las fragancias."
           value={values.title}
-          onChange={update("title")}
+          error={errors.title}
+          onChange={(e) => handleFieldChange("title", e.target.value)}
         />
       </div>
 
@@ -74,7 +95,8 @@ export default function SectionForm({
           placeholder="Texto descriptivo de la sección..."
           minHeightClass="min-h-[97px]"
           value={values.description}
-          onChange={update("description")}
+          error={errors.description}
+          onChange={(e) => handleFieldChange("description", e.target.value)}
         />
       </div>
 
@@ -85,7 +107,7 @@ export default function SectionForm({
           folder="info"
           value={values.imageUrl}
           onChange={(imageUrl) =>
-            setValues((current) => ({ ...current, imageUrl: imageUrl ?? "" }))
+            handleFieldChange("imageUrl", imageUrl ?? "")
           }
         />
       </div>

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 import { deleteImage } from '@/lib/r2'
+import { productApiSchema } from '@/schemas/product'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(
   request: Request,
@@ -15,11 +17,12 @@ export async function PUT(
   if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
   const body = await request.json()
-  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, badge, images, notes } = body
-
-  if (!name || !brandId || !categoryId || !targetAudience) {
-    return NextResponse.json({ error: 'name, brandId, categoryId and targetAudience are required' }, { status: 400 })
+  const validation = validateApiRequest(productApiSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, badge, images, notes } = validation.data
 
   const [brand, category] = await Promise.all([
     prisma.brand.findUnique({ where: { id: brandId } }),

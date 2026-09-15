@@ -7,6 +7,13 @@ import AdminButton from "./AdminButton";
 import FilterChip from "./FilterChip";
 import ProductImagesField from "./ProductImagesField";
 import type { ProductOrientation } from "@/context/adminStore";
+import { productFormSchema } from "@/schemas/product";
+import { brandSchema } from "@/schemas/brand";
+import {
+  validateSingleField,
+  validateFormData,
+  type ValidationErrors,
+} from "@/lib/validation";
 
 export type ProductFormValues = {
   name: string;
@@ -92,6 +99,7 @@ export default function ProductForm({
     ...EMPTY_VALUES,
     ...initialValues,
   });
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [newBrandName, setNewBrandName] = useState("");
@@ -100,28 +108,34 @@ export default function ProductForm({
   const currentOrientation: ProductOrientation =
     ORIENTATION_REVERSE[values.targetAudience] ?? "Unisex";
 
-  const isBodySplash = categories
-    .find((c) => c.id === values.categoryId)
-    ?.name.toLowerCase()
-    .includes("body splash") ?? false;
+  const isBodySplash =
+    categories
+      .find((c) => c.id === values.categoryId)
+      ?.name.toLowerCase()
+      .includes("body splash") ?? false;
 
-  const update =
-    (field: keyof ProductFormValues) =>
-    (
-      event: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement
-      >,
-    ) =>
-      setValues((current) => ({ ...current, [field]: event.target.value }));
+  const handleFieldChange = (field: keyof ProductFormValues, value: any) => {
+    const next = { ...values, [field]: value };
+    setValues(next);
+    const fieldError = validateSingleField(productFormSchema, field, next);
+    setErrors((prev) => ({
+      ...prev,
+      [field]: fieldError ?? "",
+    }));
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const result = validateFormData(productFormSchema, values);
+    if (!result.success) {
+      setErrors(result.errors);
+      return;
+    }
+    onSubmit(values);
+  };
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(values);
-      }}
-      className="w-full max-w-[672px]"
-    >
+    <form onSubmit={handleSubmit} className="w-full max-w-[672px]">
       {/* 1. Datos Principales */}
       <section className="border border-ink/10 bg-background p-5 sm:p-7">
         <div className="flex items-center justify-between border-b border-ink/10 pb-3">
@@ -138,8 +152,8 @@ export default function ProductForm({
             label="Nombre del producto"
             placeholder="Ej: Oud Royale"
             value={values.name}
-            onChange={update("name")}
-            required
+            error={errors.name}
+            onChange={(e) => handleFieldChange("name", e.target.value)}
           />
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -160,13 +174,13 @@ export default function ProductForm({
                 <select
                   value={values.brandId}
                   onChange={(event) =>
-                    setValues((current) => ({
-                      ...current,
-                      brandId: event.target.value,
-                    }))
+                    handleFieldChange("brandId", event.target.value)
                   }
-                  required
-                  className="h-9 w-full appearance-none border-b border-ink/10 bg-transparent pr-8 text-[14px] text-ink outline-none transition-colors focus:border-ink/40"
+                  className={`h-9 w-full appearance-none border-b bg-transparent pr-8 text-[14px] text-ink outline-none transition-colors ${
+                    errors.brandId
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-ink/10 focus:border-ink/40"
+                  }`}
                 >
                   <option value="" disabled>
                     Seleccioná una marca
@@ -178,11 +192,26 @@ export default function ProductForm({
                   ))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center text-muted">
-                  <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="size-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
+              {errors.brandId && (
+                <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+                  {errors.brandId}
+                </p>
+              )}
             </div>
 
             <div>
@@ -196,11 +225,16 @@ export default function ProductForm({
                     label={category.name}
                     active={values.categoryId === category.id}
                     onClick={() =>
-                      setValues((current) => ({ ...current, categoryId: category.id }))
+                      handleFieldChange("categoryId", category.id)
                     }
                   />
                 ))}
               </div>
+              {errors.categoryId && (
+                <p className="pt-1.5 text-[11px] leading-[14px] text-red-500">
+                  {errors.categoryId}
+                </p>
+              )}
             </div>
           </div>
 
@@ -216,10 +250,10 @@ export default function ProductForm({
                     label={orientation}
                     active={currentOrientation === orientation}
                     onClick={() =>
-                      setValues((current) => ({
-                        ...current,
-                        targetAudience: ORIENTATION_MAP[orientation],
-                      }))
+                      handleFieldChange(
+                        "targetAudience",
+                        ORIENTATION_MAP[orientation],
+                      )
                     }
                   />
                 ))}
@@ -242,11 +276,10 @@ export default function ProductForm({
                     label={c.label}
                     active={values.concentration === c.value}
                     onClick={() =>
-                      setValues((current) => ({
-                        ...current,
-                        concentration:
-                          current.concentration === c.value ? "" : c.value,
-                      }))
+                      handleFieldChange(
+                        "concentration",
+                        values.concentration === c.value ? "" : c.value,
+                      )
                     }
                   />
                 ))}
@@ -260,7 +293,9 @@ export default function ProductForm({
               tag="Opcional"
               placeholder="Ej: Amaderado Oriental, Floral Especiado"
               value={values.olfactoryFamily}
-              onChange={update("olfactoryFamily")}
+              onChange={(e) =>
+                handleFieldChange("olfactoryFamily", e.target.value)
+              }
             />
           </div>
         </div>
@@ -285,7 +320,8 @@ export default function ProductForm({
               type="number"
               placeholder="Ej: 8900"
               value={values.price}
-              onChange={update("price")}
+              error={errors.price}
+              onChange={(e) => handleFieldChange("price", e.target.value)}
             />
             <TextField
               label="Precio tachado / original ($)"
@@ -293,7 +329,10 @@ export default function ProductForm({
               type="number"
               placeholder="Ej: 10500"
               value={values.originalPrice}
-              onChange={update("originalPrice")}
+              error={errors.originalPrice}
+              onChange={(e) =>
+                handleFieldChange("originalPrice", e.target.value)
+              }
             />
           </div>
 
@@ -304,7 +343,7 @@ export default function ProductForm({
                 tag="Opcional"
                 placeholder="Ej: 30ml, 50ml, 100ml"
                 value={values.sizes}
-                onChange={update("sizes")}
+                onChange={(e) => handleFieldChange("sizes", e.target.value)}
               />
               <p className="pt-1 text-[8px] tracking-[0.5px] text-muted">
                 Valores separados por coma
@@ -317,7 +356,7 @@ export default function ProductForm({
                 tag="Opcional"
                 placeholder="Ej: Nuevo, Más vendido, Oferta"
                 value={values.badge}
-                onChange={update("badge")}
+                onChange={(e) => handleFieldChange("badge", e.target.value)}
               />
               <p className="pt-1 text-[8px] tracking-[0.5px] text-muted">
                 Etiqueta visible sobre la tarjeta
@@ -328,9 +367,7 @@ export default function ProductForm({
           <div className="border-t border-ink/[0.06] pt-5">
             <ProductImagesField
               images={values.images}
-              onChange={(images) =>
-                setValues((current) => ({ ...current, images }))
-              }
+              onChange={(images) => handleFieldChange("images", images)}
             />
           </div>
         </div>
@@ -354,7 +391,7 @@ export default function ProductForm({
               tag="Opcional"
               placeholder="Ej: Vainilla, Coco, Ámbar"
               value={values.topNotes}
-              onChange={update("topNotes")}
+              onChange={(e) => handleFieldChange("topNotes", e.target.value)}
             />
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -363,21 +400,23 @@ export default function ProductForm({
                 tag="Opcional"
                 placeholder="Ej: Bergamota, Cardamomo"
                 value={values.topNotes}
-                onChange={update("topNotes")}
+                onChange={(e) => handleFieldChange("topNotes", e.target.value)}
               />
               <TextField
                 label="Notas de corazón"
                 tag="Opcional"
                 placeholder="Ej: Oud, Rosa de Damasco"
                 value={values.heartNotes}
-                onChange={update("heartNotes")}
+                onChange={(e) =>
+                  handleFieldChange("heartNotes", e.target.value)
+                }
               />
               <TextField
                 label="Notas de fondo"
                 tag="Opcional"
                 placeholder="Ej: Almizcle, Ámbar gris"
                 value={values.baseNotes}
-                onChange={update("baseNotes")}
+                onChange={(e) => handleFieldChange("baseNotes", e.target.value)}
               />
             </div>
           )}
@@ -401,7 +440,8 @@ export default function ProductForm({
             placeholder="Escribí una descripción envolvente sobre el aroma, acordes principales, longevidad o inspiración del perfume..."
             minHeightClass="min-h-[110px]"
             value={values.description}
-            onChange={update("description")}
+            error={errors.description}
+            onChange={(e) => handleFieldChange("description", e.target.value)}
           />
         </div>
       </section>
@@ -439,34 +479,43 @@ export default function ProductForm({
                 label="Nombre de la marca"
                 placeholder="Ej: Lattafa, Maison Alhambra"
                 value={newBrandName}
+                error={brandError ?? undefined}
                 onChange={(e) => {
                   setNewBrandName(e.target.value);
-                  setBrandError(null);
+                  const err = validateSingleField(brandSchema, "name", {
+                    name: e.target.value,
+                  });
+                  setBrandError(err);
                 }}
               />
-              {brandError && (
-                <p className="pt-1 text-[11px] leading-4 text-red-700">
-                  {brandError}
-                </p>
-              )}
             </div>
             <div className="flex flex-col items-stretch gap-3 pt-6 sm:flex-row">
               <AdminButton
                 variant="primary"
                 onClick={async () => {
-                  if (!newBrandName.trim()) {
-                    setBrandError("El nombre es requerido.");
+                  const validation = brandSchema.safeParse({
+                    name: newBrandName.trim(),
+                  });
+                  if (!validation.success) {
+                    setBrandError(
+                      validation.error.issues[0]?.message ??
+                        "El nombre es requerido.",
+                    );
                     return;
                   }
                   try {
                     const { createBrand } = await import("@/services/brands");
-                    const created = await createBrand({ name: newBrandName.trim() });
+                    const created = await createBrand({
+                      name: validation.data.name,
+                    });
                     onBrandCreated?.({ id: created.id, name: created.name });
-                    setValues((current) => ({ ...current, brandId: created.id }));
+                    handleFieldChange("brandId", created.id);
                     setNewBrandName("");
                     setShowBrandModal(false);
                   } catch {
-                    setBrandError("No se pudo crear la marca. Puede que ya exista.");
+                    setBrandError(
+                      "No se pudo crear la marca. Puede que ya exista.",
+                    );
                   }
                 }}
                 className="h-[39px] flex-1 px-5 py-3"

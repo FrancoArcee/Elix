@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { contactUpdateSchema } from '@/schemas/contact'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(
   request: Request,
@@ -11,7 +13,12 @@ export async function PUT(
 
   const { id } = await params
   const body = await request.json()
-  const { application, value, isPrimary, displayOrder } = body
+  const validation = validateApiRequest(contactUpdateSchema, body)
+  if (!validation.success) {
+    return validation.response
+  }
+
+  const { application, value, isPrimary, displayOrder } = validation.data
 
   const existing = await prisma.contact.findUnique({ where: { id } })
   if (!existing) {

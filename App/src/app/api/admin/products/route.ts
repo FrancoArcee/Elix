@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
-import type { Prisma } from '@prisma/client'
+import { productApiSchema } from '@/schemas/product'
+import { validateApiRequest } from '@/lib/validation'
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: { brand: true; category: true; images: true }
@@ -46,11 +47,12 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, badge, images, notes } = body
-
-  if (!name || !brandId || !categoryId || !targetAudience) {
-    return NextResponse.json({ error: 'name, brandId, categoryId and targetAudience are required' }, { status: 400 })
+  const validation = validateApiRequest(productApiSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { name, brandId, categoryId, targetAudience, description, price, fraganceFamily, presentation, concentration, badge, images, notes } = validation.data
 
   const [brand, category] = await Promise.all([
     prisma.brand.findUnique({ where: { id: brandId } }),

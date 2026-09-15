@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 import { intToHex, hexToInt } from '@/lib/colors'
+import { categoryUpdateSchema } from '@/schemas/category'
+import { validateApiRequest } from '@/lib/validation'
 
 export async function PUT(
   request: Request,
@@ -12,7 +14,11 @@ export async function PUT(
 
   const { id } = await params
   const body = await request.json()
-  const { name, color, urlImage, description } = body
+  const validation = validateApiRequest(categoryUpdateSchema, body)
+  if (!validation.success) {
+    return validation.response
+  }
+  const { name, color, urlImage, description } = validation.data
 
   const existing = await prisma.category.findUnique({ where: { id } })
   if (!existing) {

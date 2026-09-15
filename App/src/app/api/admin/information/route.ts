@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { informationSectionSchema } from '@/schemas/information'
+import { validateApiRequest } from '@/lib/validation'
 
 async function ensureHowToBuySection() {
   const existing = await prisma.information.findUnique({
@@ -43,11 +45,12 @@ export async function POST(request: Request) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { label, title, description, imageUrl, visible, displayOrder } = body
-
-  if (!label || !title || !description) {
-    return NextResponse.json({ error: 'label, title and description are required' }, { status: 400 })
+  const validation = validateApiRequest(informationSectionSchema, body)
+  if (!validation.success) {
+    return validation.response
   }
+
+  const { label, title, description, imageUrl, visible, displayOrder } = validation.data
 
   const maxOrder = await prisma.information.aggregate({ _max: { displayOrder: true } })
   const nextOrder = (maxOrder._max.displayOrder ?? -1) + 1
