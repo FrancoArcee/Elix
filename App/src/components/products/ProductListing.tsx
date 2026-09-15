@@ -55,6 +55,8 @@ type ProductListingProps = {
   products: CatalogProduct[];
   backgroundColor?: string;
   backgroundClass?: string;
+  emptyMessage?: string;
+  titleClassName?: string;
 };
 
 export default function ProductListing({
@@ -62,6 +64,8 @@ export default function ProductListing({
   products,
   backgroundColor,
   backgroundClass = "bg-background",
+  emptyMessage,
+  titleClassName,
 }: ProductListingProps) {
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(INITIAL_FILTERS);
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
@@ -216,7 +220,7 @@ export default function ProductListing({
       style={backgroundColor ? { backgroundColor } : undefined}
     >
       <div className="mx-auto w-full max-w-[1280px]">
-        <h1 className="font-serif text-[30px] font-bold leading-9 text-ink md:text-[36px] md:leading-10">
+        <h1 className={`font-serif text-[18px] font-bold leading-6 text-ink md:text-[24px] md:leading-8 ${titleClassName ?? ""}`}>
           {title}
         </h1>
 
@@ -301,12 +305,18 @@ export default function ProductListing({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
+        <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:gap-10">
+          {filterGroups.length > 0 && isFiltersOpen && (
+            <div
+              className="fixed inset-0 z-10 bg-ink/20 lg:hidden"
+              onClick={() => setIsFiltersOpen(false)}
+            />
+          )}
           {filterGroups.length > 0 && (
             <div
               className={`${
                 isFiltersOpen ? "block" : "hidden"
-              } w-full lg:block lg:w-[220px] lg:shrink-0`}
+              } absolute inset-x-0 top-0 z-20 max-h-[80vh] overflow-y-auto bg-background p-4 shadow-lg lg:relative lg:block lg:max-h-none lg:w-[220px] lg:shrink-0 lg:overflow-visible lg:bg-transparent lg:p-0 lg:shadow-none`}
             >
               <FilterPanel
                 filterGroups={filterGroups}
@@ -323,19 +333,22 @@ export default function ProductListing({
             {sortedProducts.length === 0 ? (
               <div className="flex min-h-[320px] flex-col items-center justify-center border border-dashed border-ink/15 p-8 text-center">
                 <p className="font-serif text-[20px] font-semibold text-ink">
-                  No se encontraron productos
+                  {emptyMessage ?? "No se encontraron productos"}
                 </p>
                 <p className="mt-2 max-w-[360px] text-[13px] text-muted">
-                  No hay fragancias que coincidan con la combinación de filtros
-                  seleccionada en esta categoría.
+                  {emptyMessage
+                    ? "Intenta con otro término de búsqueda."
+                    : "No hay fragancias que coincidan con la combinación de filtros seleccionada en esta categoría."}
                 </p>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="mt-5 border border-ink bg-ink px-5 py-2.5 text-[10px] font-medium uppercase tracking-[2px] text-background transition-colors hover:bg-ink/85"
-                >
-                  Restablecer filtros
-                </button>
+                {!emptyMessage && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="mt-5 border border-ink bg-ink px-5 py-2.5 text-[10px] font-medium uppercase tracking-[2px] text-background transition-colors hover:bg-ink/85"
+                  >
+                    Restablecer filtros
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 pb-14 sm:grid-cols-2 sm:gap-4 md:gap-6 lg:grid-cols-3">
