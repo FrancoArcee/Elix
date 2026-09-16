@@ -9,12 +9,6 @@ export interface OfferData {
   active: boolean
 }
 
-export async function getActiveOffer(): Promise<OfferData | null> {
-  const res = await fetch('/api/offers', { cache: 'no-store' })
-  if (!res.ok) return null
-  return res.json()
-}
-
 export async function getAdminOffers(): Promise<OfferData[]> {
   const res = await fetchAdmin('/api/admin/offers', { cache: 'no-store' })
   if (!res.ok) return []
@@ -33,7 +27,10 @@ export async function createOffer(data: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to create offer')
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null)
+    throw new Error(errorData?.error || 'Failed to create offer')
+  }
   return res.json()
 }
 
@@ -52,7 +49,10 @@ export async function updateOffer(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to update offer')
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null)
+    throw new Error(errorData?.error || 'Failed to update offer')
+  }
   return res.json()
 }
 
@@ -60,5 +60,8 @@ export async function deleteOffer(id: string): Promise<void> {
   const res = await fetchAdmin(`/api/admin/offers/${id}`, {
     method: 'DELETE',
   })
-  if (!res.ok) throw new Error('Failed to delete offer')
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null)
+    throw new Error(errorData?.error || 'Failed to delete offer')
+  }
 }

@@ -43,6 +43,3 @@ export const offerApiSchema = z.object({
 
 export const offerApiUpdateSchema = offerApiSchema.partial();
 
-export type OfferFormInput = z.infer<typeof offerFormSchema>;
-export type OfferApiInput = z.infer<typeof offerApiSchema>;
-export type OfferApiUpdateInput = z.infer<typeof offerApiUpdateSchema>;

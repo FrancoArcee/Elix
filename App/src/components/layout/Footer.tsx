@@ -1,6 +1,5 @@
 import Image from "next/image";
-import { BASE_URL } from "@/lib/base-url";
-import type { ContactData } from "@/services/contacts";
+import { prisma } from "@/lib/prisma";
 import LegalFooterLinks from "./LegalFooterLinks";
 
 const SOCIAL_ICON_MAP: Record<string, string> = {
@@ -53,8 +52,9 @@ function buildSocialHref(application: string, value: string): string {
 }
 
 export default async function Footer() {
-  const res = await fetch(`${BASE_URL}/api/contacts`, { cache: "no-store" });
-  const contacts: ContactData[] = res.ok ? await res.json() : [];
+  const contacts = await prisma.contact.findMany({
+    orderBy: { displayOrder: "asc" },
+  });
 
   const socialContacts = contacts.filter(
     (c) => SOCIAL_ICON_MAP[c.application]

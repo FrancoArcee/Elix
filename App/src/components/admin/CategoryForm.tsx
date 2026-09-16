@@ -13,7 +13,7 @@ export type CategoryFormValues = {
   name: string;
   description: string;
   color: string;
-  imageUrl: string;
+  urlImage: string;
 };
 
 type CategoryFormProps = {
@@ -27,7 +27,7 @@ const EMPTY_VALUES: CategoryFormValues = {
   name: "",
   description: "",
   color: "#F2F1EE",
-  imageUrl: "",
+  urlImage: "",
 };
 
 export default function CategoryForm({
@@ -66,7 +66,7 @@ export default function CategoryForm({
     try {
       await onSubmit({
         ...result.data,
-        imageUrl: result.data.imageUrl ?? "",
+        urlImage: result.data.urlImage ?? "",
       });
     } catch (err: any) {
       setSubmitError(err.message ?? "Error al guardar. Intentá de nuevo.");
@@ -106,9 +106,9 @@ export default function CategoryForm({
         <ImageDropzone
           label="Imagen"
           folder="categories"
-          value={values.imageUrl}
-          onChange={(imageUrl) =>
-            handleFieldChange("imageUrl", imageUrl ?? "")
+          value={values.urlImage}
+          onChange={(urlImage) =>
+            handleFieldChange("urlImage", urlImage ?? "")
           }
         />
       </div>

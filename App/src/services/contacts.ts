@@ -8,12 +8,6 @@ export interface ContactData {
   displayOrder: number
 }
 
-export async function getContacts(): Promise<ContactData[]> {
-  const res = await fetch(`/api/contacts`, { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json()
-}
-
 export async function getAdminContacts(): Promise<ContactData[]> {
   const res = await fetchAdmin(`/api/admin/contacts`, { cache: 'no-store' })
   if (!res.ok) return []

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams, notFound } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
-import Skeleton from "@/components/admin/Skeleton";
+import Skeleton from "@/components/ui/Skeleton";
 import CategoryForm from "@/components/admin/CategoryForm";
 import ConfirmationModal from "@/components/admin/ConfirmationModal";
 import { useAdminStore } from "@/context/adminStore";
@@ -76,14 +76,14 @@ export default function AdminEditCategoryPage() {
             name: category.name,
             description: category.description ?? "",
             color: category.color,
-            imageUrl: category.image,
+            urlImage: category.image,
           }}
           onSubmit={async (values) => {
             await updateCategory(categoryId, {
               name: values.name,
               description: values.description,
               color: values.color,
-              image: values.imageUrl || category.image,
+              image: values.urlImage || category.image,
             });
             router.push("/admin/categories?success=updated");
           }}

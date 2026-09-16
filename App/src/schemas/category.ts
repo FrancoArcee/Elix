@@ -15,10 +15,8 @@ export const categorySchema = z.object({
     .string()
     .trim()
     .regex(hexColorRegex, "Ingresá un color hexadecimal válido (ej: #F2F1EE)"),
-  imageUrl: z.string().trim().optional().or(z.literal("")),
+  urlImage: z.string().trim().optional().or(z.literal("")),
 });
 
 export const categoryUpdateSchema = categorySchema.partial();
 
-export type CategoryInput = z.infer<typeof categorySchema>;
-export type CategoryUpdateInput = z.infer<typeof categoryUpdateSchema>;

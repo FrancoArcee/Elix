@@ -20,7 +20,7 @@ export default function AdminNewCategoryPage() {
               name: values.name,
               description: values.description,
               color: values.color,
-              image: values.imageUrl || "",
+              image: values.urlImage || "",
             });
             router.push("/admin/categories?success=created");
           }}

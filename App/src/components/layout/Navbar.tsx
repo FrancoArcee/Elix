@@ -19,16 +19,20 @@ function categoryHref(id: string): string {
 type NavbarProps = {
   active?: string;
   withSearchBar?: boolean;
+  categories?: { label: string; href: string }[];
 };
 
 export default function Navbar({
   active = "/",
   withSearchBar = true,
+  categories: categoriesProp,
 }: NavbarProps) {
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [categories, setCategories] = useState<{ label: string; href: string }[]>([]);
+  const [categories, setCategories] = useState<{ label: string; href: string }[]>(
+    categoriesProp ?? []
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProductData[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -38,10 +42,11 @@ export default function Navbar({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (categoriesProp) return;
     getCategories().then((data) =>
       setCategories(data.map((c) => ({ label: c.name, href: categoryHref(c.id) })))
     );
-  }, []);
+  }, [categoriesProp]);
 
   useEffect(() => {
     if (!isSearchOpen) {

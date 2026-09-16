@@ -31,13 +31,6 @@ export interface ProductDetailData extends ProductData {
   related: { id: string; name: string; brand: string; image: string | null }[]
 }
 
-export async function getProducts(categoryId?: string): Promise<ProductData[]> {
-  const url = categoryId ? `/api/products?categoryId=${categoryId}` : '/api/products'
-  const res = await fetch(url, { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json()
-}
-
 export async function searchProducts(query: string): Promise<ProductData[]> {
   const res = await fetch(`/api/products?search=${encodeURIComponent(query)}&limit=5`, { cache: 'no-store' })
   if (!res.ok) return []

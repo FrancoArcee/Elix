@@ -28,22 +28,24 @@ type ProductPageProps = {
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params;
 
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: {
-      brand: true,
-      category: true,
-      images: { orderBy: { displayOrder: "asc" } },
-      notes: { include: { note: true } },
-      volumes: { include: { volume: true } },
-    },
-  }) as ProductFull | null;
+  const [product, primaryContact, navCategories] = await Promise.all([
+    prisma.product.findUnique({
+      where: { id },
+      include: {
+        brand: true,
+        category: true,
+        images: { orderBy: { displayOrder: "asc" } },
+        notes: { include: { note: true } },
+        volumes: { include: { volume: true } },
+      },
+    }) as Promise<ProductFull | null>,
+    prisma.contact.findFirst({
+      where: { isPrimary: true },
+    }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   if (!product) notFound();
-
-  const primaryContact = await prisma.contact.findFirst({
-    where: { isPrimary: true },
-  });
 
   const relatedProducts = await prisma.product.findMany({
     where: {
@@ -86,9 +88,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     extrait: "Extrait de Parfum",
   };
 
+  const navbarCategories = navCategories.map((c) => ({
+    label: c.name,
+    href: `/products?categoryId=${c.id}`,
+  }));
+
   return (
     <>
-      <Navbar active={`/products?categoryId=${product.categoryId}`} withSearchBar={false} />
+      <Navbar active={`/products?categoryId=${product.categoryId}`} withSearchBar={false} categories={navbarCategories} />
       <ProductDetail
         brand={product.brand.name}
         name={product.name}

@@ -24,6 +24,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     redirect("/");
   }
 
+  const navCategories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const navbarCategories = navCategories.map((c) => ({
+    label: c.name,
+    href: `/products?categoryId=${c.id}`,
+  }));
+
   if (categoryId) {
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
@@ -48,6 +54,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <Navbar
           active={`/products?categoryId=${category.id}`}
           withSearchBar={false}
+          categories={navbarCategories}
         />
         <Suspense>
           <ProductListing
@@ -130,7 +137,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <>
-      <Navbar active="/" withSearchBar={false} />
+      <Navbar active="/" withSearchBar={false} categories={navbarCategories} />
       <Suspense>
         <ProductListing
           title={title}

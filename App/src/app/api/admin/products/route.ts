@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 import { productApiSchema } from '@/schemas/product'
 import { validateApiRequest } from '@/lib/validation'
+import type { Prisma } from '@prisma/client'
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: { brand: true; category: true; images: true }
@@ -30,7 +31,7 @@ export async function GET() {
       category: p.category.name,
       categoryId: p.categoryId,
       image: p.images[0]?.imageUrl ?? null,
-      images: p.images.map((img) => ({ url: img.imageUrl, key: img.imageUrl.split('/').pop(), displayOrder: img.displayOrder })),
+      images: p.images.map((img: { imageUrl: string; displayOrder: number }) => ({ url: img.imageUrl, key: img.imageUrl.split('/').pop(), displayOrder: img.displayOrder })),
       price: p.price ? Number(p.price) : null,
       fraganceFamily: p.fraganceFamily,
       concentration: p.concentration,

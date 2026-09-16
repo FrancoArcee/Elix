@@ -3,10 +3,10 @@ import { type ZodType } from "zod";
 
 export type ValidationErrors = Record<string, string>;
 
-export function parseValidationErrors(error: { issues: { path: (string | number)[]; message: string }[] }): ValidationErrors {
+export function parseValidationErrors(error: { issues: { path: readonly PropertyKey[]; message: string }[] }): ValidationErrors {
   const issues: ValidationErrors = {};
   for (const issue of error.issues) {
-    const field = issue.path.join(".") || "form";
+    const field = issue.path.filter((p): p is string | number => typeof p === "string" || typeof p === "number").join(".") || "form";
     if (!issues[field]) {
       issues[field] = issue.message;
     }

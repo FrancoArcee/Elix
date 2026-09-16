@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { BASE_URL } from "@/lib/base-url";
-import type { InformationSection } from "@/services/information";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -29,12 +28,41 @@ const STEPS = [
 ];
 
 export default async function NosotrosPage() {
-  const res = await fetch(`${BASE_URL}/api/information`, { cache: "no-store" });
-  const sections: InformationSection[] = res.ok ? await res.json() : [];
+  const existing = await prisma.information.findUnique({
+    where: { id: "how_to_buy" },
+  });
+  if (!existing) {
+    const maxOrder = await prisma.information.aggregate({
+      _max: { displayOrder: true },
+    });
+    await prisma.information.create({
+      data: {
+        id: "how_to_buy",
+        label: "Cómo comprar",
+        title: "Sin carritos. Sin formularios. Solo una consulta.",
+        description:
+          "Proceso guiado de compra directa: Explorás el catálogo, consultás desde el producto y coordinamos la entrega.",
+        visible: true,
+        displayOrder: (maxOrder._max.displayOrder ?? -1) + 1,
+      },
+    });
+  }
+
+  const [sections, navCategories] = await Promise.all([
+    prisma.information.findMany({
+      where: { visible: true },
+      orderBy: { displayOrder: "asc" },
+    }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+  ]);
+  const navbarCategories = navCategories.map((c) => ({
+    label: c.name,
+    href: `/products?categoryId=${c.id}`,
+  }));
 
   return (
     <>
-      <Navbar active="/nosotros" withSearchBar={false} />
+      <Navbar active="/nosotros" withSearchBar={false} categories={navbarCategories} />
       <main className="mx-auto w-full max-w-[896px] px-4 py-16 md:px-6 md:py-24">
         {sections.map((section, index) => {
           if (section.id === "how_to_buy") {

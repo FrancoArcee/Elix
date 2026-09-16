@@ -2,16 +2,12 @@ import { z } from "zod";
 
 export const productTargetAudienceEnum = z.enum(
   ["masculino", "femenino", "unisex"],
-  {
-    errorMap: () => ({ message: "Seleccioná una orientación válida" }),
-  },
+  { error: "Seleccioná una orientación válida" },
 );
 
 export const productConcentrationEnum = z.enum(
   ["edt", "edp", "edc", "extrait"],
-  {
-    errorMap: () => ({ message: "Seleccioná una concentración válida" }),
-  },
+  { error: "Seleccioná una concentración válida" },
 );
 
 export const productFormSchema = z.object({
@@ -98,8 +94,3 @@ export const productApiSchema = z.object({
     .optional(),
 });
 
-export const productApiUpdateSchema = productApiSchema.partial();
-
-export type ProductFormInput = z.infer<typeof productFormSchema>;
-export type ProductApiInput = z.infer<typeof productApiSchema>;
-export type ProductApiUpdateInput = z.infer<typeof productApiUpdateSchema>;
