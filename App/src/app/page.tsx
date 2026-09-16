@@ -17,7 +17,9 @@ export const dynamic = "force-dynamic";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://elixfragancias.com.ar";
 
 export const metadata: Metadata = {
-  title: "ELIX — Perfumería Árabe | Catálogo de Fragancias",
+  title: {
+    absolute: "ELIX — Perfumería Árabe",
+  },
   description:
     "Descubrí nuestra colección de perfumes árabes originales: body splash, perfumes y fragancias exclusivas de las mejores marcas de Oriente Medio.",
   openGraph: {
