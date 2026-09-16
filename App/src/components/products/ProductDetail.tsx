@@ -50,7 +50,7 @@ type Tab = (typeof TABS)[number];
 
 function buildContactHref(application: string, value: string, productName: string): string {
   const message = encodeURIComponent(
-    `¡Hola! 👋 Estoy interesado/a en ${productName}. ¿Me podrían pasar más información y el precio?`
+    `Hola, me interesa el producto ${productName} ¿Podrían darme mas información del mismo?`
   );
   const lower = application.toLowerCase();
 
