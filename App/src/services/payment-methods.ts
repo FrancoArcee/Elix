@@ -6,12 +6,6 @@ export interface PaymentMethodData {
   identifier: string | null
 }
 
-export async function getPaymentMethods(): Promise<PaymentMethodData[]> {
-  const res = await fetch(`/api/payment-methods`, { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json()
-}
-
 export async function getAdminPaymentMethods(): Promise<PaymentMethodData[]> {
   const res = await fetchAdmin(`/api/admin/payment-methods`, { cache: 'no-store' })
   if (!res.ok) return []

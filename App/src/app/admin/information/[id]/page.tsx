@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams, notFound } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
-import Skeleton from "@/components/admin/Skeleton";
+import Skeleton from "@/components/ui/Skeleton";
 import SectionForm from "@/components/admin/SectionForm";
 import { useAdminStore } from "@/context/adminStore";
 

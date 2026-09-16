@@ -1,4 +1,4 @@
-import Skeleton from "@/components/admin/Skeleton";
+import Skeleton from "@/components/ui/Skeleton";
 
 export default function AdminCategoryFormLoading() {
   return (

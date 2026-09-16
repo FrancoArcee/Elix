@@ -20,8 +20,3 @@ export const paymentMethodUpdateSchema = paymentMethodApiSchema.partial();
 
 export const paymentMethodSchema = paymentMethodApiSchema;
 
-export type PaymentMethodFormInput = z.infer<typeof paymentMethodFormSchema>;
-export type PaymentMethodApiInput = z.infer<typeof paymentMethodApiSchema>;
-export type PaymentMethodUpdateInput = z.infer<
-  typeof paymentMethodUpdateSchema
->;

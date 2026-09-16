@@ -7,4 +7,3 @@ export const brandSchema = z.object({
     .min(2, "El nombre de la marca debe tener al menos 2 caracteres"),
 });
 
-export type BrandInput = z.infer<typeof brandSchema>;

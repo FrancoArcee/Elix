@@ -12,17 +12,19 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 async function getActiveOffer() {
-  const offer = await prisma.offer.findFirst({
-    where: { active: true },
-    include: {
-      offerCategories: { include: { category: true } },
-      offerPaymentMethods: { include: { paymentMethod: true } },
-    },
-  })
+  const [offer, allCategoryCount] = await Promise.all([
+    prisma.offer.findFirst({
+      where: { active: true },
+      include: {
+        offerCategories: { include: { category: true } },
+        offerPaymentMethods: { include: { paymentMethod: true } },
+      },
+    }),
+    prisma.category.count(),
+  ])
 
   if (!offer) return null
 
-  const allCategoryCount = await prisma.category.count()
   const categoryNames = offer.offerCategories.map((oc: { category: { name: string } }) => oc.category.name)
   const isAllCategories = categoryNames.length === allCategoryCount && allCategoryCount > 0
 
@@ -36,11 +38,19 @@ async function getActiveOffer() {
 }
 
 export default async function Home() {
-  const offer = await getActiveOffer()
+  const [offer, navCategories] = await Promise.all([
+    getActiveOffer(),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+  ]);
+
+  const navbarCategories = navCategories.map((c) => ({
+    label: c.name,
+    href: `/products?categoryId=${c.id}`,
+  }));
 
   return (
     <>
-      <Navbar />
+      <Navbar categories={navbarCategories} />
       <main>
         <div className="flex min-h-[calc(100dvh-60px)] flex-col md:min-h-0 md:block">
           {offer && <AnnouncementBar offer={offer} />}

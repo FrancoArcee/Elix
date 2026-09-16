@@ -35,8 +35,3 @@ export const informationSectionSchema = z.object({
 
 export const informationSectionUpdateSchema = informationSectionSchema.partial();
 
-export type HeroInput = z.infer<typeof heroSchema>;
-export type InformationSectionInput = z.infer<typeof informationSectionSchema>;
-export type InformationSectionUpdateInput = z.infer<
-  typeof informationSectionUpdateSchema
->;

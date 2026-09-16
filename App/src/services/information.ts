@@ -10,12 +10,6 @@ export interface InformationSection {
   displayOrder: number
 }
 
-export async function getInformation(): Promise<InformationSection[]> {
-  const res = await fetch(`/api/information`, { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json()
-}
-
 export async function getAdminInformation(): Promise<InformationSection[]> {
   const res = await fetchAdmin(`/api/admin/information`, { cache: 'no-store' })
   if (!res.ok) return []

@@ -12,12 +12,6 @@ export type FeaturedProductData = {
   }
 }
 
-export async function getFeatured(): Promise<FeaturedProductData[]> {
-  const res = await fetch('/api/featured', { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json()
-}
-
 export async function getAdminFeatured(): Promise<FeaturedProductData[]> {
   const res = await fetchAdmin('/api/admin/featured', { cache: 'no-store' })
   if (!res.ok) return []

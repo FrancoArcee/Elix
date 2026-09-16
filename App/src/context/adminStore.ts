@@ -49,13 +49,16 @@ export type AdminProduct = {
   brand: string;
   brandId: string;
   name: string;
-  image: string;
+  image: string | null;
   images?: string[];
   category: ProductCategory;
   categoryId: string;
   badge?: string;
   orientation?: ProductOrientation;
   olfactoryFamily?: string;
+  fraganceFamily?: string;
+  concentration?: string;
+  presentation?: string;
   price?: number;
   originalPrice?: number;
   sizes?: string;
@@ -100,6 +103,30 @@ export type Offer = {
   description: string;
   active: boolean;
 };
+
+import type { ProductData } from "@/services/products";
+
+function mapProduct(p: ProductData): AdminProduct {
+  return {
+    id: p.id,
+    name: p.name,
+    brand: p.brand,
+    brandId: p.brandId,
+    category: p.category as ProductCategory,
+    categoryId: p.categoryId,
+    image: p.image ?? null,
+    images: Array.isArray(p.images)
+      ? p.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
+      : [],
+    price: p.price ?? undefined,
+    fraganceFamily: p.fraganceFamily ?? undefined,
+    concentration: p.concentration ?? undefined,
+    orientation: p.targetAudience === "masculino" ? "Masculino" : p.targetAudience === "femenino" ? "Femenino" : "Unisex",
+    presentation: p.presentation ?? undefined,
+    badge: p.badge ?? undefined,
+    description: p.description ?? undefined,
+  };
+}
 
 type AdminState = {
   hero: HeroContent;
@@ -441,25 +468,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       const data = await productService.getAdminProducts();
       set({
-        products: data.map((p) => ({
-          id: p.id,
-          name: p.name,
-          brand: p.brand,
-          brandId: p.brandId,
-          category: p.category as ProductCategory,
-          categoryId: p.categoryId,
-          image: p.image ?? null,
-          images: Array.isArray(p.images)
-            ? p.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
-            : [],
-          price: p.price ?? undefined,
-          fraganceFamily: p.fraganceFamily ?? undefined,
-          concentration: p.concentration ?? undefined,
-          orientation: p.targetAudience === "masculino" ? "Masculino" : p.targetAudience === "femenino" ? "Femenino" : "Unisex",
-          presentation: p.presentation ?? undefined,
-          badge: p.badge ?? undefined,
-          description: p.description ?? undefined,
-        })),
+        products: data.map(mapProduct),
       });
     } catch (error) {
       if (error instanceof UnauthorizedError) {
@@ -475,25 +484,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const created = await productService.createProduct(data);
       set((state) => ({
         products: [
-          {
-            id: created.id,
-            name: created.name,
-            brand: created.brand,
-            brandId: created.brandId,
-            category: created.category as ProductCategory,
-            categoryId: created.categoryId,
-            image: created.image ?? null,
-            images: Array.isArray(created.images)
-              ? created.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
-              : [],
-            price: created.price ?? undefined,
-            fraganceFamily: created.fraganceFamily ?? undefined,
-            concentration: created.concentration ?? undefined,
-            orientation: created.targetAudience === "masculino" ? "Masculino" : created.targetAudience === "femenino" ? "Femenino" : "Unisex",
-            presentation: created.presentation ?? undefined,
-            badge: created.badge ?? undefined,
-            description: created.description ?? undefined,
-          },
+          mapProduct(created),
           ...state.products,
         ],
       }));
@@ -506,25 +497,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       set((state) => ({
         products: state.products.map((product) =>
           product.id === id
-            ? {
-                ...product,
-                name: updated.name,
-                brand: updated.brand,
-                brandId: updated.brandId,
-                category: updated.category as ProductCategory,
-                categoryId: updated.categoryId,
-                image: updated.image ?? product.image,
-                images: Array.isArray(updated.images)
-                  ? updated.images.map((img: string | { url: string }) => typeof img === "string" ? img : img.url)
-                  : product.images,
-                price: updated.price ?? undefined,
-                fraganceFamily: updated.fraganceFamily ?? undefined,
-                concentration: updated.concentration ?? undefined,
-                orientation: updated.targetAudience === "masculino" ? "Masculino" : updated.targetAudience === "femenino" ? "Femenino" : "Unisex",
-                presentation: updated.presentation ?? undefined,
-                badge: updated.badge ?? undefined,
-                description: updated.description ?? undefined,
-              }
+            ? { ...product, ...mapProduct(updated) }
             : product,
         ),
       }));

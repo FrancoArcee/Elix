@@ -50,5 +50,3 @@ export const contactUpdateSchema = z.object({
   displayOrder: z.number().int().optional(),
 });
 
-export type ContactInput = z.infer<typeof contactSchema>;
-export type ContactUpdateInput = z.infer<typeof contactUpdateSchema>;

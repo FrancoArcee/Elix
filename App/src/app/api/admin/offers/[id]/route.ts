@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
-import { offerApiSchema } from '@/schemas/offer'
+import { offerApiUpdateSchema } from '@/schemas/offer'
 import { validateApiRequest } from '@/lib/validation'
 
 type OfferWithRelations = {
@@ -66,7 +66,7 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const validation = validateApiRequest(offerApiSchema, body)
+  const validation = validateApiRequest(offerApiUpdateSchema, body)
   if (!validation.success) {
     return validation.response
   }
@@ -80,23 +80,27 @@ export async function PUT(
     })
   }
 
-  const allCategories = await prisma.category.findMany()
-  const isAllCategories = categories?.includes('Toda la colección')
-  const categoryIds = isAllCategories
-    ? allCategories.map((c: { id: string }) => c.id)
-    : allCategories.filter((c: { name: string }) => categories?.includes(c.name)).map((c: { id: string }) => c.id)
-
-  let paymentMethodRecord = paymentMethod
-    ? await prisma.paymentMethod.findFirst({ where: { method: paymentMethod } })
-    : null
-  if (!paymentMethodRecord && paymentMethod) {
-    paymentMethodRecord = await prisma.paymentMethod.create({
-      data: { method: paymentMethod },
-    })
+  let paymentMethodRecord = null
+  if (paymentMethod !== undefined) {
+    paymentMethodRecord = await prisma.paymentMethod.findFirst({ where: { method: paymentMethod } })
+    if (!paymentMethodRecord && paymentMethod) {
+      paymentMethodRecord = await prisma.paymentMethod.create({
+        data: { method: paymentMethod },
+      })
+    }
+    await prisma.offerPaymentMethod.deleteMany({ where: { offerId: id } })
   }
 
-  await prisma.offerPaymentMethod.deleteMany({ where: { offerId: id } })
-  await prisma.offerCategory.deleteMany({ where: { offerId: id } })
+  let categoryIds: string[] = []
+  if (categories !== undefined) {
+    const allCategories = await prisma.category.findMany()
+    const isAllCategories = categories.includes('Toda la colección')
+    categoryIds = isAllCategories
+      ? allCategories.map((c: { id: string }) => c.id)
+      : allCategories.filter((c: { name: string }) => categories.includes(c.name)).map((c: { id: string }) => c.id)
+
+    await prisma.offerCategory.deleteMany({ where: { offerId: id } })
+  }
 
   const offer = await prisma.offer.update({
     where: { id },
@@ -104,10 +108,10 @@ export async function PUT(
       ...(discount !== undefined && { discount: Number(discount) }),
       ...(description !== undefined && { description: description || null }),
       ...(active !== undefined && { active }),
-      ...(paymentMethodRecord && {
+      ...(paymentMethod !== undefined && paymentMethodRecord && {
         offerPaymentMethods: { create: [{ paymentMethodId: paymentMethodRecord.id }] },
       }),
-      ...(categoryIds.length > 0 && {
+      ...(categories !== undefined && categoryIds.length > 0 && {
         offerCategories: { create: categoryIds.map((categoryId: string) => ({ categoryId })) },
       }),
     },
@@ -117,7 +121,8 @@ export async function PUT(
     },
   })
 
-  return NextResponse.json(flattenOffer(offer as unknown as OfferWithRelations, allCategories.length))
+  const allCategoryCount = await prisma.category.count()
+  return NextResponse.json(flattenOffer(offer as unknown as OfferWithRelations, allCategoryCount))
 }
 
 export async function DELETE(
