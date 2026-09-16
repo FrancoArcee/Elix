@@ -8,11 +8,13 @@ import Categories from "@/components/home/Categories";
 import BrandMarquee from "@/components/home/BrandMarquee";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import { getPublicHomeData } from "@/lib/public-data";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const { offer, categories, hero, featuredProducts, contacts } = await getPublicHomeData();
+  const brands = await prisma.brand.findMany({ orderBy: { name: "asc" } });
 
   const navbarCategories = categories.map((c) => ({
     label: c.name,
@@ -30,7 +32,7 @@ export default async function Home() {
         <Benefits />
         {offer && <PromoSection offer={offer} />}
         <Categories categories={categories} />
-        <BrandMarquee />
+        <BrandMarquee brands={brands} />
         <FeaturedProducts products={featuredProducts} />
       </main>
       <Footer contacts={contacts} />
