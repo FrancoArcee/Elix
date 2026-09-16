@@ -57,13 +57,6 @@ export async function POST(request: Request) {
 
   const { discount, description, paymentMethod, categories, active } = validation.data
 
-  if (active) {
-    await prisma.offer.updateMany({
-      where: { active: true },
-      data: { active: false },
-    })
-  }
-
   const allCategories = await prisma.category.findMany()
   const isAllCategories = categories?.includes('Toda la colección')
   const categoryIds = isAllCategories

@@ -8,11 +8,13 @@ import Categories from "@/components/home/Categories";
 import BrandMarquee from "@/components/home/BrandMarquee";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import { getPublicHomeData } from "@/lib/public-data";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { offer, categories, hero, featuredProducts, contacts } = await getPublicHomeData();
+  const { offers, categories, hero, featuredProducts, contacts } = await getPublicHomeData();
+  const brands = await prisma.brand.findMany({ orderBy: { name: "asc" } });
 
   const navbarCategories = categories.map((c) => ({
     label: c.name,
@@ -24,13 +26,13 @@ export default async function Home() {
       <Navbar categories={navbarCategories} />
       <main>
         <div className="flex min-h-[calc(100dvh-60px)] flex-col md:min-h-0 md:block">
-          {offer && <AnnouncementBar offer={offer} />}
+          {offers.length > 0 && <AnnouncementBar offers={offers} />}
           <Hero hero={hero} />
         </div>
         <Benefits />
-        {offer && <PromoSection offer={offer} />}
+        {offers.length > 0 && <PromoSection offers={offers} />}
         <Categories categories={categories} />
-        <BrandMarquee />
+        <BrandMarquee brands={brands} />
         <FeaturedProducts products={featuredProducts} />
       </main>
       <Footer contacts={contacts} />

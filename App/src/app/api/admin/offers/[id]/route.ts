@@ -74,13 +74,6 @@ export async function PUT(
 
   const { discount, description, paymentMethod, categories, active } = validation.data
 
-  if (active && !existing.active) {
-    await prisma.offer.updateMany({
-      where: { active: true, id: { not: id } },
-      data: { active: false },
-    })
-  }
-
   let paymentMethodRecord = null
   if (paymentMethod !== undefined) {
     paymentMethodRecord = await prisma.paymentMethod.findFirst({ where: { method: paymentMethod } })

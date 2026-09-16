@@ -11,13 +11,18 @@ const BENEFITS = [
     title: "Cotización instantánea",
     subtitle: "Con servicio particular",
   },
+  {
+    icon: "/icons/icon-shipping.svg",
+    title: "Envíos a todo el país",
+    subtitle: "A la puerta de tu casa",
+  },
 ];
 
 export default function Benefits() {
   return (
     <section className="border-y border-ink/10">
       <div className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-ink/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 md:divide-x md:divide-ink/10">
           {BENEFITS.map((benefit, index) => (
             <div
               key={benefit.title}

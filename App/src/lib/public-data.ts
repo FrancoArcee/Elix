@@ -52,11 +52,12 @@ export const getPublicFeaturedProducts = unstable_cache(
   { revalidate: 300, tags: ["public-featured"] },
 );
 
-export const getPublicActiveOffer = unstable_cache(
+export const getPublicActiveOffers = unstable_cache(
   async () => {
-    const [offer, allCategoryCount] = await Promise.all([
-      prisma.offer.findFirst({
+    const [offers, allCategoryCount] = await Promise.all([
+      prisma.offer.findMany({
         where: { active: true },
+        orderBy: { id: "desc" },
         include: {
           offerCategories: { include: { category: true } },
           offerPaymentMethods: { include: { paymentMethod: true } },
@@ -65,20 +66,20 @@ export const getPublicActiveOffer = unstable_cache(
       prisma.category.count(),
     ]);
 
-    if (!offer) return null;
+    return offers.map((offer) => {
+      const categories = offer.offerCategories.map(({ category }) => category.name);
+      const isAllCategories = categories.length === allCategoryCount && allCategoryCount > 0;
 
-    const categories = offer.offerCategories.map(({ category }) => category.name);
-    const isAllCategories = categories.length === allCategoryCount && allCategoryCount > 0;
-
-    return {
-      discount: Number(offer.discount),
-      paymentMethod: offer.offerPaymentMethods[0]?.paymentMethod.method ?? "",
-      categories: isAllCategories ? ["Toda la colección"] : categories,
-      categoryId: !isAllCategories && offer.offerCategories[0]
-        ? offer.offerCategories[0].category.id
-        : null,
-      description: offer.description ?? "",
-    };
+      return {
+        discount: Number(offer.discount),
+        paymentMethod: offer.offerPaymentMethods[0]?.paymentMethod.method ?? "",
+        categories: isAllCategories ? ["Toda la colección"] : categories,
+        categoryId: !isAllCategories && offer.offerCategories[0]
+          ? offer.offerCategories[0].category.id
+          : null,
+        description: offer.description ?? "",
+      };
+    });
   },
   ["public-offer"],
   { revalidate: 300, tags: ["public-offer"] },
@@ -86,15 +87,15 @@ export const getPublicActiveOffer = unstable_cache(
 
 export const getPublicHomeData = unstable_cache(
   async () => {
-    const [offer, categories, hero, featuredProducts, contacts] = await Promise.all([
-      getPublicActiveOffer(),
+    const [offers, categories, hero, featuredProducts, contacts] = await Promise.all([
+      getPublicActiveOffers(),
       getPublicCategories(),
       getPublicHero(),
       getPublicFeaturedProducts(),
       getPublicContacts(),
     ]);
 
-    return { offer, categories, hero, featuredProducts, contacts };
+    return { offers, categories, hero, featuredProducts, contacts };
   },
   ["public-home"],
   {

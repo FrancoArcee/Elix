@@ -1,20 +1,24 @@
-type AnnouncementBarProps = {
-  offer: {
-    discount: number;
-    paymentMethod: string;
-    categories: string[];
-  };
+type OfferInfo = {
+  discount: number;
+  paymentMethod: string;
+  categories: string[];
 };
 
-function AnnouncementRow({ offer }: { offer: AnnouncementBarProps["offer"] }) {
-  const isAllCategories = offer.categories.includes("Toda la colección");
+type AnnouncementBarProps = {
+  offers: OfferInfo[];
+};
 
-  const segments = [
-    { type: "accent", text: `${offer.discount}% off` },
-    { type: "muted", text: `pagando en ${offer.paymentMethod.toLowerCase()}` },
-    { type: "muted", text: isAllCategories ? "en toda la colección" : offer.categories[0] },
-    { type: "accent", text: "Oferta activa" },
-  ];
+function AnnouncementRow({ offers }: { offers: OfferInfo[] }) {
+  const segments = offers.flatMap((offer) => {
+    const isAllCategories = offer.categories.includes("Toda la colección");
+
+    return [
+      { type: "accent", text: `${offer.discount}% off` },
+      { type: "muted", text: `pagando en ${offer.paymentMethod.toLowerCase()}` },
+      { type: "muted", text: isAllCategories ? "en toda la colección" : offer.categories[0] },
+      { type: "accent", text: "Oferta activa" },
+    ];
+  });
 
   return (
     <>
@@ -39,12 +43,12 @@ function AnnouncementRow({ offer }: { offer: AnnouncementBarProps["offer"] }) {
   );
 }
 
-export default function AnnouncementBar({ offer }: AnnouncementBarProps) {
+export default function AnnouncementBar({ offers }: AnnouncementBarProps) {
   return (
     <div className="w-full shrink-0 overflow-hidden border-b border-background/10 bg-ink py-4">
       <div className="flex w-max animate-marquee">
-        <AnnouncementRow offer={offer} />
-        <AnnouncementRow offer={offer} />
+        <AnnouncementRow offers={offers} />
+        <AnnouncementRow offers={offers} />
       </div>
     </div>
   );
