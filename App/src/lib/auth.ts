@@ -7,6 +7,12 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  trustedOrigins: [
+    "https://elixfragancias.com.ar",
+    "https://www.elixfragancias.com.ar",
+    "https://elix-beige.vercel.app",
+    "http://localhost:3000",
+  ],
   emailAndPassword: {
     enabled: true,
   },
