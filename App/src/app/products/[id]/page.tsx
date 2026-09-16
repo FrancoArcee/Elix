@@ -1,11 +1,15 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductDetail from "@/components/products/ProductDetail";
+import JsonLd from "@/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://elixfragancias.com.ar";
 
 type ProductFull = Prisma.ProductGetPayload<{
   include: {
@@ -24,6 +28,42 @@ type ProductWithBrandAndImages = Prisma.ProductGetPayload<{
 type ProductPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { brand: true, images: true },
+  });
+
+  if (!product) {
+    return { title: "Producto no encontrado" };
+  }
+
+  const title = `${product.brand.name} ${product.name}`;
+  const description =
+    product.description?.slice(0, 160) ||
+    `${product.name} de ${product.brand.name} — Perfumería árabe original en ELIX.`;
+
+  const imageUrl = product.images[0]?.imageUrl || `${baseUrl}/og-image.png`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: imageUrl, width: 800, height: 800, alt: product.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params;
@@ -95,6 +135,34 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: `${product.brand.name} ${product.name}`,
+          description: product.description || `${product.name} de ${product.brand.name}`,
+          image: allImages,
+          brand: { "@type": "Brand", name: product.brand.name },
+          category: product.category.name,
+          offers: product.price
+            ? {
+                "@type": "Offer",
+                priceCurrency: "ARS",
+                price: Number(product.price),
+                availability: "https://schema.org/InStock",
+                url: `${baseUrl}/products/${product.id}`,
+              }
+            : undefined,
+          breadcrumb: {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Inicio", item: baseUrl },
+              { "@type": "ListItem", position: 2, name: product.category.name, item: `${baseUrl}/products?categoryId=${product.categoryId}` },
+              { "@type": "ListItem", position: 3, name: `${product.brand.name} ${product.name}` },
+            ],
+          },
+        }}
+      />
       <Navbar active={`/products?categoryId=${product.categoryId}`} withSearchBar={false} categories={navbarCategories} />
       <ProductDetail
         brand={product.brand.name}

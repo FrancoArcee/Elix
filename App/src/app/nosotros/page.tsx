@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -5,6 +6,12 @@ import Footer from "@/components/layout/Footer";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Nosotros",
+  description:
+    "Conocé ELIX: somos apasionados por las fragancias árabes. Te acercamos las mejores marcas de Oriente Medio.",
+};
 
 const STEPS = [
   {
@@ -64,6 +71,7 @@ export default async function NosotrosPage() {
     <>
       <Navbar active="/nosotros" withSearchBar={false} categories={navbarCategories} />
       <main className="mx-auto w-full max-w-[896px] px-4 py-16 md:px-6 md:py-24">
+        <h1 className="sr-only">Sobre ELIX — Perfumería Árabe</h1>
         {sections.map((section, index) => {
           if (section.id === "how_to_buy") {
             return (

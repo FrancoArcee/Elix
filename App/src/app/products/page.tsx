@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -5,9 +6,12 @@ import type { Prisma } from "@prisma/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductListing from "@/components/products/ProductListing";
+import JsonLd from "@/components/seo/JsonLd";
 import { intToHex } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://elixfragancias.com.ar";
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: { brand: true; category: true; images: true };
@@ -16,6 +20,39 @@ type ProductWithRelations = Prisma.ProductGetPayload<{
 type ProductsPageProps = {
   searchParams: Promise<{ categoryId?: string; search?: string }>;
 };
+
+export async function generateMetadata({ searchParams }: ProductsPageProps): Promise<Metadata> {
+  const { categoryId, search } = await searchParams;
+
+  if (search) {
+    return {
+      title: `Resultados para "${search}"`,
+      description: `Encontrá perfumes árabes relacionados con "${search}" en ELIX.`,
+      robots: { index: false },
+    };
+  }
+
+  if (categoryId) {
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      return { title: "Categoría no encontrada" };
+    }
+
+    return {
+      title: category.name,
+      description: category.description || `Catálogo de ${category.name} en ELIX.`,
+      openGraph: {
+        title: `${category.name} — ELIX`,
+        description: category.description || `Catálogo de ${category.name}.`,
+      },
+    };
+  }
+
+  return {};
+}
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const { categoryId, search } = await searchParams;
@@ -51,6 +88,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
     return (
       <>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Inicio", item: baseUrl },
+              { "@type": "ListItem", position: 2, name: category.name },
+            ],
+          }}
+        />
         <Navbar
           active={`/products?categoryId=${category.id}`}
           withSearchBar={false}

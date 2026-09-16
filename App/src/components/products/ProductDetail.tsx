@@ -48,9 +48,9 @@ const TABS = ["Notas Olfativas", "Descripción", "Características"] as const;
 
 type Tab = (typeof TABS)[number];
 
-function buildContactHref(application: string, value: string, productName: string): string {
+function buildContactHref(application: string, value: string, productName: string, brandName: string): string {
   const message = encodeURIComponent(
-    `Hola, me interesa el producto ${productName} ¿Podrían darme mas información del mismo?`
+    `Hola, me interesa el producto ${productName} de la marca ${brandName} ¿Podrían darme mas información del mismo?`
   );
   const lower = application.toLowerCase();
 
@@ -92,7 +92,7 @@ export default function ProductDetail({
   const galleryImages = images?.length ? images : image ? [image] : [];
 
   const contactHref = primaryContact
-    ? buildContactHref(primaryContact.application, primaryContact.value, name)
+    ? buildContactHref(primaryContact.application, primaryContact.value, name, brand)
     : undefined;
 
   return (
@@ -118,15 +118,14 @@ export default function ProductDetail({
                     type="button"
                     onClick={() => setActiveImage(i)}
                     aria-label={`Imagen ${i + 1} de ${name}`}
-                    className={`relative aspect-square overflow-hidden bg-surface transition-opacity ${
-                      i === activeImage
-                        ? "shadow-[0_0_0_1px_#0c0c0b]"
-                        : "opacity-50 hover:opacity-80"
-                    }`}
+                    className={`relative aspect-square overflow-hidden bg-surface transition-opacity ${i === activeImage
+                      ? "shadow-[0_0_0_1px_#0c0c0b]"
+                      : "opacity-50 hover:opacity-80"
+                      }`}
                   >
                     <Image
                       src={img}
-                      alt=""
+                      alt={`Imagen ${i + 1} de ${name}`}
                       fill
                       sizes="(max-width: 640px) 25vw, 12.5vw"
                       className="object-cover"
@@ -168,11 +167,10 @@ export default function ProductDetail({
                         key={size}
                         type="button"
                         onClick={() => setSelectedSize(size)}
-                        className={`border-[0.667px] px-4 py-2.5 text-[12px] font-medium leading-4 transition-colors ${
-                          size === selectedSize
-                            ? "border-ink bg-ink text-background"
-                            : "border-ink/10 bg-background text-ink hover:border-ink/40"
-                        }`}
+                        className={`border-[0.667px] px-4 py-2.5 text-[12px] font-medium leading-4 transition-colors ${size === selectedSize
+                          ? "border-ink bg-ink text-background"
+                          : "border-ink/10 bg-background text-ink hover:border-ink/40"
+                          }`}
                       >
                         {size}
                       </button>
@@ -209,9 +207,8 @@ export default function ProductDetail({
                     {benefits.map((benefit, i) => (
                       <div
                         key={benefit.text}
-                        className={`flex items-center gap-3 ${
-                          i > 0 ? "pt-3" : ""
-                        }`}
+                        className={`flex items-center gap-3 ${i > 0 ? "pt-3" : ""
+                          }`}
                       >
                         <Image
                           src={benefit.icon}
@@ -239,11 +236,10 @@ export default function ProductDetail({
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`whitespace-nowrap border-b-2 py-6 text-[10px] font-medium uppercase tracking-[1.8px] transition-colors ${
-                      activeTab === tab
-                        ? "border-ink text-ink"
-                        : "border-transparent text-muted hover:text-ink"
-                    }`}
+                    className={`whitespace-nowrap border-b-2 py-6 text-[10px] font-medium uppercase tracking-[1.8px] transition-colors ${activeTab === tab
+                      ? "border-ink text-ink"
+                      : "border-transparent text-muted hover:text-ink"
+                      }`}
                   >
                     {tab}
                   </button>
@@ -262,9 +258,8 @@ export default function ProductDetail({
                             {group.notes.map((note, i) => (
                               <p
                                 key={note}
-                                className={`text-[14px] leading-5 text-ink ${
-                                  i > 0 ? "pt-2" : ""
-                                }`}
+                                className={`text-[14px] leading-5 text-ink ${i > 0 ? "pt-2" : ""
+                                  }`}
                               >
                                 {note}
                               </p>
