@@ -69,7 +69,7 @@ export default async function NosotrosPage() {
 
   return (
     <>
-      <Navbar active="/nosotros" withSearchBar={false} categories={navbarCategories} />
+      <Navbar active="/nosotros" categories={navbarCategories} />
       <main className="mx-auto w-full max-w-[896px] px-4 py-16 md:px-6 md:py-24">
         <h1 className="sr-only">Sobre ELIX — Perfumería Árabe</h1>
         {sections.map((section, index) => {

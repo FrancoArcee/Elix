@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 export default function ProductsLoading() {
   return (
     <>
-      <Navbar active="/" withSearchBar={false} />
+      <Navbar active="/" />
       <main className="min-h-screen bg-background px-4 py-10 md:px-6 md:py-12">
         <div className="mx-auto w-full max-w-[1280px]">
           <Skeleton className="h-[36px] w-48 md:h-[40px] md:w-64" />

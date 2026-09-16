@@ -89,16 +89,18 @@ export default function Navbar({
     fetchResults(value);
   }
 
-  function handleResultClick() {
-    if (!searchQuery.trim()) return;
-    const q = searchQuery.trim();
-    router.push(`/products?search=${encodeURIComponent(q)}`);
+  function handleResultClick(product: ProductData) {
+    router.push(`/products/${product.id}`);
   }
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     const q = searchQuery.trim();
+    if (searchResults.length === 1) {
+      router.push(`/products/${searchResults[0].id}`);
+      return;
+    }
     router.push(`/products?search=${encodeURIComponent(q)}`);
   }
 
@@ -126,7 +128,7 @@ export default function Navbar({
               <li key={product.id}>
                 <button
                   type="button"
-                  onClick={handleResultClick}
+                  onClick={() => handleResultClick(product)}
                   className="flex w-full items-center gap-3 px-4 py-2 transition-colors hover:bg-surface"
                 >
                   {product.image ? (
