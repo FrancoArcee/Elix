@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { deleteImage } from '@/lib/r2'
 import { productApiSchema } from '@/schemas/product'
 import { validateApiRequest } from '@/lib/validation'
@@ -93,6 +94,8 @@ export async function PUT(
     }
   }
 
+  revalidatePublicData('public-featured')
+
   return NextResponse.json({
     id: product.id,
     name: product.name,
@@ -135,6 +138,7 @@ export async function DELETE(
   await prisma.featuredProduct.deleteMany({ where: { productId: id } })
   await prisma.productVolume.deleteMany({ where: { productId: id } })
   await prisma.product.delete({ where: { id } })
+  revalidatePublicData('public-featured')
 
   return NextResponse.json({ status: 'deleted' })
 }

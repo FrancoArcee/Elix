@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { productApiSchema } from '@/schemas/product'
 import { validateApiRequest } from '@/lib/validation'
 import type { Prisma } from '@prisma/client'
@@ -101,6 +102,8 @@ export async function POST(request: Request) {
       await prisma.productVolume.upsert({ where: { productId_volumeId: { productId: product.id, volumeId: volume.id } }, create: { productId: product.id, volumeId: volume.id }, update: {} })
     }
   }
+
+  revalidatePublicData('public-featured')
 
   return NextResponse.json({
     id: product.id,

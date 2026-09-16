@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { offerApiSchema } from '@/schemas/offer'
 import { validateApiRequest } from '@/lib/validation'
 
@@ -95,6 +96,8 @@ export async function POST(request: Request) {
       offerPaymentMethods: { include: { paymentMethod: true } },
     },
   })
+
+  revalidatePublicData('public-offer')
 
   return NextResponse.json(flattenOffer(offer, allCategories.length), { status: 201 })
 }

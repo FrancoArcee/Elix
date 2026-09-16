@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { intToHex, hexToInt } from '@/lib/colors'
 
 import { categorySchema } from '@/schemas/category'
@@ -45,6 +46,8 @@ export async function POST(request: Request) {
       description,
     },
   })
+
+  revalidatePublicData('public-categories', 'public-offer')
 
   return NextResponse.json({
     id: category.id,

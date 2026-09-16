@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { type getPublicCategories } from "@/lib/public-data";
 
-export default async function Categories() {
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-  });
+type CategoriesProps = {
+  categories: Awaited<ReturnType<typeof getPublicCategories>>;
+};
+
+export default function Categories({ categories }: CategoriesProps) {
 
   if (categories.length === 0) return null;
 
