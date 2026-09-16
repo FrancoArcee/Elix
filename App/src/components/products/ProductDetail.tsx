@@ -67,6 +67,25 @@ function buildContactHref(application: string, value: string, productName: strin
     const username = value.replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/^@/, "").replace(/\/$/, "");
     return `https://ig.me/m/${username}?text=${message}`;
   }
+  if (lower === "twitter" || lower === "x") {
+    const username = value.replace(/^@/, "");
+    return `https://x.com/${username}`;
+  }
+  if (lower === "tiktok") {
+    const username = value.replace(/^@/, "");
+    return `https://www.tiktok.com/@${username}`;
+  }
+  if (lower === "facebook") {
+    const page = value.replace(/^https?:\/\/(www\.)?facebook\.com\//, "").replace(/\/$/, "");
+    return `https://www.facebook.com/${page}`;
+  }
+  if (lower === "youtube") {
+    const channel = value.replace(/^https?:\/\/(www\.)?youtube\.com\//, "").replace(/\/$/, "");
+    return `https://www.youtube.com/${channel}`;
+  }
+  if (lower === "email") {
+    return `mailto:${value}`;
+  }
   return value;
 }
 
