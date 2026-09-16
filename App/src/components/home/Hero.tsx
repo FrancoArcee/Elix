@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { type getPublicHero } from "@/lib/public-data";
 
-export default async function Hero() {
-  const hero = await prisma.hero.findFirst()
+type HeroProps = {
+  hero: Awaited<ReturnType<typeof getPublicHero>>;
+};
+
+export default function Hero({ hero }: HeroProps) {
 
   if (!hero) return null
 

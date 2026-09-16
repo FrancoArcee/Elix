@@ -1,26 +1,11 @@
-import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 import ProductCard from "@/components/products/ProductCard";
+import { type getPublicFeaturedProducts } from "@/lib/public-data";
 
-type FeaturedWithProduct = Prisma.FeaturedProductGetPayload<{
-  include: { product: { include: { brand: true; images: true } } }
-}>;
+type FeaturedProductsProps = {
+  products: Awaited<ReturnType<typeof getPublicFeaturedProducts>>;
+};
 
-export default async function FeaturedProducts() {
-  const featured = await prisma.featuredProduct.findMany({
-    orderBy: { displayOrder: "asc" },
-    include: {
-      product: {
-        include: {
-          brand: true,
-          images: { orderBy: { displayOrder: "asc" }, take: 1 },
-        },
-      },
-    },
-    take: 6,
-  }) as FeaturedWithProduct[];
-
-  const products = featured.map((fp) => fp.product);
+export default function FeaturedProducts({ products }: FeaturedProductsProps) {
 
   if (products.length === 0) return null;
 
@@ -39,8 +24,8 @@ export default async function FeaturedProducts() {
         {products.map((product) => (
           <ProductCard
             key={product.id}
-            image={product.images[0]?.imageUrl ?? null}
-            brand={product.brand.name}
+            image={product.image}
+            brand={product.brand}
             name={product.name}
             surface="surface"
             href={`/products/${product.id}`}

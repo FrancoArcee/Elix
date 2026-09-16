@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 
 const MAX_FEATURED = 6
 
@@ -67,6 +68,8 @@ export async function POST(request: Request) {
     },
   })
 
+  revalidatePublicData('public-featured')
+
   return NextResponse.json({
     id: featured.id,
     productId: featured.productId,
@@ -95,6 +98,8 @@ export async function PUT(request: Request) {
     )
   )
 
+  revalidatePublicData('public-featured')
+
   return NextResponse.json({ status: 'ok' })
 }
 
@@ -106,6 +111,8 @@ export async function DELETE(request: Request) {
   if (!productId) return NextResponse.json({ error: 'productId is required' }, { status: 400 })
 
   await prisma.featuredProduct.deleteMany({ where: { productId } })
+
+  revalidatePublicData('public-featured')
 
   return NextResponse.json({ status: 'deleted' })
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 
 import { contactSchema } from '@/schemas/contact'
 import { validateApiRequest } from '@/lib/validation'
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
         displayOrder: displayOrder ?? nextOrder,
       },
     })
+    revalidatePublicData('public-contacts')
     return NextResponse.json(contact, { status: 201 })
   } catch (e: any) {
     if (e.code === 'P2002') {

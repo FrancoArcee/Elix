@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { revalidatePublicData } from '@/lib/public-data'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 import { heroSchema } from '@/schemas/information'
@@ -32,6 +33,7 @@ export async function PUT(request: Request) {
   }
 
   revalidatePath('/')
+  revalidatePublicData('public-hero')
 
   return NextResponse.json(hero)
 }

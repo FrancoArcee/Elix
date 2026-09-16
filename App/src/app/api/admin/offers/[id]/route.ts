@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { offerApiUpdateSchema } from '@/schemas/offer'
 import { validateApiRequest } from '@/lib/validation'
 
@@ -122,6 +123,7 @@ export async function PUT(
   })
 
   const allCategoryCount = await prisma.category.count()
+  revalidatePublicData('public-offer')
   return NextResponse.json(flattenOffer(offer as unknown as OfferWithRelations, allCategoryCount))
 }
 
@@ -142,6 +144,7 @@ export async function DELETE(
   await prisma.offerPaymentMethod.deleteMany({ where: { offerId: id } })
   await prisma.offerCategory.deleteMany({ where: { offerId: id } })
   await prisma.offer.delete({ where: { id } })
+  revalidatePublicData('public-offer')
 
   return NextResponse.json({ status: 'deleted' })
 }

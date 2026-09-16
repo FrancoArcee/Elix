@@ -7,43 +7,14 @@ import PromoSection from "@/components/home/PromoSection";
 import Categories from "@/components/home/Categories";
 import BrandMarquee from "@/components/home/BrandMarquee";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
-import { prisma } from "@/lib/prisma";
+import { getPublicHomeData } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
-async function getActiveOffer() {
-  const [offer, allCategoryCount] = await Promise.all([
-    prisma.offer.findFirst({
-      where: { active: true },
-      include: {
-        offerCategories: { include: { category: true } },
-        offerPaymentMethods: { include: { paymentMethod: true } },
-      },
-    }),
-    prisma.category.count(),
-  ])
-
-  if (!offer) return null
-
-  const categoryNames = offer.offerCategories.map((oc: { category: { name: string } }) => oc.category.name)
-  const isAllCategories = categoryNames.length === allCategoryCount && allCategoryCount > 0
-
-  return {
-    discount: Number(offer.discount),
-    paymentMethod: offer.offerPaymentMethods[0]?.paymentMethod.method ?? "",
-    categories: isAllCategories ? ["Toda la colección"] : categoryNames,
-    categoryId: !isAllCategories && offer.offerCategories[0] ? offer.offerCategories[0].category.id : null,
-    description: offer.description ?? "",
-  }
-}
-
 export default async function Home() {
-  const [offer, navCategories] = await Promise.all([
-    getActiveOffer(),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
-  ]);
+  const { offer, categories, hero, featuredProducts, contacts } = await getPublicHomeData();
 
-  const navbarCategories = navCategories.map((c) => ({
+  const navbarCategories = categories.map((c) => ({
     label: c.name,
     href: `/products?categoryId=${c.id}`,
   }));
@@ -54,15 +25,15 @@ export default async function Home() {
       <main>
         <div className="flex min-h-[calc(100dvh-60px)] flex-col md:min-h-0 md:block">
           {offer && <AnnouncementBar offer={offer} />}
-          <Hero />
+          <Hero hero={hero} />
         </div>
         <Benefits />
         {offer && <PromoSection offer={offer} />}
-        <Categories />
+        <Categories categories={categories} />
         <BrandMarquee />
-        <FeaturedProducts />
+        <FeaturedProducts products={featuredProducts} />
       </main>
-      <Footer />
+      <Footer contacts={contacts} />
     </>
   )
 }

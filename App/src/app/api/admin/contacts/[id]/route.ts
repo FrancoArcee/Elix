@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { contactUpdateSchema } from '@/schemas/contact'
 import { validateApiRequest } from '@/lib/validation'
 
@@ -43,6 +44,8 @@ export async function PUT(
       },
     })
 
+    revalidatePublicData('public-contacts')
+
     return NextResponse.json(contact)
   } catch (e: any) {
     if (e.code === 'P2002') {
@@ -67,5 +70,6 @@ export async function DELETE(
   }
 
   await prisma.contact.delete({ where: { id } })
+  revalidatePublicData('public-contacts')
   return NextResponse.json({ status: 'deleted' })
 }
