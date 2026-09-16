@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 export default function ProductDetailLoading() {
   return (
     <>
-      <Navbar active="/" withSearchBar={false} />
+      <Navbar active="/" />
       <main className="bg-background">
         <div className="mx-auto w-full max-w-[1280px] px-6 py-12">
           <div className="grid grid-cols-1 gap-10 pt-8 lg:grid-cols-2">

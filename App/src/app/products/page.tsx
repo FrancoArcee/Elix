@@ -100,7 +100,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         />
         <Navbar
           active={`/products?categoryId=${category.id}`}
-          withSearchBar={false}
           categories={navbarCategories}
         />
         <Suspense>
@@ -184,7 +183,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <>
-      <Navbar active="/" withSearchBar={false} categories={navbarCategories} />
+        <Navbar active="/" categories={navbarCategories} />
       <Suspense>
         <ProductListing
           title={title}

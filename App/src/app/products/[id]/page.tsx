@@ -163,7 +163,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           },
         }}
       />
-      <Navbar active={`/products?categoryId=${product.categoryId}`} withSearchBar={false} categories={navbarCategories} />
+      <Navbar active={`/products?categoryId=${product.categoryId}`} categories={navbarCategories} />
       <ProductDetail
         brand={product.brand.name}
         name={product.name}
