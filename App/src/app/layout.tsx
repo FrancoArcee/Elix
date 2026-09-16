@@ -17,7 +17,7 @@ const libreBaskerville = Libre_Baskerville({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.elixfragancias.com.ar";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://elixfragancias.com.ar";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Carrito",
+  robots: { index: false },
+};
+
 export default function CartPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 sm:px-6">

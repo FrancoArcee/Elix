@@ -126,7 +126,7 @@ export default function ProductDetail({
                   >
                     <Image
                       src={img}
-                      alt=""
+                      alt={`Imagen ${i + 1} de ${name}`}
                       fill
                       sizes="(max-width: 640px) 25vw, 12.5vw"
                       className="object-cover"
