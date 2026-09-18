@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
+import { revalidatePublicData } from '@/lib/public-data'
 import { brandSchema } from '@/schemas/brand'
 import { validateApiRequest } from '@/lib/validation'
+import { deleteProductImagesFromR2, deleteProductCascade } from '@/lib/product-cascade'
 
 export async function PUT(
   request: Request,
@@ -51,14 +53,26 @@ export async function DELETE(
 
   const { id } = await params
 
-  const existing = await prisma.brand.findUnique({ where: { id }, include: { _count: { select: { products: true } } } })
+  const existing = await prisma.brand.findUnique({
+    where: { id },
+    include: { products: { include: { images: true } } },
+  })
   if (!existing) {
     return NextResponse.json({ error: 'Brand not found' }, { status: 404 })
   }
-  if (existing._count.products > 0) {
-    return NextResponse.json({ error: 'Cannot delete brand with associated products' }, { status: 409 })
+
+  for (const product of existing.products) {
+    await deleteProductImagesFromR2(product)
   }
 
-  await prisma.brand.delete({ where: { id } })
+  await prisma.$transaction(async (tx) => {
+    for (const product of existing.products) {
+      await deleteProductCascade(tx, product.id)
+    }
+    await tx.brand.delete({ where: { id } })
+  })
+
+  revalidatePublicData('public-featured', 'public-categories', 'public-offer')
+
   return NextResponse.json({ status: 'deleted' })
 }

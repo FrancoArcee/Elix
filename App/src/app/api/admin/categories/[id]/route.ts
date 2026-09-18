@@ -3,8 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/admin'
 import { revalidatePublicData } from '@/lib/public-data'
 import { intToHex, hexToInt } from '@/lib/colors'
+import { deleteImage } from '@/lib/r2'
 import { categoryUpdateSchema } from '@/schemas/category'
 import { validateApiRequest } from '@/lib/validation'
+import { deleteProductImagesFromR2, deleteProductCascade } from '@/lib/product-cascade'
 
 export async function PUT(
   request: Request,
@@ -56,12 +58,32 @@ export async function DELETE(
 
   const { id } = await params
 
-  const existing = await prisma.category.findUnique({ where: { id } })
+  const existing = await prisma.category.findUnique({
+    where: { id },
+    include: { products: { include: { images: true } } },
+  })
   if (!existing) {
     return NextResponse.json({ error: 'Category not found' }, { status: 404 })
   }
 
-  await prisma.category.delete({ where: { id } })
+  for (const product of existing.products) {
+    await deleteProductImagesFromR2(product)
+  }
+
+  if (existing.urlImage && existing.urlImage.includes('r2.dev')) {
+    const key = existing.urlImage.split('/').slice(-2).join('/')
+    try { await deleteImage(key) } catch {}
+  }
+
+  await prisma.$transaction(async (tx) => {
+    for (const product of existing.products) {
+      await deleteProductCascade(tx, product.id)
+    }
+    await tx.offerCategory.deleteMany({ where: { categoryId: id } })
+    await tx.category.delete({ where: { id } })
+  })
+
   revalidatePublicData('public-categories', 'public-offer')
+
   return NextResponse.json({ status: 'deleted' })
 }

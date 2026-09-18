@@ -5,6 +5,7 @@ import { revalidatePublicData } from '@/lib/public-data'
 import { deleteImage } from '@/lib/r2'
 import { productApiSchema } from '@/schemas/product'
 import { validateApiRequest } from '@/lib/validation'
+import { deleteProductImagesFromR2, deleteProductCascade } from '@/lib/product-cascade'
 
 export async function PUT(
   request: Request,
@@ -126,18 +127,12 @@ export async function DELETE(
   const existing = await prisma.product.findUnique({ where: { id }, include: { images: true } })
   if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
-  for (const img of existing.images) {
-    if (img.imageUrl.includes('r2.dev')) {
-      const key = img.imageUrl.split('/').slice(-2).join('/')
-      try { await deleteImage(key) } catch {}
-    }
-  }
+  await deleteProductImagesFromR2(existing)
 
-  await prisma.productNote.deleteMany({ where: { productId: id } })
-  await prisma.productImage.deleteMany({ where: { productId: id } })
-  await prisma.featuredProduct.deleteMany({ where: { productId: id } })
-  await prisma.productVolume.deleteMany({ where: { productId: id } })
-  await prisma.product.delete({ where: { id } })
+  await prisma.$transaction(async (tx) => {
+    await deleteProductCascade(tx, id)
+  })
+
   revalidatePublicData('public-featured')
 
   return NextResponse.json({ status: 'deleted' })
