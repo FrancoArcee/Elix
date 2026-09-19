@@ -187,6 +187,8 @@ type AdminState = {
   removeProduct: (id: string) => Promise<void>;
   fetchBrands: () => Promise<void>;
   addBrand: (data: { name: string }) => Promise<void>;
+  updateBrand: (id: string, data: { name: string }) => Promise<void>;
+  removeBrand: (id: string) => Promise<void>;
   fetchFeatured: () => Promise<void>;
   addFeatured: (productId: string) => Promise<void>;
   removeFeatured: (productId: string) => Promise<void>;
@@ -536,6 +538,27 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     });
   },
 
+  updateBrand: async (id, data) => {
+    await withAuth(set)(async () => {
+      const updated = await brandService.updateBrand(id, data);
+      set((state) => ({
+        brands: state.brands.map((brand) =>
+          brand.id === id ? updated : brand
+        ).sort((a, b) => a.name.localeCompare(b.name)),
+      }));
+    });
+  },
+
+  removeBrand: async (id) => {
+    await withAuth(set)(async () => {
+      await brandService.deleteBrand(id);
+      set((state) => ({
+        brands: state.brands.filter((brand) => brand.id !== id),
+        products: state.products.filter((product) => product.brandId !== id),
+      }));
+    });
+  },
+
   fetchFeatured: async () => {
     set({ isUnauthorized: false });
     try {
@@ -647,6 +670,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       await categoryService.deleteCategory(id);
       set((state) => ({
         categories: state.categories.filter((category) => category.id !== id),
+        products: state.products.filter((product) => product.categoryId !== id),
       }));
     });
   },

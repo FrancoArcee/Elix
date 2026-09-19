@@ -5,7 +5,7 @@ import { useRouter, useParams, notFound } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import CategoryForm from "@/components/admin/CategoryForm";
-import ConfirmationModal from "@/components/admin/ConfirmationModal";
+import DeletionConfirmationModal from "@/components/admin/DeletionConfirmationModal";
 import { useAdminStore } from "@/context/adminStore";
 
 export default function AdminEditCategoryPage() {
@@ -14,16 +14,18 @@ export default function AdminEditCategoryPage() {
   const categoryId = params.id;
 
   const categories = useAdminStore((state) => state.categories);
+  const products = useAdminStore((state) => state.products);
   const category = categories.find((item) => item.id === categoryId);
   const updateCategory = useAdminStore((state) => state.updateCategory);
   const removeCategory = useAdminStore((state) => state.removeCategory);
   const fetchCategories = useAdminStore((state) => state.fetchCategories);
+  const fetchProducts = useAdminStore((state) => state.fetchProducts);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    fetchCategories().then(() => setReady(true));
-  }, [fetchCategories]);
+    Promise.all([fetchCategories(), fetchProducts()]).then(() => setReady(true));
+  }, [fetchCategories, fetchProducts]);
 
   useEffect(() => {
     if (ready && !category) {
@@ -66,6 +68,8 @@ export default function AdminEditCategoryPage() {
     router.push("/admin/categories?success=deleted");
   };
 
+  const categoryProducts = products.filter((p) => p.categoryId === categoryId);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <AdminHeader title="Editar categoría" backHref="/admin/categories" />
@@ -102,9 +106,11 @@ export default function AdminEditCategoryPage() {
       </div>
 
       {isConfirmOpen && (
-        <ConfirmationModal
+        <DeletionConfirmationModal
           title="Eliminar categoría"
-          message={`¿Seguro que querés eliminar "${category.name}"? Esta acción no se puede deshacer.`}
+          entityName={category.name}
+          message={`Esta acción eliminará permanentemente "${category.name}" y todos sus productos asociados. Esta acción no se puede deshacer.`}
+          products={categoryProducts.map((p) => ({ name: p.name, brand: p.brand }))}
           onConfirm={() => {
             setIsConfirmOpen(false);
             handleDelete();

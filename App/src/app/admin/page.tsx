@@ -18,6 +18,11 @@ const PANEL_SECTIONS = [
     href: "/admin/categories",
   },
   {
+    title: "Marcas",
+    description: "Gestioná las marcas del catálogo",
+    href: "/admin/brands",
+  },
+  {
     title: "Ofertas",
     description: "Configurá descuentos y promociones activas",
     href: "/admin/offers",
