@@ -120,15 +120,19 @@ export default function ProductDetail({
         <div className="mx-auto w-full max-w-[1280px] px-6 py-12">
           <div className="grid grid-cols-1 gap-10 pt-8 lg:grid-cols-2">
             <div className="flex flex-col">
-              <div className="relative aspect-square w-full overflow-hidden bg-surface">
-                <Image
-                  src={galleryImages[activeImage]}
-                  alt={name}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
+              <div className="relative aspect-square w-full overflow-hidden">
+                {galleryImages.length > 0 ? (
+                  <Image
+                    src={galleryImages[activeImage]}
+                    alt={name}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-surface" />
+                )}
               </div>
               <div className={`grid gap-2 pt-3 ${galleryImages.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
                 {galleryImages.map((img, i) => (
@@ -137,7 +141,7 @@ export default function ProductDetail({
                     type="button"
                     onClick={() => setActiveImage(i)}
                     aria-label={`Imagen ${i + 1} de ${name}`}
-                    className={`relative aspect-square overflow-hidden bg-surface transition-opacity ${i === activeImage
+                    className={`relative aspect-square overflow-hidden transition-opacity ${i === activeImage
                       ? "shadow-[0_0_0_1px_#0c0c0b]"
                       : "opacity-50 hover:opacity-80"
                       }`}

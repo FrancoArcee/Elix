@@ -22,11 +22,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   return (
     <Link href={href} className="group flex flex-col">
-      <div
-        className={`relative w-full overflow-hidden ${imageClassName} ${
-          surface === "surface" ? "bg-surface" : "bg-surface-alt"
-        }`}
-      >
+      <div className={`relative w-full overflow-hidden ${imageClassName}`}>
         {image ? (
           <Image
             src={image}
@@ -36,7 +32,11 @@ export default function ProductCard({
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
+          <div
+            className={`flex h-full w-full items-center justify-center ${
+              surface === "surface" ? "bg-surface" : "bg-surface-alt"
+            }`}
+          >
             <p className="text-[10px] uppercase tracking-[1.5px] text-muted">
               Sin imagen
             </p>
