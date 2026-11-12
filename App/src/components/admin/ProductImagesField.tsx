@@ -157,7 +157,7 @@ export default function ProductImagesField({
                 handleDrop(index);
               }}
               onDragEnd={() => setDragIndex(null)}
-              className={`group relative h-[130px] w-[96px] shrink-0 overflow-hidden border border-ink/10 bg-surface transition-all ${
+              className={`group relative h-[130px] w-[96px] shrink-0 overflow-hidden border border-ink/10 transition-all ${
                 dragIndex === index ? "scale-95 opacity-70" : ""
               } ${dragIndex !== null && dragIndex !== index ? "cursor-grab" : ""}`}
             >
@@ -194,7 +194,7 @@ export default function ProductImagesField({
               </button>
 
               {images.length > 1 && (
-                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1.5 pt-4">
+                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between p-1.5">
                   <button
                     type="button"
                     disabled={index === 0}

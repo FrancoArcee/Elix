@@ -21,34 +21,35 @@ function CardContent({
 }: Omit<AdminProductCardProps, "href" | "isFeatured" | "onToggleFeatured" | "featuredDisabled" | "onDelete">) {
   return (
     <>
-      {image ? (
-        <Image
-          src={image}
-          alt={name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 266px"
-          className="object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-surface">
-          <p className="text-[9px] uppercase tracking-[1.35px] text-muted">
-            Sin imagen
-          </p>
-        </div>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      {badge && (
-        <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
-          <span className="bg-background px-1.5 py-0.5 text-[8px] uppercase leading-3 tracking-[0.96px] text-ink">
-            {badge}
-          </span>
-        </div>
-      )}
-      <div className="absolute inset-x-0 bottom-0 p-3">
-        <p className="text-[8px] uppercase leading-3 tracking-[1.2px] text-white/60">
+      <div className="relative aspect-[3/4] w-full overflow-hidden">
+        {image ? (
+          <Image
+            src={image}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 266px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-surface">
+            <p className="text-[9px] uppercase tracking-[1.35px] text-muted">
+              Sin imagen
+            </p>
+          </div>
+        )}
+        {badge && (
+          <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1">
+            <span className="bg-background px-1.5 py-0.5 text-[8px] uppercase leading-3 tracking-[0.96px] text-ink">
+              {badge}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="px-3 pb-2 pt-3">
+        <p className="text-[8px] uppercase leading-3 tracking-[1.2px] text-muted">
           {brand}
         </p>
-        <p className="pt-0.5 font-serif text-[14px] font-bold leading-[17.5px] text-white">
+        <p className="pt-0.5 font-serif text-[14px] font-bold leading-[17.5px] text-ink">
           {name}
         </p>
       </div>
@@ -128,7 +129,7 @@ export default function AdminProductCard({
     return (
       <Link
         href={href}
-        className="relative block aspect-[3/4] w-full overflow-hidden bg-surface transition-opacity hover:opacity-90"
+        className="relative block w-full transition-opacity hover:opacity-90"
       >
         {actions}
         <CardContent
@@ -142,7 +143,7 @@ export default function AdminProductCard({
   }
 
   return (
-    <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface">
+    <div className="relative w-full">
       {actions}
       <CardContent
         image={image}
